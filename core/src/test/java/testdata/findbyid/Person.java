@@ -1,5 +1,6 @@
 package testdata.findbyid;
 
+import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
