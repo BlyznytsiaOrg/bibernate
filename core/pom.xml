@@ -21,6 +21,7 @@
         <slf4j.version>2.0.11</slf4j.version>
         <mockito.version>5.9.0</mockito.version>
         <hikari.version>5.1.0</hikari.version>
+        <postgresql.version>42.7.1</postgresql.version>
         <testcontainers.version>1.19.3</testcontainers.version>
     </properties>
 
@@ -103,6 +104,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
