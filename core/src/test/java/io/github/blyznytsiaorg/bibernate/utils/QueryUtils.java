@@ -17,7 +17,7 @@ public class QueryUtils {
     public static void assertQueries(BibernateSessionFactory bibernateSessionFactory, List<String> expectedQueries) {
         List<String> executedQueries = bibernateSessionFactory.getExecutedQueries();
         assertThat(executedQueries).isNotEmpty();
-        assertThat(executedQueries.size()).isEqualTo(expectedQueries.size());
+        assertThat(executedQueries).hasSize(expectedQueries.size());
 
         for (int i = 0; i < expectedQueries.size(); i++) {
             assertThat(executedQueries.get(i)).isEqualTo(expectedQueries.get(i));

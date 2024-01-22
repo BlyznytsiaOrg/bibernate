@@ -15,6 +15,7 @@ public class EntityMapper {
 
     public <T> T toEntity(ResultSet resultSet, Class<T> entityClass)
             throws ReflectiveOperationException, SQLException {
+        
         T entity = entityClass.getDeclaredConstructor().newInstance();
 
         for (var field : entityClass.getDeclaredFields()) {

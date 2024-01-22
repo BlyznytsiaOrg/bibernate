@@ -37,8 +37,8 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id=?;",
-                    "UPDATE persons SET first_name = ? WHERE id=?;")
+                    "SELECT * FROM persons WHERE id = ?;",
+                    "UPDATE persons SET first_name = ? WHERE id = ?;")
             );
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -51,7 +51,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
@@ -78,8 +78,8 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id=?;",
-                    "UPDATE persons SET first_name = ?, last_name = ? WHERE id=?;")
+                    "SELECT * FROM persons WHERE id = ?;",
+                    "UPDATE persons SET first_name = ?, last_name = ? WHERE id = ?;")
             );
 
 
@@ -93,7 +93,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
@@ -119,8 +119,8 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id=?;",
-                    "UPDATE persons SET first_name = ?, last_name = ? WHERE id=?;")
+                    "SELECT * FROM persons WHERE id = ?;",
+                    "UPDATE persons SET first_name = ?, last_name = ? WHERE id = ?;")
             );
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -133,7 +133,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 }

@@ -6,6 +6,8 @@ import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.tools.Diagnostic;
+import java.util.Objects;
 import java.util.Set;
 
 @SupportedAnnotationTypes("io.github.blyznytsiaorg.bibernate.annotation.Entity")
@@ -17,31 +19,40 @@ public class EntityRequirementProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        messager = processingEnv.getMessager();
+        this.messager = processingEnv.getMessager();
     }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        for (Element element : roundEnv.getElementsAnnotatedWith(Entity.class)) {
-            if (element.getKind() == ElementKind.CLASS) {
-                TypeElement typeElement = (TypeElement) element;
-                boolean hasRequiredField = element.getEnclosedElements().stream()
-                        .anyMatch(field -> field.getKind() == ElementKind.FIELD && field.getAnnotation(Id.class) != null);
-
-                if (!hasRequiredField) {
-                    messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                            "Class annotated with @Entity must have at least one field annotated with @Id",
-                            element);
-                }
-
-                if (!hasNoArgsConstructor(typeElement)) {
-                    messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                            "Class annotated with @Entity must have constructor without params", typeElement);
-                }
-            }
-        }
+        roundEnv.getElementsAnnotatedWith(Entity.class)
+                .stream()
+                .filter(element -> element.getKind() == ElementKind.CLASS)
+                .forEach(this::validate);
 
         return true;
+    }
+    
+    private void validate(Element element) {
+        TypeElement typeElement = (TypeElement) element;
+        
+        boolean hasRequiredField = element.getEnclosedElements()
+                .stream()
+                .anyMatch(this::isIdAnnotatedField);
+
+        if (!hasRequiredField) {
+            messager.printMessage(Diagnostic.Kind.ERROR,
+                    "Class annotated with @Entity must have at least one field annotated with @Id",
+                    element);
+        }
+
+        if (!hasNoArgsConstructor(typeElement)) {
+            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                    "Class annotated with @Entity must have constructor without params", typeElement);
+        }
+    }
+    
+    private boolean isIdAnnotatedField(Element field) {
+        return field.getKind() == ElementKind.FIELD && Objects.nonNull(field.getAnnotation(Id.class));
     }
 
     private boolean hasNoArgsConstructor(TypeElement typeElement) {

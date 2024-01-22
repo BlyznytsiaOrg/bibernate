@@ -33,7 +33,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
@@ -54,7 +54,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
@@ -76,7 +76,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 }

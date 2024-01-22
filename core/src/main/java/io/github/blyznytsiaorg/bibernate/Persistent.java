@@ -15,6 +15,7 @@ import java.util.Map;
 @Getter
 @Slf4j
 public class Persistent {
+    
     private final Map<String, String> bibernateSettings;
     private final String configFileName;
 

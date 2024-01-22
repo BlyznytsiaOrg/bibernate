@@ -2,9 +2,11 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinClause;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
+import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -12,6 +14,7 @@ import java.util.List;
  *  @since 1.0
  */
 public class SelectQueryBuilder extends QueryBuilder {
+    
     private String groupByField;
     private String havingCondition;
     private final List<String> selectedFields;
@@ -78,41 +81,29 @@ public class SelectQueryBuilder extends QueryBuilder {
     public String buildSelectStatement() {
         var queryBuilder = new StringBuilder(SELECT);
 
-        if (selectedFields.isEmpty()) {
-            queryBuilder.append(ALL_FIELDS);
-        } else {
-            for (int i = 0; i < selectedFields.size(); i++) {
-                queryBuilder.append(selectedFields.get(i));
-                if (i < selectedFields.size() - 1) {
-                    queryBuilder.append(COMA);
-                }
-            }
-        }
+        queryBuilder.append(CollectionUtils.isEmpty(selectedFields) ? ALL_FIELDS : String.join(COMA, selectedFields));
 
         queryBuilder.append(FROM).append(tableName);
 
-        for (var joinClause : joinClauses) {
-            queryBuilder.append(SPACE).append(joinClause.toString());
-        }
+        joinClauses.forEach(joinClause -> queryBuilder.append(SPACE).append(joinClause.toString()));
 
         handleWhereCondition(queryBuilder);
 
-        if (groupByField != null && !groupByField.isEmpty()) {
+        if (Objects.nonNull(groupByField) && !groupByField.isEmpty()) {
             queryBuilder.append(GROUP_BY).append(groupByField);
         }
 
-        if (havingCondition != null && !havingCondition.isEmpty()) {
+        if (Objects.nonNull(havingCondition) && !havingCondition.isEmpty()) {
             queryBuilder.append(HAVING).append(havingCondition);
         }
 
-        if (!unionQueries.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(unionQueries)) {
             queryBuilder.append(UNION);
-            for (var unionQuery : unionQueries) {
-                queryBuilder.append(unionQuery.buildSelectStatement()).append(SPACE);
-            }
+            unionQueries.forEach(unionQuery -> 
+                    queryBuilder.append(unionQuery.buildSelectStatement()).append(SPACE));
         }
 
-        queryBuilder.append(";");
+        queryBuilder.append(SEMICOLON);
 
         return queryBuilder.toString();
     }
