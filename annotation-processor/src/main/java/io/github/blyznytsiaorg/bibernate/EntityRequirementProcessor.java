@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 @SupportedAnnotationTypes("io.github.blyznytsiaorg.bibernate.annotation.Entity")
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
-public class EntityRequiredDefaultConstructorProcessor extends AbstractProcessor {
+public class EntityRequirementProcessor extends AbstractProcessor {
 
     private Messager messager;
 
@@ -24,6 +25,14 @@ public class EntityRequiredDefaultConstructorProcessor extends AbstractProcessor
         for (Element element : roundEnv.getElementsAnnotatedWith(Entity.class)) {
             if (element.getKind() == ElementKind.CLASS) {
                 TypeElement typeElement = (TypeElement) element;
+                boolean hasRequiredField = element.getEnclosedElements().stream()
+                        .anyMatch(field -> field.getKind() == ElementKind.FIELD && field.getAnnotation(Id.class) != null);
+
+                if (!hasRequiredField) {
+                    messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                            "Class annotated with @Entity must have at least one field annotated with @Id",
+                            element);
+                }
 
                 if (!hasNoArgsConstructor(typeElement)) {
                     messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
