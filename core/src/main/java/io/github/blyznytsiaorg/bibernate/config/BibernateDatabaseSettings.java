@@ -17,6 +17,8 @@ import java.util.Objects;
 @Slf4j
 public class BibernateDatabaseSettings {
 
+    public static final String SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY = " should not be null. Please configure it %s";
+
     public static final String DB_URL = "db.url";
     public static final String DB_USER = "db.user";
     public static final String DB_PASSWORD = "db.password";
@@ -29,16 +31,18 @@ public class BibernateDatabaseSettings {
 
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
 
-    public static final String SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY = " should not be null. Please configure it %s";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
 
     private final Map<String, String> bibernateSettingsProperties;
+    
     private final String configurationErrorMessage;
+    
     private final String bibernateFileName;
 
     private final HikariDataSource dataSource;
 
-    public BibernateDatabaseSettings(final Map<String, String> bibernateSettingsProperties, final String bibernateFileName) {
+    public BibernateDatabaseSettings(final Map<String, String> bibernateSettingsProperties, 
+                                     final String bibernateFileName) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
         this.bibernateFileName = bibernateFileName;
@@ -46,13 +50,13 @@ public class BibernateDatabaseSettings {
     }
 
     public BibernateDatabaseSettings(final Map<String, String> bibernateSettings,
-                                         final String bibernateFileName, HikariDataSource dataSource) {
+                                     final String bibernateFileName, 
+                                     final HikariDataSource dataSource) {
         this.bibernateSettingsProperties = bibernateSettings;
         this.bibernateFileName = bibernateFileName;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettings, bibernateFileName);
         this.dataSource = dataSource;
     }
-
 
     private HikariDataSource createDataSource() {
         log.info("Creating dataSource...");
@@ -92,10 +96,7 @@ public class BibernateDatabaseSettings {
         return getProperty(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
-
     private boolean getProperty(String key, String defaultValue) {
         return Boolean.parseBoolean(bibernateSettingsProperties.getOrDefault(key, defaultValue));
     }
-
-
 }

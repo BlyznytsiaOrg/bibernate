@@ -6,6 +6,7 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join;
  *  @since 1.0
  */
 public class JoinClause {
+    
     private final String joinedTable;
     private final String onCondition;
     private final JoinType joinType;

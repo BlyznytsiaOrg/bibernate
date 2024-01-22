@@ -5,7 +5,6 @@ import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -25,10 +24,11 @@ import java.util.stream.IntStream;
 @UtilityClass
 public class EntityReflectionUtils {
 
+    public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
+    
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
-    public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY_S = "Unable to get id name for entity [%s]";
-    public static final String UNABLE_TO_GET_FIELD_NAMES_AND_THEIR_VALUES_FOR_ENTITY = "Unable to get field names and their values for entity %s";
+    
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -54,8 +54,7 @@ public class EntityReflectionUtils {
                 .map(EntityReflectionUtils::columnName)
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
-                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY_S.formatted(entityClass.getSimpleName()))
-                );
+                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
     }
 
     public static Object columnIdValue(Class<?> entityClass, Object entity) {
@@ -64,8 +63,7 @@ public class EntityReflectionUtils {
                 .map(field -> getValueFromObject(entity, field))
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
-                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY_S.formatted(entityClass.getSimpleName()))
-                );
+                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
     }
 
     public static Class<?> columnIdType(Class<?> entityClass) {
@@ -74,8 +72,7 @@ public class EntityReflectionUtils {
                 .map(Field::getType)
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
-                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY_S.formatted(entityClass.getSimpleName()))
-                );
+                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
     }
 
     @SneakyThrows
@@ -84,37 +81,10 @@ public class EntityReflectionUtils {
         return field.get(entity);
     }
 
-    public <T> List<ColumnSnapshot> getFieldNamesToValues(T object) {
-        Class<?> type = object.getClass();
-
-        List<ColumnSnapshot> fieldNamesToValues = new ArrayList<>();
-        for (Field field : type.getDeclaredFields()) {
-            try {
-                field.setAccessible(true);
-
-                ColumnSnapshot fieldNameToValue = buildFieldNameToValue(field, object);
-                fieldNamesToValues.add(fieldNameToValue);
-            } catch (IllegalAccessException | IllegalArgumentException exe) {
-                throw new BibernateGeneralException(
-                        UNABLE_TO_GET_FIELD_NAMES_AND_THEIR_VALUES_FOR_ENTITY.formatted(type.getSimpleName()),
-                        exe
-                );
-            }
-        }
-
-        return fieldNamesToValues;
-    }
-
-    private ColumnSnapshot buildFieldNameToValue(Field field, Object object) throws IllegalAccessException {
-        String columnName = columnName(field);
-        Object columnValue = field.get(object);
-
-        return new ColumnSnapshot(columnName, columnValue, field.getType());
-    }
-
-    public static List<ColumnSnapshot> isCurrentSnapshotAndOldSnapshotTheSame(List<ColumnSnapshot> currentEntitySnapshot, List<ColumnSnapshot> oldEntitySnapshot) {
+    public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
+                                                     List<ColumnSnapshot> oldEntitySnapshot) {
         return IntStream.range(0, currentEntitySnapshot.size())
-                .filter(i -> !currentEntitySnapshot.get(i).equals(oldEntitySnapshot.get(i)))
+                .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
                 .mapToObj(currentEntitySnapshot::get)
                 .collect(Collectors.toList());
     }
