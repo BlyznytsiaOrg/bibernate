@@ -21,7 +21,7 @@ public class DefaultBibernateSession implements BibernateSession {
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
-        return dao.findById(entityClass, primaryKey);
+        return dao.findById(entityClass, primaryKey, this);
     }
 
     @Override

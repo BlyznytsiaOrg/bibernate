@@ -1,7 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity;
 
-import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
-import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
+import io.github.blyznytsiaorg.bibernate.BibernateSession;
 import lombok.RequiredArgsConstructor;
 
 import java.sql.ResultSet;
@@ -17,9 +16,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
  */
 @RequiredArgsConstructor
 public class EntityMapper {
-    private final EntityDao entityDao;
 
-    public  <T> T toEntity(ResultSet resultSet, Class<T> entityClass)
+    public  <T> T toEntity(ResultSet resultSet, Class<T> entityClass, BibernateSession bibernateSession)
             throws ReflectiveOperationException, SQLException {
         T entity = entityClass.getDeclaredConstructor().newInstance();
 
@@ -37,8 +35,14 @@ public class EntityMapper {
                 var joinColumnName = joinColumnName(field);
                 var joinColumnValue = resultSet.getObject(joinColumnName);
 
-                Optional<?> joinEntityById = entityDao.findById(field.getType(), joinColumnValue);
-                field.set(entity, joinEntityById.get());
+                Optional<?> joinEntityById = bibernateSession.findById(field.getType(), joinColumnValue);
+                joinEntityById.ifPresent(entityValue -> {
+                    try {
+                        field.set(entity, entityValue);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
         }
 

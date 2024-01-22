@@ -1,10 +1,7 @@
 package testdata.findbyid;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
@@ -12,6 +9,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
     @Column(name = "id")

@@ -31,7 +31,7 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
     }
 
     public EntityDao entityDao() {
-        return new EntityDao(new SqlBuilder(), getBibernateSettings());
+        return new EntityDao(new SqlBuilder(), getBibernateSettings(), new EntityMapper());
     }
 
     public List<String> getExecutedQueries() {
