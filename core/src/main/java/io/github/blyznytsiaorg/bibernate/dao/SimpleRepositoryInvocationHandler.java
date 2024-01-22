@@ -7,7 +7,6 @@ import io.github.blyznytsiaorg.bibernate.dao.method.ReturnType;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 
@@ -40,13 +39,20 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
     public static final String REGISTER_REPOSITORY = "Register repository {}";
     public static final String HANDLE_GENERIC_METHOD = "Handle generic method {}";
     public static final String HANDLE_METHOD = "Handle method {}";
-    public static final String NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME = "Not supported returnType{} for methodName {}";
+    public static final String NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME =
+            "Not supported returnType{} for methodName {}";
+    public static final String TRY_TO_FIND_OUT_CUSTOM_REPOSITORY_IMPLEMENTATION_FOR_S_METHOD =
+            "Try to find out custom repository implementation for {} method";
+    public static final String CLASS_METHOD_FOUND_WILL_INVOKE_IT_WITH_PARAMETERS =
+            "Class {} Method {} found will invoke it with parameters {}";
+    public static final String LOOKS_LIKE_METHOD_METADATA_NOT_FOUND_FOR_METHOD =
+            "Looks like methodMetadata not found for {} method";
 
     private final BibernateSessionFactory sessionFactory;
 
-    @SneakyThrows
     @Override
-    public Object invoke(Object proxy, Method method, Object[] parameters) {
+    public Object invoke(Object proxy, Method method, Object[] parameters)
+            throws InvocationTargetException, IllegalAccessException {
         List<String> parameterNames = getParameterNames(method);
         String methodName = method.getName();
         log.trace(CALL_METHOD_NAME_PARAMETERS_PARAMETER_NAMES_EXTENDS_INTERFACES,
@@ -65,22 +71,35 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
                 );
 
         log.trace(RESOLVE_REPOSITORY_DETAILS, methodName, repositoryDetails);
+        var methodMetadataMap = repositoryDetails.methodsMetadata();
 
-        var methodMetadata = repositoryDetails.methodsMetadata().get(methodName);
-        if (methodName.equals(FIND_BY_ID)) {
-            return handleMethodFindById(method, parameters, repositoryDetails, methodMetadata, methodName);
-        } else if (methodName.startsWith(FIND_BY)) {
-            return handleMethodFindBy(parameters, methodName, methodMetadata);
-        }
+        if (!methodMetadataMap.isEmpty()) {
+            var methodMetadata = methodMetadataMap.get(methodName);
 
-        for (var customRepository : CUSTOM_REPOSITORY_IMPLEMENTATIONS) {
-            for (var customRepositoryMethod : customRepository.getClass().getDeclaredMethods()) {
-                if (customRepositoryMethod.getName().equals(methodName)) {
-                    return customRepositoryMethod.invoke(customRepository, parameters);
+            if (Objects.nonNull(methodMetadata)) {
+                if (methodName.equals(FIND_BY_ID)) {
+                    return handleMethodFindById(method, parameters, repositoryDetails, methodMetadata, methodName);
+                } else if (methodName.startsWith(FIND_BY)) {
+                    return handleMethodFindBy(parameters, methodName, methodMetadata);
+                }
+            } else {
+                log.trace(LOOKS_LIKE_METHOD_METADATA_NOT_FOUND_FOR_METHOD, methodName);
+            }
+
+
+            log.trace(TRY_TO_FIND_OUT_CUSTOM_REPOSITORY_IMPLEMENTATION_FOR_S_METHOD, methodName);
+            for (var customRepository : CUSTOM_REPOSITORY_IMPLEMENTATIONS) {
+                for (var customRepositoryMethod : customRepository.getClass().getDeclaredMethods()) {
+                    if (customRepositoryMethod.getName().equals(methodName)) {
+                        log.trace(CLASS_METHOD_FOUND_WILL_INVOKE_IT_WITH_PARAMETERS,
+                                customRepository.getClass().getSimpleName(), methodName, Arrays.toString(parameters));
+                        return customRepositoryMethod.invoke(customRepository, parameters);
+                    }
                 }
             }
         }
 
+        log.trace(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
         throw new IllegalArgumentException(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
     }
 
