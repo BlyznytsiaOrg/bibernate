@@ -19,9 +19,8 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -30,8 +29,8 @@ public class EntityDao implements Dao {
             "Cannot execute findById entityClass [%s] for primaryKey %s message %s";
 
     private final SqlBuilder sqlBuilder;
-    private final EntityMapper entityMapper;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
+    private final EntityMapper entityMapper = new EntityMapper(this);
     @Getter
     private final List<String> executedQueries = new ArrayList<>();
 
@@ -57,7 +56,7 @@ public class EntityDao implements Dao {
             statement.setObject(1, primaryKey);
             var resultSet = statement.executeQuery();
 
-            return resultSet.next() ? Optional.of(this.entityMapper.toEntity(resultSet, entityClass)) : Optional.empty();
+            return resultSet.next() ? Optional.of(entityMapper.toEntity(resultSet, entityClass)) : Optional.empty();
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_FIND_BY_ID_ENTITY_CLASS_S_FOR_PRIMARY_KEY_S_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
@@ -77,7 +76,7 @@ public class EntityDao implements Dao {
         var fieldIdName = columnIdName(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
 
-        String query  = sqlBuilder.update(entity, tableName, fieldIdName, diff);
+        String query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
         if (bibernateDatabaseSettings.isCollectQueries()) {
             executedQueries.add(query);
         }
@@ -115,5 +114,4 @@ public class EntityDao implements Dao {
         }
         statement.setObject(parameterIndex, fieldIdValue);
     }
-
 }

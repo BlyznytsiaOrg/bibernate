@@ -1,9 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Column;
-import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
@@ -46,6 +43,13 @@ public class EntityReflectionUtils {
                 .map(Column::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(getSnakeString(field.getName()));
+    }
+
+    public static String joinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                .map(JoinColumn::name)
+                .filter(Predicate.not(String::isEmpty))
+                .orElse(getSnakeString(field.getName()).concat("_id"));
     }
 
     public static String columnIdName(Class<?> entityClass) {
@@ -157,6 +161,18 @@ public class EntityReflectionUtils {
         // Add more conditions for other types if needed
         return value;
     }
+
+    public static boolean isRegularField(Field field) {
+        return !isEntityField(field);
+    }
+
+    public static boolean isEntityField(Field field) {
+        return field.isAnnotationPresent(OneToOne.class);
+    }
+
+
+
+
 
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();

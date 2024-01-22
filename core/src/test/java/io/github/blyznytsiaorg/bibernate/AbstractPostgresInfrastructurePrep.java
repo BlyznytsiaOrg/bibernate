@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 @Slf4j
-public abstract class AbstractPostgresInfrastructurePrep implements AbstractPostgresTableCreationPrep{
+public abstract class AbstractPostgresInfrastructurePrep implements AbstractPostgresTableCreationPrep {
     private static final String POSTGRES_LATEST = "postgres:latest";
     private static final String DB_URL = "db.url";
     private static final String DB_USER = "db.user";
