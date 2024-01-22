@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.util.*;
 
@@ -23,7 +24,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 @RequiredArgsConstructor
 @Slf4j
 public class EntityDao implements Dao {
-    private static final String CANNOT_EXECUTE_FIND_BY_ID_ENTITY_CLASS_S_FOR_PRIMARY_KEY_S_MESSAGE =
+
+    private static final String CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE =
             "Cannot execute findById entityClass [%s] for primaryKey %s message %s";
 
     private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS =
@@ -60,7 +62,7 @@ public class EntityDao implements Dao {
             return resultSet.next() ? Optional.of(this.entityMapper.toEntity(resultSet, entityClass)) : Optional.empty();
         } catch (Exception exe) {
             throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_FIND_BY_ID_ENTITY_CLASS_S_FOR_PRIMARY_KEY_S_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
+                    CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
                     exe);
         }
     }
@@ -125,7 +127,8 @@ public class EntityDao implements Dao {
             }
             populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, diff);
             var resultSet = statement.executeUpdate();
-            log.info("Update effected row {} for entity clazz {} with id {}", resultSet, entityClass.getSimpleName(), fieldIdValue);
+            log.info("Update effected row {} for entity clazz {} with id {}",
+                    resultSet, entityClass.getSimpleName(), fieldIdValue);
         }
 
         return entityClass.cast(entity);
@@ -133,24 +136,29 @@ public class EntityDao implements Dao {
 
     @SneakyThrows
     private void populatePreparedStatement(Object entity, PreparedStatement statement,
-                                           String fieldIdName, Object fieldIdValue, List<ColumnSnapshot> diff) {
+                                           String fieldIdName, Object fieldIdValue,
+                                           List<ColumnSnapshot> diff) throws SQLException {
         int parameterIndex = 1;
 
-        if (!isDynamicUpdate(entity.getClass())) {
+        if (isDynamicUpdate(entity.getClass())) {
+            for (var columnSnapshot : diff) {
+                statement.setObject(parameterIndex++, columnSnapshot.value());
+            }
+
+            statement.setObject(parameterIndex, fieldIdValue);
+        } else {
             for (var field : entity.getClass().getDeclaredFields()) {
-                if (!fieldIdName.equals(columnName(field))) {
+                if (!isIdField(fieldIdName, field)) {
                     var fieldValue = getValueFromObject(entity, field);
                     statement.setObject(parameterIndex++, fieldValue);
                 }
             }
-            statement.setObject(parameterIndex, fieldIdValue);
-            return;
-        }
 
-        for (var columnSnapshot : diff) {
-            statement.setObject(parameterIndex++, columnSnapshot.value());
+            statement.setObject(parameterIndex, fieldIdValue);
         }
-        statement.setObject(parameterIndex, fieldIdValue);
     }
 
+    private boolean isIdField(String fieldIdName, Field field) {
+        return Objects.equals(fieldIdName, columnName(field));
+    }
 }

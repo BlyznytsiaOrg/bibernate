@@ -33,6 +33,5 @@ public class DefaultBibernateSession implements BibernateSession {
     @Override
     public void close() {
         log.info("Close session...");
-
     }
 }

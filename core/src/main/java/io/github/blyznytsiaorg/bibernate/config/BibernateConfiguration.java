@@ -17,8 +17,10 @@ import static java.util.stream.Collectors.toMap;
 @Getter
 @Slf4j
 public class BibernateConfiguration {
+    
     private static final String DEFAULT_CONFIGURATION = "bibernate.properties";
     private final String configFileName;
+    
     public BibernateConfiguration(String configFileName) {
         this.configFileName = configFileName;
     }

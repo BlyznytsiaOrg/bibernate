@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <name>bibernate-project</name>
-  <description>This project is the Bring Framework</description>
+  <description>Bibernate ORM Framework</description>
   <url>https://github.com/BlyznytsiaOrg/bibernate</url>
 
 
@@ -23,7 +23,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
+    <!--suppress UnresolvedMavenProperty -->
     <sonar.login>${env.SONAR_USERNAME}</sonar.login>
+    <!--suppress UnresolvedMavenProperty -->
     <sonar.host.url>${env.SONAR_HOST}</sonar.host.url>
   </properties>
 

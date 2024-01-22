@@ -12,6 +12,7 @@ import java.util.Optional;
  *  @since 1.0
  */
 public interface BibernateSession extends Closeable {
+
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
     <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues);
