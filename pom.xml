@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <name>bibernate-project</name>
-  <description>Bibernate ORM</description>
+  <description>Bibernate ORM Framework</description>
   <url>https://github.com/BlyznytsiaOrg/bibernate</url>
 
 
