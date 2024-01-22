@@ -47,6 +47,8 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
             "Class {} Method {} found will invoke it with parameters {}";
     public static final String LOOKS_LIKE_METHOD_METADATA_NOT_FOUND_FOR_METHOD =
             "Looks like methodMetadata not found for {} method";
+    public static final String CANNOT_INVOKE_CLASS_METHOD_WITH_PARAMETERS_MESSAGE = "Cannot invoke class %s method %s " +
+            "with parameters %s message %s";
 
     private final BibernateSessionFactory sessionFactory;
 
@@ -93,7 +95,16 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
                     if (customRepositoryMethod.getName().equals(methodName)) {
                         log.trace(CLASS_METHOD_FOUND_WILL_INVOKE_IT_WITH_PARAMETERS,
                                 customRepository.getClass().getSimpleName(), methodName, Arrays.toString(parameters));
-                        return customRepositoryMethod.invoke(customRepository, parameters);
+                        try {
+                            return customRepositoryMethod.invoke(customRepository, parameters);
+                        } catch (Exception exe) {
+                            var errorMessage = CANNOT_INVOKE_CLASS_METHOD_WITH_PARAMETERS_MESSAGE.formatted(
+                                    customRepository.getClass(),
+                                    customRepositoryMethod.getName(),
+                                    Arrays.toString(parameters), exe.getMessage());
+                            log.error(errorMessage, exe);
+                            throw new BibernateGeneralException(errorMessage, exe);
+                        }
                     }
                 }
             }

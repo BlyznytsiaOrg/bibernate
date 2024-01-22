@@ -21,23 +21,19 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
     @Test
     void shouldCallCustomRepositoryMethod() {
         //given
-        try {
-            createTableWithData(5);
+        createTableWithData(5);
 
-            try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
-                var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-                var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
-                var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
-                //when
-                List<Person> persons = personRepository.findMyCustomQuery();
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+            //when
+            List<Person> persons = personRepository.findMyCustomQuery();
 
-                //then
-                Assertions.assertThat(persons).hasSize(1);
-                assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
-            }
-        } catch (Exception exe) {
-            log.info("Some exception on CI ", exe);
+            //then
+            Assertions.assertThat(persons).hasSize(1);
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
