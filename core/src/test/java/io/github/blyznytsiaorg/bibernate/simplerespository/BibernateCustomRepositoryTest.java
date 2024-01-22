@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.Person;
@@ -18,7 +18,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 @Slf4j
 class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
-    @Ignore("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
+    @Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
     @DisplayName("Should call custom repository method")
     @Test
     void shouldCallCustomRepositoryMethod() {
