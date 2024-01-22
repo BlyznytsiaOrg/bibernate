@@ -36,7 +36,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             Assertions.assertThat(persons).isPresent();
             Assertions.assertThat(persons).get().isNotNull();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 

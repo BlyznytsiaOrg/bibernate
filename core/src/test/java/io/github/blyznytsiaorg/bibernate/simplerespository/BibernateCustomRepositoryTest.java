@@ -31,7 +31,7 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
 
             //then
             Assertions.assertThat(persons).hasSize(1);
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
     }
 
@@ -40,12 +40,5 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
-    }
-
-    private Person createPerson(String firstName, String lastName) {
-        var person = new Person();
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-        return person;
     }
 }

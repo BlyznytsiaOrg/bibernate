@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
@@ -134,7 +135,6 @@ public class EntityDao implements Dao {
         return entityClass.cast(entity);
     }
 
-    @SneakyThrows
     private void populatePreparedStatement(Object entity, PreparedStatement statement,
                                            String fieldIdName, Object fieldIdValue,
                                            List<ColumnSnapshot> diff) throws SQLException {
