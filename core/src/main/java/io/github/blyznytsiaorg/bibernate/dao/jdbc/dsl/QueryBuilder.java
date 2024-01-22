@@ -37,7 +37,7 @@ abstract class QueryBuilder {
 
     protected void handleWhereCondition(StringBuilder queryBuilder) {
         if (CollectionUtils.isNotEmpty(whereConditions)) {
-            queryBuilder.append(WHERE).append(String.join(" ", whereConditions));
+            queryBuilder.append(WHERE).append(String.join(SPACE, whereConditions));
         }
     }
 }

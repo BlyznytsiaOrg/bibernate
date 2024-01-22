@@ -41,17 +41,17 @@ public class BibernateDatabaseSettings {
 
     private final HikariDataSource dataSource;
 
-    public BibernateDatabaseSettings(final Map<String, String> bibernateSettingsProperties, 
-                                     final String bibernateFileName) {
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, 
+                                     String bibernateFileName) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
         this.bibernateFileName = bibernateFileName;
         this.dataSource = createDataSource();
     }
 
-    public BibernateDatabaseSettings(final Map<String, String> bibernateSettings,
-                                     final String bibernateFileName, 
-                                     final HikariDataSource dataSource) {
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettings,
+                                     String bibernateFileName, 
+                                     HikariDataSource dataSource) {
         this.bibernateSettingsProperties = bibernateSettings;
         this.bibernateFileName = bibernateFileName;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettings, bibernateFileName);

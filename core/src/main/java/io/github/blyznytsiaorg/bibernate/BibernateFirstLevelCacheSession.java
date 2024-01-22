@@ -110,8 +110,12 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     public void close() {
         log.info("Session is closing. Performing dirty checking...");
         performDirtyChecking();
+        
         log.info("FirstLevelCache is clearing...");
         firstLevelCache.clear();
+
+        log.info("Snapshots are clearing...");
+        snapshots.clear();
     }
 
     @Override

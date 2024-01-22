@@ -27,25 +27,28 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         roundEnv.getElementsAnnotatedWith(Entity.class)
                 .stream()
                 .filter(element -> element.getKind() == ElementKind.CLASS)
-                .forEach(element -> {
-                    TypeElement typeElement = (TypeElement) element;
-                    boolean hasRequiredField = element.getEnclosedElements()
-                            .stream()
-                            .anyMatch(this::isIdAnnotatedField);
-                    
-                    if (!hasRequiredField) {
-                        messager.printMessage(Diagnostic.Kind.ERROR,
-                                "Class annotated with @Entity must have at least one field annotated with @Id",
-                                element);
-                    }
-
-                    if (!hasNoArgsConstructor(typeElement)) {
-                        messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                                "Class annotated with @Entity must have constructor without params", typeElement);
-                    }
-                });
+                .forEach(this::validate);
 
         return true;
+    }
+    
+    private void validate(Element element) {
+        TypeElement typeElement = (TypeElement) element;
+        
+        boolean hasRequiredField = element.getEnclosedElements()
+                .stream()
+                .anyMatch(this::isIdAnnotatedField);
+
+        if (!hasRequiredField) {
+            messager.printMessage(Diagnostic.Kind.ERROR,
+                    "Class annotated with @Entity must have at least one field annotated with @Id",
+                    element);
+        }
+
+        if (!hasNoArgsConstructor(typeElement)) {
+            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+                    "Class annotated with @Entity must have constructor without params", typeElement);
+        }
     }
     
     private boolean isIdAnnotatedField(Element field) {
