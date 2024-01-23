@@ -94,7 +94,7 @@ public class EntityDao implements Dao {
             }
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                items.add(entityClass.cast(this.entityMapper.toEntity(resultSet, entityClass)));
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
             throw new BibernateGeneralException(

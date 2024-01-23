@@ -5,27 +5,23 @@ import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromResultSetByColumn;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
 
-//@RequiredArgsConstructor
 public class EntityFieldFieldResolver implements TypeFieldResolver {
 
-//    private final BibernateSession session;
-
     @Override
-    public boolean isResolved(Field field) {
+    public boolean isAppropriate(Field field) {
         return EntityReflectionUtils.isEntityField(field);
     }
 
     @Override
-    public Object setValueToField(Field field, ResultSet resultSet) throws SQLException {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
         var session = BibernateSessionContextHolder.getBibernateSession();
         var joinColumnName = joinColumnName(field);
-        var joinColumnValue = resultSet.getObject(joinColumnName);
+        var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
 
-        //TODO: check what hibernate do if entity is not found
         return session.findById(field.getType(), joinColumnValue)
                 .orElse(null);
     }

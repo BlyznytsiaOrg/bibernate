@@ -2,11 +2,14 @@ package io.github.blyznytsiaorg.bibernate.utils;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -22,10 +25,11 @@ import java.util.stream.IntStream;
 public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
-    
+
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
-    
+    public static final String ID_POSTFIX = "_id";
+
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -49,7 +53,7 @@ public class EntityReflectionUtils {
         return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
                 .map(JoinColumn::name)
                 .filter(Predicate.not(String::isEmpty))
-                .orElse(getSnakeString(field.getName()).concat("_id"));
+                .orElse(getSnakeString(field.getName()).concat(ID_POSTFIX));
     }
 
     public static String columnIdName(Class<?> entityClass) {
@@ -83,6 +87,23 @@ public class EntityReflectionUtils {
     public static Object getValueFromObject(Object entity, Field field) {
         field.setAccessible(true);
         return field.get(entity);
+    }
+
+    public static Object getValueFromResultSetByColumn(ResultSet resultSet, String joinColumnName) {
+        try {
+            return resultSet.getObject(joinColumnName);
+        } catch (SQLException e) {
+            throw new BibernateGeneralException(String.format("Cannot get result from ResultSet by columnName = %s",
+                    joinColumnName), e);
+        }
+    }
+
+    public static Object getValueFromResultSet(Field field, ResultSet resultSet, String fieldName) {
+        try {
+            return resultSet.getObject(fieldName, field.getType());
+        } catch (SQLException e) {
+            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+        }
     }
 
     public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
@@ -148,10 +169,6 @@ public class EntityReflectionUtils {
     public static boolean isEntityField(Field field) {
         return field.isAnnotationPresent(OneToOne.class);
     }
-
-
-
-
 
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();

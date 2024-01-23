@@ -1,10 +1,10 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.dao.method.ReturnType;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
