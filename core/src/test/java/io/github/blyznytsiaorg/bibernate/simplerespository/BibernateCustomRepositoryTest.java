@@ -18,7 +18,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 @Slf4j
 class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
-    @Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
+    //@Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
     @DisplayName("Should call custom repository method")
     @Test
     void shouldCallCustomRepositoryMethod() {
@@ -40,9 +40,9 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
     }
 
     private static void createTableWithData(int i) {
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
     }
 }

@@ -17,7 +17,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
-    @DisplayName("Should try findById")
+    @DisplayName("Should findById")
     @Test
     void shouldFindById() {
         //given
@@ -40,7 +40,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         }
     }
 
-    @DisplayName("Should try findByFirstNameEquals using bibernate repository and return empty if nothing found")
+    @DisplayName("Should findByFirstNameEquals using bibernate repository and return empty if nothing found")
     @Test
     void shouldFindByFirstNameEqualsAndReturnEmptyIfNothingFound() {
         //given
@@ -57,7 +57,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             //then
             Assertions.assertThat(persons).hasSize(0);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
         }
     }
 
@@ -82,11 +82,11 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstNameEquals("John2");
 
             //then
-            Assertions.assertThat(persons).hasSize(2)
+            Assertions.assertThat(persons).hasSize(expectedPersons.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
         }
     }
 
@@ -116,15 +116,15 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name=? Or last_name=?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ? Or last_name = ?;"));
         }
     }
 
     private static void createTableWithData(int i) {
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
     }
 
     private Person createPerson(String firstName, String lastName) {

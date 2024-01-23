@@ -72,7 +72,6 @@ public class EntityDao implements Dao {
     public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object[] bindValues) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(whereCondition, "whereCondition must be not null");
-        Objects.requireNonNull(bindValues, "bindValues must be not null");
 
         var tableName = table(entityClass);
         var dataSource = bibernateDatabaseSettings.getDataSource();
@@ -88,10 +87,13 @@ public class EntityDao implements Dao {
                 log.info("Query {} bindValues {}", query, Arrays.toString(bindValues));
             }
 
-            int index = 1;
-            for (Object bindValue : bindValues) {
-                statement.setObject(index++, bindValue);
+            if (Objects.nonNull(bindValues)) {
+                int index = 1;
+                for (Object bindValue : bindValues) {
+                    statement.setObject(index++, bindValue);
+                }
             }
+
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 items.add(entityClass.cast(this.entityMapper.toEntity(resultSet, entityClass)));

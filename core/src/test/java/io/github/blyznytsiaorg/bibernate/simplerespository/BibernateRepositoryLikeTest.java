@@ -38,7 +38,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
             List<Person> persons = personRepository.findByFirstNameLike("John%");
 
             //then
-            Assertions.assertThat(persons).hasSize(2)
+            Assertions.assertThat(persons).hasSize(expectedPersons.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
@@ -47,10 +47,10 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
     }
 
     private static void createTableWithData(int i) {
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
-        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
+        setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
     }
 
     private Person createPerson(String firstName, String lastName) {
