@@ -18,7 +18,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 @Slf4j
 class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
-    @Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
+    //@Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
     @DisplayName("Should call custom repository method")
     @Test
     void shouldCallCustomRepositoryMethod() {
