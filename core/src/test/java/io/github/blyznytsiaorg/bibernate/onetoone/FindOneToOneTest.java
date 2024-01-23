@@ -30,7 +30,6 @@ public class FindOneToOneTest extends AbstractPostgresInfrastructurePrep {
                 //then
                 assertThat(user).isPresent();
 
-                System.out.println(user.get());
                 Address address = user.get().getAddress();
                 assertThat(address).isNotNull();
                 assertThat(address.getId()).isEqualTo(1L);
