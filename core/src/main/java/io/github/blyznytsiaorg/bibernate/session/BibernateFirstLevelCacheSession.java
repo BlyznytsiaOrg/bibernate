@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.session;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityKey;
+import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,8 +13,9 @@ import java.util.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
- * @author Blyzhnytsia Team
- * @since 1.0
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -28,28 +30,38 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         var fieldIdType = columnIdType(entityClass);
-        primaryKey = castIdToEntityId(entityClass, primaryKey);
+        primaryKey  = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
         var cachedEntity = firstLevelCache.get(entityKey);
 
         if (Objects.isNull(cachedEntity)) {
             var finalPrimaryKey = primaryKey;
+
             return bibernateSession.findById(entityClass, primaryKey)
                     .map(entityFromDb -> {
                         firstLevelCache.put(entityKey, entityFromDb);
-                        List<ColumnSnapshot> entityCurrentSnapshot = makeCurrentEntitySnapshot(entityFromDb);
+
+                        List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
                         snapshots.put(entityKey, entityCurrentSnapshot);
+
                         log.info("Create snapshot for entity {} id {}", entityClass.getSimpleName(), finalPrimaryKey);
                         log.info("Entity {} not found in firstLevel cache by id {}", entityClass.getSimpleName(), finalPrimaryKey);
+
                         return entityFromDb;
                     });
         }
 
         log.info(ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), primaryKey);
+
         return Optional.of(entityClass.cast(cachedEntity));
     }
 
-    public static List<ColumnSnapshot> makeCurrentEntitySnapshot(Object entityClass) {
+    @Override
+    public <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues) {
+        return bibernateSession.findBy(entityClass, whereQuery, bindValues);
+    }
+
+    private List<ColumnSnapshot> buildEntitySnapshot(Object entityClass) {
         Objects.requireNonNull(entityClass, "entityClass should not be null");
         Class<?> aClass = entityClass.getClass();
         Field[] declaredFields = aClass.getDeclaredFields();
@@ -72,38 +84,44 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         T insertEntityFromDb = getDao().update(entityClass, entity, diff);
         firstLevelCache.put(entityKey, insertEntityFromDb);
         log.info("Update Entity {} in firstLevel cache by id {}", entityClass.getSimpleName(), fieldIdValue);
-        List<ColumnSnapshot> entityCurrentSnapshot = makeCurrentEntitySnapshot(insertEntityFromDb);
+
+        List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(insertEntityFromDb);
         snapshots.put(entityKey, entityCurrentSnapshot);
         log.info("Update snapshot for entity {} id {}", entityClass.getSimpleName(), fieldIdValue);
     }
 
-    private void checkDirtyCheckingEntities() {
-        for (EntityKey<?> entityKey : firstLevelCache.keySet()) {
+    private void performDirtyChecking() {
+        firstLevelCache.keySet().forEach(entityKey -> {
             var entityInFirstLevelCache = firstLevelCache.get(entityKey);
-            var entityInFirstLevelCacheCurrentSnapshot = makeCurrentEntitySnapshot(entityInFirstLevelCache);
+            var entityInFirstLevelCacheCurrentSnapshot = buildEntitySnapshot(entityInFirstLevelCache);
             var entityOldSnapshot = snapshots.get(entityKey);
-            var diff = isCurrentSnapshotAndOldSnapshotTheSame(entityInFirstLevelCacheCurrentSnapshot, entityOldSnapshot);
-            if (!diff.isEmpty()) {
-                log.info("Dirty entity found need to generate update for entityKey {} and entity {}", entityKey, entityInFirstLevelCache);
+            var diff = getDifference(entityInFirstLevelCacheCurrentSnapshot, entityOldSnapshot);
+
+            if (CollectionUtils.isNotEmpty(diff)) {
+                log.info("Dirty entity found need to generate update for entityKey {} and entity {}",
+                        entityKey, entityInFirstLevelCache);
                 update(entityInFirstLevelCache.getClass(), entityInFirstLevelCache, diff);
             } else {
                 log.info("Dirty entity not found for entityKey {} no changes", entityKey);
             }
-        }
+        });
     }
-
     @Override
     public void flush() {
-        checkDirtyCheckingEntities();
+        performDirtyChecking();
     }
 
     @Override
     public void close() {
-        log.info("Session is closing. Need to check do I have dirtyCheckin entities.");
-        checkDirtyCheckingEntities();
+        log.info("Session is closing. Performing dirty checking...");
+        performDirtyChecking();
+        BibernateSessionContextHolder.resetBibernateSession();
+
         log.info("FirstLevelCache is clearing...");
         firstLevelCache.clear();
-        BibernateSessionContextHolder.resetBibernateSession();
+
+        log.info("Snapshots are clearing...");
+        snapshots.clear();
     }
 
     @Override

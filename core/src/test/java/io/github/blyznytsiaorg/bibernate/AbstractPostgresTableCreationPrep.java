@@ -38,6 +38,10 @@ public interface AbstractPostgresTableCreationPrep {
             insert into persons(first_name, last_name) values ('FirstName', 'LastName');
             """;
 
+    String CREATE_GENERAL_INSERT_STATEMENT = """
+            insert into persons(first_name, last_name) values ('%s', '%s');
+            """;
+
     String CREATE_INSERT_USERS_ADRESSES_STATEMENT = """
             insert into houses(id, name) values (1, 'big');
             insert into addresses(id, name, house_id) values (1, 'street', 1);

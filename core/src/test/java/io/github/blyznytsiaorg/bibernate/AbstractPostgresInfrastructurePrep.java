@@ -12,6 +12,7 @@ import java.util.Map;
 
 @Slf4j
 public abstract class AbstractPostgresInfrastructurePrep implements AbstractPostgresTableCreationPrep {
+
     private static final String POSTGRES_LATEST = "postgres:latest";
     private static final String DB_URL = "db.url";
     private static final String DB_USER = "db.user";
@@ -19,6 +20,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String DB = "db";
     private static final String USER = "user";
     private static final String PASSWORD = "password";
+
     @Container
     private static final PostgreSQLContainer<?> POSTGRES_CONTAINER = new PostgreSQLContainer<>(POSTGRES_LATEST)
             .withDatabaseName(DB)
@@ -60,6 +62,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         dataSource.setDatabaseName(db);
         dataSource.setUser(user);
         dataSource.setPassword(password);
+
         return dataSource;
     }
 }

@@ -18,6 +18,12 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDy
  */
 public class SqlBuilder {
 
+    public String selectBy(String tableName, String whereCondition) {
+        return from(tableName)
+                .whereCondition(whereCondition)
+                .buildSelectStatement();
+    }
+
     public String selectById(String tableName, String fieldIdName) {
         return from(tableName)
                 .whereCondition(fieldIdName + EQ + PARAMETER)
