@@ -18,6 +18,11 @@ import java.util.stream.Collectors;
 
 import static io.github.blyznytsiaorg.bibernate.dao.utils.RepositoryParserUtils.getParameterNames;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @Slf4j
 public class SimpleRepositoryFactory {
     private static final String CUSTOM_REPOSITORY_SHOULD_HAVE_ONE_CONSTRUCTOR_WITH_BIBERNATE_SESSION_FACTORY_MESSAGE
@@ -40,8 +45,8 @@ public class SimpleRepositoryFactory {
     public SimpleRepositoryFactory(BibernateSessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
         this.simpleRepositoryMethodHandlers = new ArrayList<>();
-        simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindByIdMethodHandler());
-        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindByIdMethodHandler(sessionFactory));
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler(sessionFactory));
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
     }
 
@@ -96,7 +101,7 @@ public class SimpleRepositoryFactory {
                 return simpleRepositoryMethodHandlers.stream()
                         .filter(handler -> handler.isMethodHandle(methodName))
                         .findFirst()
-                        .map(handler -> handler.execute(method, parameters, repositoryDetails, methodMetadata, sessionFactory))
+                        .map(handler -> handler.execute(method, parameters, repositoryDetails, methodMetadata))
                         .orElseThrow(() -> {
                             log.trace(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
                             return new IllegalArgumentException(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));

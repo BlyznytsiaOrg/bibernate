@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -12,6 +13,12 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.dao.utils.RepositoryParserUtils.buildQueryByMethodName;
 import static java.util.Objects.nonNull;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
+@RequiredArgsConstructor
 @Slf4j
 public class SimpleRepositoryMethodFindByHandler implements SimpleRepositoryMethodHandler {
 
@@ -20,6 +27,8 @@ public class SimpleRepositoryMethodFindByHandler implements SimpleRepositoryMeth
     private static final String NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME =
             "Not supported returnType{} for methodName {}";
 
+    private final BibernateSessionFactory sessionFactory;
+
     @Override
     public boolean isMethodHandle(String methodName) {
         return methodName.startsWith(FIND_BY);
@@ -27,12 +36,11 @@ public class SimpleRepositoryMethodFindByHandler implements SimpleRepositoryMeth
 
     @Override
     public Object execute(Method method, Object[] parameters, RepositoryDetails repositoryDetails,
-                          MethodMetadata methodMetadata, BibernateSessionFactory sessionFactory) {
-        return handleMethodFindBy(parameters, method.getName(), methodMetadata, sessionFactory);
+                          MethodMetadata methodMetadata) {
+        return handleMethodFindBy(parameters, method.getName(), methodMetadata);
     }
 
-    private List<?> handleMethodFindBy(Object[] parameters, String methodName, MethodMetadata methodMetadata,
-                                       BibernateSessionFactory sessionFactory) {
+    private List<?> handleMethodFindBy(Object[] parameters, String methodName, MethodMetadata methodMetadata) {
         log.trace(HANDLE_GENERIC_METHOD, methodName);
         var whereQuery = buildQueryByMethodName(methodName);
         var returnType = methodMetadata.getReturnType();

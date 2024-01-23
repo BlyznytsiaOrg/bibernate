@@ -7,6 +7,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 public class SimpleRepositoryInvocationHandler implements InvocationHandler {
     private final BibernateSessionFactory sessionFactory;
     private final SimpleRepositoryFactory simpleRepositoryFactory;

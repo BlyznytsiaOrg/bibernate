@@ -1,6 +1,5 @@
 package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -12,6 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class SimpleRepositoryMethodCustomImplHandler implements SimpleRepositoryMethodHandler {
@@ -35,7 +39,7 @@ public class SimpleRepositoryMethodCustomImplHandler implements SimpleRepository
 
     @Override
     public Object execute(Method method, Object[] parameters, RepositoryDetails repositoryDetails,
-                          MethodMetadata methodMetadata, BibernateSessionFactory sessionFactory) {
+                          MethodMetadata methodMetadata) {
         String methodName = method.getName();
         log.trace(TRY_TO_FIND_OUT_CUSTOM_REPOSITORY_IMPLEMENTATION_FOR_S_METHOD, methodName);
         for (var customRepository : customRepositoryImplementations) {
