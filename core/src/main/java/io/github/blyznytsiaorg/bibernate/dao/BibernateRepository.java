@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.Param;
 
 import java.util.Optional;
 
-public interface BibernateRepository<ID, T> {
+public interface BibernateRepository<T, ID> {
 
     Optional<T> findById(@Param("id") ID primaryKey);
 }

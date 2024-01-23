@@ -53,8 +53,7 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
     private final BibernateSessionFactory sessionFactory;
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] parameters)
-            throws InvocationTargetException, IllegalAccessException {
+    public Object invoke(Object proxy, Method method, Object[] parameters) {
         List<String> parameterNames = getParameterNames(method);
         String methodName = method.getName();
         log.trace(CALL_METHOD_NAME_PARAMETERS_PARAMETER_NAMES_EXTENDS_INTERFACES,
@@ -122,8 +121,8 @@ public class SimpleRepositoryInvocationHandler implements InvocationHandler {
 
         if (genericInterface instanceof ParameterizedType parameterizedType) {
             Type[] typeArguments = parameterizedType.getActualTypeArguments();
-            primaryKeyType = typeArguments[0];
-            entityType = typeArguments[1];
+            entityType = typeArguments[0];
+            primaryKeyType = typeArguments[1];
         }
 
         if (!REPOSITORY_MEDATA.containsKey(repositoryInterface.getName())) {
