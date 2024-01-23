@@ -1,6 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 

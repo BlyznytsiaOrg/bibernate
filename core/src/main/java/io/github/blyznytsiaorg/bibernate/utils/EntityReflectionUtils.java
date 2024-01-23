@@ -1,15 +1,15 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Column;
-import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -25,10 +25,11 @@ import java.util.stream.IntStream;
 public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
-    
+
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
-    
+    public static final String ID_POSTFIX = "_id";
+
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -46,6 +47,13 @@ public class EntityReflectionUtils {
                 .map(Column::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(getSnakeString(field.getName()));
+    }
+
+    public static String joinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                .map(JoinColumn::name)
+                .filter(Predicate.not(String::isEmpty))
+                .orElse(getSnakeString(field.getName()).concat(ID_POSTFIX));
     }
 
     public static String columnIdName(Class<?> entityClass) {
@@ -81,12 +89,38 @@ public class EntityReflectionUtils {
         return field.get(entity);
     }
 
+    public static Object getValueFromResultSetByColumn(ResultSet resultSet, String joinColumnName) {
+        try {
+            return resultSet.getObject(joinColumnName);
+        } catch (SQLException e) {
+            throw new BibernateGeneralException(String.format("Cannot get result from ResultSet by columnName = %s",
+                    joinColumnName), e);
+        }
+    }
+
+    public static Object getValueFromResultSet(Field field, ResultSet resultSet, String fieldName) {
+        try {
+            return resultSet.getObject(fieldName, field.getType());
+        } catch (SQLException e) {
+            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+        }
+    }
+
     public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
                                                      List<ColumnSnapshot> oldEntitySnapshot) {
         return IntStream.range(0, currentEntitySnapshot.size())
                 .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
                 .mapToObj(currentEntitySnapshot::get)
                 .collect(Collectors.toList());
+    }
+
+    public static void setField(Field field, Object obj, Object value) {
+        try {
+            field.setAccessible(true);
+            field.set(obj, value);
+        } catch (Exception e) {
+            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+        }
     }
 
     public static <T> T castIdToEntityId(Class<T> entityClass, Object primaryKey) {
@@ -126,6 +160,14 @@ public class EntityReflectionUtils {
         }
         // Add more conditions for other types if needed
         return value;
+    }
+
+    public static boolean isRegularField(Field field) {
+        return !isEntityField(field);
+    }
+
+    public static boolean isEntityField(Field field) {
+        return field.isAnnotationPresent(OneToOne.class);
     }
 
     private String getSnakeString(String str) {
