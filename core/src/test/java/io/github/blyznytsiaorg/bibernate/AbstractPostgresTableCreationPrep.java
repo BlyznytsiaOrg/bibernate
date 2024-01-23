@@ -13,4 +13,8 @@ public interface AbstractPostgresTableCreationPrep {
     String CREATE_INSERT_STATEMENT = """
             insert into persons(first_name, last_name) values ('FirstName', 'LastName');
             """;
+
+    String CREATE_GENERAL_INSERT_STATEMENT = """
+            insert into persons(first_name, last_name) values ('%s', '%s');
+            """;
 }

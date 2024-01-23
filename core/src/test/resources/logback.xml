@@ -6,7 +6,9 @@
         </encoder>
     </appender>
 
-    <root level="TRACE">
+    <logger name="io.github.blyznytsiaorg.bibernate" level="${io.github.blyznytsiaorg.bibernate.log.level:-TRACE}"/>
+
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 

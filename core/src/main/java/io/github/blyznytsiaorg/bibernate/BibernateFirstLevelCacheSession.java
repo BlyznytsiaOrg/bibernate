@@ -36,24 +36,29 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         if (Objects.isNull(cachedEntity)) {
             var finalPrimaryKey = primaryKey;
-            
+
             return bibernateSession.findById(entityClass, primaryKey)
                     .map(entityFromDb -> {
                         firstLevelCache.put(entityKey, entityFromDb);
-                        
+
                         List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
                         snapshots.put(entityKey, entityCurrentSnapshot);
-                        
+
                         log.info("Create snapshot for entity {} id {}", entityClass.getSimpleName(), finalPrimaryKey);
                         log.info("Entity {} not found in firstLevel cache by id {}", entityClass.getSimpleName(), finalPrimaryKey);
-                        
+
                         return entityFromDb;
                     });
         }
 
         log.info(ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), primaryKey);
-        
+
         return Optional.of(entityClass.cast(cachedEntity));
+    }
+
+    @Override
+    public <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues) {
+        return bibernateSession.findBy(entityClass, whereQuery, bindValues);
     }
 
     private List<ColumnSnapshot> buildEntitySnapshot(Object entityClass) {
@@ -79,7 +84,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         T insertEntityFromDb = getDao().update(entityClass, entity, diff);
         firstLevelCache.put(entityKey, insertEntityFromDb);
         log.info("Update Entity {} in firstLevel cache by id {}", entityClass.getSimpleName(), fieldIdValue);
-        
+
         List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(insertEntityFromDb);
         snapshots.put(entityKey, entityCurrentSnapshot);
         log.info("Update snapshot for entity {} id {}", entityClass.getSimpleName(), fieldIdValue);
@@ -91,9 +96,9 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
             var entityInFirstLevelCacheCurrentSnapshot = buildEntitySnapshot(entityInFirstLevelCache);
             var entityOldSnapshot = snapshots.get(entityKey);
             var diff = getDifference(entityInFirstLevelCacheCurrentSnapshot, entityOldSnapshot);
-            
+
             if (CollectionUtils.isNotEmpty(diff)) {
-                log.info("Dirty entity found need to generate update for entityKey {} and entity {}", 
+                log.info("Dirty entity found need to generate update for entityKey {} and entity {}",
                         entityKey, entityInFirstLevelCache);
                 update(entityInFirstLevelCache.getClass(), entityInFirstLevelCache, diff);
             } else {
@@ -110,7 +115,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     public void close() {
         log.info("Session is closing. Performing dirty checking...");
         performDirtyChecking();
-        
+
         log.info("FirstLevelCache is clearing...");
         firstLevelCache.clear();
 
