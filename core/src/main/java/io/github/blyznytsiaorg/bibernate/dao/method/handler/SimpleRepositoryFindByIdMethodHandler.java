@@ -1,8 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

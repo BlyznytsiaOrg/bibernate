@@ -1,7 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
 import io.github.blyznytsiaorg.bibernate.dao.method.handler.SimpleRepositoryFactory;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
