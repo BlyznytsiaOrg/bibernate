@@ -4,7 +4,11 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.lang.reflect.ParameterizedType;
-
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @ToString
 @Getter
 public class ReturnType {

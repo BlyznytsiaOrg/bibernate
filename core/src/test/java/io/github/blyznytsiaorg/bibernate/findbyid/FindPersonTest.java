@@ -18,7 +18,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldFindExistingPersonById() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -41,7 +41,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldReturnEmptyOptionalWhenPersonNotFound() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -62,7 +62,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldReturnPersonFromFirstLevelCache() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

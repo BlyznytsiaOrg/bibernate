@@ -9,4 +9,6 @@ public interface PersonRepository extends BibernateRepository<Person, Long>, Per
     List<Person> findByFirstNameOrLastName(@Param("first_name") String firstName, @Param("last_name") String lastName);
 
     List<Person> findByFirstNameEquals(@Param("first_name") String fistName);
+
+    List<Person> findByFirstNameLike(@Param("first_name") String firstNameStart);
 }
