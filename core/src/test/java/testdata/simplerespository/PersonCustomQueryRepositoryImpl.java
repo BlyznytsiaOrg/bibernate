@@ -1,6 +1,6 @@
 package testdata.simplerespository;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSessionFactory;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

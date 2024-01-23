@@ -29,23 +29,21 @@ public class RepositoryParserUtils {
     ));
 
     private static final Map<String, String> OPERATION_TO_SQL_CONDITIONS = new HashMap<>();
-    public static final String EQ = "=";
+    public static final String EQ = " = ";
     public static final String PARAMETER = "?";
     public static final String UNDERSCORE = "_";
 
     static {
-        OPERATION_TO_SQL_CONDITIONS.put("And", "=? And ");
-        OPERATION_TO_SQL_CONDITIONS.put("Or", "=? Or ");
-        OPERATION_TO_SQL_CONDITIONS.put("Equals", "=?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthan", "<?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthanequal", "<=?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthan", ">?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthanequal", ">=?");
+        OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
+        OPERATION_TO_SQL_CONDITIONS.put("Or", " = ? Or ");
+        OPERATION_TO_SQL_CONDITIONS.put("Equals", " = ?");
+        OPERATION_TO_SQL_CONDITIONS.put("Lessthan", " < ?");
+        OPERATION_TO_SQL_CONDITIONS.put("Lessthanequal", " <= ?");
+        OPERATION_TO_SQL_CONDITIONS.put("Greaterthan", " > ?");
+        OPERATION_TO_SQL_CONDITIONS.put("Greaterthanequal", " >= ?");
         OPERATION_TO_SQL_CONDITIONS.put("Null", " is null");
         OPERATION_TO_SQL_CONDITIONS.put("Notnull", " is not null");
         OPERATION_TO_SQL_CONDITIONS.put("Like", " like ?");
-        OPERATION_TO_SQL_CONDITIONS.put("True", "=True");
-        OPERATION_TO_SQL_CONDITIONS.put("False", "=False");
     }
 
     private static final String EMPTY = "";

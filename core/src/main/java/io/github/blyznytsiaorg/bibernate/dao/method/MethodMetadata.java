@@ -5,7 +5,11 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @ToString
 @Getter
 public class MethodMetadata {

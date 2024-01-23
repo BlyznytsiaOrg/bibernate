@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate;
+package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
@@ -115,6 +115,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     public void close() {
         log.info("Session is closing. Performing dirty checking...");
         performDirtyChecking();
+        BibernateSessionContextHolder.resetBibernateSession();
 
         log.info("FirstLevelCache is clearing...");
         firstLevelCache.clear();

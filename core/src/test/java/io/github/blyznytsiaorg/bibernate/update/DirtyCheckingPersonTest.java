@@ -19,7 +19,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldUpdatePersonFirstName() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -59,7 +59,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldUpdatePersonFirstNameAndLastName() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -101,7 +101,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldUpdatePersonFirstNameAndLastNameIfEntityNotHavDynamicUpdate() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

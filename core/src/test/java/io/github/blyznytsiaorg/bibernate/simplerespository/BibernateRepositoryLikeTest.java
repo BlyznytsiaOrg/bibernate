@@ -2,28 +2,32 @@ package io.github.blyznytsiaorg.bibernate.simplerespository;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
-import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.Person;
 import testdata.simplerespository.PersonRepository;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
-@Slf4j
-class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  {
+class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
 
-    @Disabled("Need to investigate why on CI we have issue with HikariDataSource (HikariPool-7) has been closed")
-    @DisplayName("Should call custom repository method")
+
+    @DisplayName("Should findByFirstNameLike using bibernate repository")
     @Test
-    void shouldCallCustomRepositoryMethod() {
+    void shouldFindByFirstNameLike() {
         //given
-        createTableWithData(5);
+        createTableWithData(4);
+
+        List<Person> expectedPersons = Arrays.asList(
+                createPerson("John4", "Doe4"),
+                createPerson("John4", "Smith4")
+        );
+
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -31,11 +35,14 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
-            List<Person> persons = personRepository.findMyCustomQuery();
+            List<Person> persons = personRepository.findByFirstNameLike("John%");
 
             //then
-            Assertions.assertThat(persons).hasSize(1);
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            Assertions.assertThat(persons).hasSize(expectedPersons.size())
+                    .usingElementComparatorIgnoringFields("id")
+                    .containsExactlyInAnyOrderElementsOf(expectedPersons);
+
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name like ?;"));
         }
     }
 
@@ -44,5 +51,12 @@ class BibernateCustomRepositoryTest extends AbstractPostgresInfrastructurePrep  
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, "Jones" + i));
+    }
+
+    private Person createPerson(String firstName, String lastName) {
+        var person = new Person();
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        return person;
     }
 }

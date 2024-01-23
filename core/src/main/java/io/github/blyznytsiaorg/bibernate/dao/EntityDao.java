@@ -3,7 +3,7 @@ package io.github.blyznytsiaorg.bibernate.dao;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMapper;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +33,8 @@ public class EntityDao implements Dao {
             "Cannot execute findById entityClass [%s] message %s";
 
     private final SqlBuilder sqlBuilder;
-    private final EntityMapper entityMapper;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
+    private final EntityPersistent entityPersistent = new EntityPersistent();
     @Getter
     private final List<String> executedQueries = new ArrayList<>();
 
@@ -60,7 +60,7 @@ public class EntityDao implements Dao {
             statement.setObject(1, primaryKey);
             var resultSet = statement.executeQuery();
 
-            return resultSet.next() ? Optional.of(this.entityMapper.toEntity(resultSet, entityClass)) : Optional.empty();
+            return resultSet.next() ? Optional.of(this.entityPersistent.toEntity(resultSet, entityClass)) : Optional.empty();
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
@@ -72,7 +72,6 @@ public class EntityDao implements Dao {
     public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object[] bindValues) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(whereCondition, "whereCondition must be not null");
-        Objects.requireNonNull(bindValues, "bindValues must be not null");
 
         var tableName = table(entityClass);
         var dataSource = bibernateDatabaseSettings.getDataSource();
@@ -88,13 +87,16 @@ public class EntityDao implements Dao {
                 log.info("Query {} bindValues {}", query, Arrays.toString(bindValues));
             }
 
-            int index = 1;
-            for (Object bindValue : bindValues) {
-                statement.setObject(index++, bindValue);
+            if (Objects.nonNull(bindValues)) {
+                int index = 1;
+                for (Object bindValue : bindValues) {
+                    statement.setObject(index++, bindValue);
+                }
             }
+
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                items.add(entityClass.cast(this.entityMapper.toEntity(resultSet, entityClass)));
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
             throw new BibernateGeneralException(
@@ -117,7 +119,7 @@ public class EntityDao implements Dao {
         var fieldIdName = columnIdName(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
 
-        String query  = sqlBuilder.update(entity, tableName, fieldIdName, diff);
+        String query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
         if (bibernateDatabaseSettings.isCollectQueries()) {
             executedQueries.add(query);
         }
