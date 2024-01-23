@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate;
+package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
@@ -12,9 +12,8 @@ import java.util.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -29,7 +28,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         var fieldIdType = columnIdType(entityClass);
-        primaryKey  = castIdToEntityId(entityClass, primaryKey);
+        primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
         var cachedEntity = firstLevelCache.get(entityKey);
 
@@ -65,7 +64,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return snapshot;
     }
 
-    private <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot>  diff) {
+    private <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         var fieldIdType = columnIdType(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
 
@@ -92,6 +91,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
             }
         }
     }
+
     @Override
     public void flush() {
         checkDirtyCheckingEntities();
@@ -103,6 +103,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         checkDirtyCheckingEntities();
         log.info("FirstLevelCache is clearing...");
         firstLevelCache.clear();
+        BibernateSessionContextHolder.resetBibernateSession();
     }
 
     @Override

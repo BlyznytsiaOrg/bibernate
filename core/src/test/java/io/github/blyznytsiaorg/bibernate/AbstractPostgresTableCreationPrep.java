@@ -10,11 +10,19 @@ public interface AbstractPostgresTableCreationPrep {
             );
             """;
 
-    String CREATE_USERS_ADDRESSES_TABLES = """
-            CREATE TABLE IF NOT EXISTS addresses
+    String CREATE_USERS_ADDRESSES_HOUSES_TABLES = """
+            CREATE TABLE IF NOT EXISTS houses
             (
                 id      BIGINT primary key,
                 name    VARCHAR(255)
+            );
+            
+            CREATE TABLE IF NOT EXISTS addresses
+            (
+                id      BIGINT primary key,
+                name    VARCHAR(255),
+                house_id BIGINT NOT NULL,
+                CONSTRAINT addresses_houses_FK FOREIGN KEY (house_id) REFERENCES houses
             );
             
             CREATE TABLE IF NOT EXISTS users (
@@ -31,7 +39,8 @@ public interface AbstractPostgresTableCreationPrep {
             """;
 
     String CREATE_INSERT_USERS_ADRESSES_STATEMENT = """
-            insert into addresses(id, name) values (1, 'street');
+            insert into houses(id, name) values (1, 'big');
+            insert into addresses(id, name, house_id) values (1, 'street', 1);
             insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1);
             """;
 }

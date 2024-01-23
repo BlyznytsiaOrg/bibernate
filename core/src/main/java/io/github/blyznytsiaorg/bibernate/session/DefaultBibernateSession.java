@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate;
+package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import lombok.Getter;
@@ -21,12 +21,11 @@ public class DefaultBibernateSession implements BibernateSession {
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
-        return dao.findById(entityClass, primaryKey, this);
+        return dao.findById(entityClass, primaryKey);
     }
 
     @Override
     public void close() {
         log.info("Close session...");
-
     }
 }

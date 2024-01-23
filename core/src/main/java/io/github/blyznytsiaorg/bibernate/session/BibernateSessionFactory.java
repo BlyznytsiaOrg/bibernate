@@ -1,9 +1,9 @@
-package io.github.blyznytsiaorg.bibernate;
+package io.github.blyznytsiaorg.bibernate.session;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -27,11 +27,13 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     public BibernateSession openSession() {
         this.entityDao = entityDao();
-        return new BibernateFirstLevelCacheSession(new DefaultBibernateSession(entityDao));
+        var session = new BibernateFirstLevelCacheSession(new DefaultBibernateSession(entityDao));
+        BibernateSessionContextHolder.setBibernateSession(session);
+        return session;
     }
 
     public EntityDao entityDao() {
-        return new EntityDao(new SqlBuilder(), getBibernateSettings(), new EntityMapper());
+        return new EntityDao(new SqlBuilder(), getBibernateSettings());
     }
 
     public List<String> getExecutedQueries() {

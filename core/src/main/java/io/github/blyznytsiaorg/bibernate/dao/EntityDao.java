@@ -1,10 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import io.github.blyznytsiaorg.bibernate.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMapper;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +30,12 @@ public class EntityDao implements Dao {
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
-    private final EntityMapper entityMapper;
+    private final EntityPersistent entityMapper = new EntityPersistent();
     @Getter
     private final List<String> executedQueries = new ArrayList<>();
 
     @Override
-    public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey, BibernateSession bibernateSession) {
+    public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(primaryKey, "PrimaryKey must be not null");
 
@@ -57,7 +56,7 @@ public class EntityDao implements Dao {
             statement.setObject(1, primaryKey);
             var resultSet = statement.executeQuery();
 
-            return resultSet.next() ? Optional.of(entityMapper.toEntity(resultSet, entityClass, bibernateSession)) : Optional.empty();
+            return resultSet.next() ? Optional.of(entityMapper.toEntity(resultSet, entityClass)) : Optional.empty();
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_FIND_BY_ID_ENTITY_CLASS_S_FOR_PRIMARY_KEY_S_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),

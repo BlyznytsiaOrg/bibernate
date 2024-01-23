@@ -123,6 +123,15 @@ public class EntityReflectionUtils {
                 .collect(Collectors.toList());
     }
 
+    public static void setField(Field field, Object obj, Object value) {
+        try {
+            field.setAccessible(true);
+            field.set(obj, value);
+        } catch (Exception e) {
+            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+        }
+    }
+
     public static <T> T castIdToEntityId(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, "entityClass must be not null");
         Objects.requireNonNull(primaryKey, "PrimaryKey must be not null");

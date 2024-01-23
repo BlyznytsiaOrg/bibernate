@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate;
+package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 

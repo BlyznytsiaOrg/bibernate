@@ -86,7 +86,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
     @Test
     void shouldFindExistingPersonByIdWithRelations() {
         //given
-        QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -97,6 +97,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
                 //then
                 assertThat(user).isPresent();
 
+                System.out.println(user.get());
                 Address address = user.get().getAddress();
                 assertThat(address).isNotNull();
                 assertThat(address.getId()).isEqualTo(1L);
