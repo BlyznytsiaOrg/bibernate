@@ -17,7 +17,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryByLessThenFieldTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should FindByLessThen using bibernate repository")
     @Test
     void shouldFindByLessThen() {
