@@ -56,10 +56,10 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         bibernateSettings.put(BIBERNATE_SHOW_SQL, Boolean.TRUE.toString());
         bibernateSettings.put(BIBERNATE_COLLECT_QUERIES, Boolean.TRUE.toString());
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-
         persistent = new Persistent(bibernateSettings);
 
         dataSource = createDataSource(jdbcUrl, databaseName, username, password);
+
     }
 
     @AfterAll

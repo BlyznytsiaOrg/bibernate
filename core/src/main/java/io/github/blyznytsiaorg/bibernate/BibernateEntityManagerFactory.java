@@ -6,8 +6,6 @@ import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
-
 
 /**
  *
@@ -20,13 +18,8 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
 
     private final BibernateDatabaseSettings bibernateSettings;
 
-    public BibernateEntityManagerFactory(final Map<String, String> bibernateSettings, final String bibernateFileName) {
-        this.bibernateSettings = new BibernateDatabaseSettings(bibernateSettings, bibernateFileName);
-    }
-
-    public BibernateEntityManagerFactory(final Map<String, String> bibernateSettings,
-                                         final String bibernateFileName, HikariDataSource dataSource) {
-        this.bibernateSettings = new BibernateDatabaseSettings(bibernateSettings, bibernateFileName, dataSource);
+    public BibernateEntityManagerFactory(BibernateDatabaseSettings bibernateDatabaseSettings) {
+        this.bibernateSettings = bibernateDatabaseSettings;
     }
 
     @Override
@@ -39,10 +32,6 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
     }
 
     public BibernateSessionFactory getBibernateSessionFactory() {
-        return new BibernateSessionFactory(
-                bibernateSettings.getBibernateSettingsProperties(),
-                bibernateSettings.getBibernateFileName(),
-                bibernateSettings.getDataSource()
-        );
+        return new BibernateSessionFactory(bibernateSettings);
     }
 }

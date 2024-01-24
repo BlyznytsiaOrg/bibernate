@@ -15,6 +15,7 @@ import java.util.List;
 class FlywayConfigurationTest extends AbstractPostgresInfrastructurePrep {
 
     public static final String TABLE_NAME_PERSONS = "persons";
+    public static final String SELECT_TABLE_NAMES = "select table_name from information_schema.tables";
 
     @Test
     @DisplayName("Flyway should create table 'persons'")
@@ -22,13 +23,14 @@ class FlywayConfigurationTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTables() {
 
         //when
-        Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery("select table_name from information_schema.tables");
         List<String> tableNames = new ArrayList<>();
-        while (resultSet.next()) {
-            String tableName = resultSet.getString(1);
-            tableNames.add(tableName);
+        try (Connection connection = dataSource.getConnection();
+        Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(SELECT_TABLE_NAMES);
+            while (resultSet.next()) {
+                String tableName = resultSet.getString(1);
+                tableNames.add(tableName);
+            }
         }
 
         //then
