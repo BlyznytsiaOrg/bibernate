@@ -10,6 +10,8 @@ public class PropertyParser {
     private static final String PATTERN = "\\$\\{(.*?)}";
     private static final String PREFIX = "$";
     private static final Pattern COMPILE_PARAM = Pattern.compile(PATTERN);
+    public static final String FORMATTED_MESSAGE = "Can't match a pattern to read a property value '%s'"
+            + "for extracting env variable";
 
     public static String processProperty(String propertyValue) {
         if (propertyValue.startsWith(PREFIX)) {
@@ -25,10 +27,9 @@ public class PropertyParser {
         if (matcher.find()) {
             String key = matcher.group(1);
             return System.getenv(key);
-        } else {
-            throw new FailedToMatchPropertyException(
-                    String.format("Can't match a pattern to read a property value '%s'"
-                    + "for extracting env variable", propertyValue));
         }
+
+        throw new FailedToMatchPropertyException(
+                FORMATTED_MESSAGE.formatted(propertyValue));
     }
 }

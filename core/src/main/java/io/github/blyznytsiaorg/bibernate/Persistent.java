@@ -47,7 +47,7 @@ public class Persistent {
         return new BibernateEntityManagerFactory(bibernateSettings, configFileName, dataSource);
     }
 
-    public FlywayConfiguration enableFlyway() {
+    private FlywayConfiguration enableFlyway() {
         return new FlywayConfiguration(bibernateSettings);
     }
 }
