@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
@@ -31,7 +30,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByUsernameNull();

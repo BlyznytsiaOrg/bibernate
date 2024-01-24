@@ -61,6 +61,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return bibernateSession.findBy(entityClass, whereQuery, bindValues);
     }
 
+    @Override
+    public int find(String query, Object[] bindValues) {
+        return bibernateSession.find(query, bindValues);
+    }
+
     private List<ColumnSnapshot> buildEntitySnapshot(Object entityClass) {
         Objects.requireNonNull(entityClass, "entityClass should not be null");
         Class<?> aClass = entityClass.getClass();

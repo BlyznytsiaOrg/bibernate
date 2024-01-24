@@ -31,6 +31,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public int find(String query, Object[] bindValues) {
+        return dao.find(query, bindValues);
+    }
+
+    @Override
     public void close() {
         log.info("Close session...");
     }

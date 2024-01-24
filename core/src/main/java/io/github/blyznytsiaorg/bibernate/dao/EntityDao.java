@@ -32,6 +32,8 @@ public class EntityDao implements Dao {
     private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS =
             "Cannot execute findById entityClass [%s] message %s";
 
+    private static final String CANNOT_EXECUTE_QUERY = "Cannot execute query %s message %s";
+
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
     private final EntityPersistent entityPersistent = new EntityPersistent();
@@ -71,7 +73,6 @@ public class EntityDao implements Dao {
     @Override
     public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object[] bindValues) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
-        Objects.requireNonNull(whereCondition, "whereCondition must be not null");
 
         var tableName = table(entityClass);
         var dataSource = bibernateDatabaseSettings.getDataSource();
@@ -105,6 +106,37 @@ public class EntityDao implements Dao {
         }
 
         return items;
+    }
+
+    @Override
+    public int find(String query, Object[] bindValues) {
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+        if (bibernateDatabaseSettings.isCollectQueries()) {
+            executedQueries.add(query);
+        }
+        try (var connection = dataSource.getConnection(); var statement = connection.prepareStatement(query)) {
+            if (bibernateDatabaseSettings.isShowSql()) {
+                log.info("Query {} bindValues {}", query, Arrays.toString(bindValues));
+            }
+
+            if (Objects.nonNull(bindValues)) {
+                int index = 1;
+                for (Object bindValue : bindValues) {
+                    statement.setObject(index++, bindValue);
+                }
+            }
+
+            var resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (Exception exe) {
+            throw new BibernateGeneralException(
+                    CANNOT_EXECUTE_QUERY.formatted(query, exe.getMessage()),
+                    exe);
+        }
+
+        return 0;
     }
 
 

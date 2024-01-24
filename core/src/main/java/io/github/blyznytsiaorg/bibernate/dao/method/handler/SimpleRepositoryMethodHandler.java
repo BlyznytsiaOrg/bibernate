@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  */
 public interface SimpleRepositoryMethodHandler {
 
-    boolean isMethodHandle(String methodName);
+    boolean isMethodHandle(Method method);
 
     Object execute(Method method, Object[] parameters, RepositoryDetails repositoryDetails,
                    MethodMetadata methodMetadata);

@@ -4,7 +4,6 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
@@ -15,19 +14,20 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
-class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInfrastructurePrep {
+class BibernateRepositoryFindAllTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
-    @DisplayName("Should findByAgeGreaterThanEqual using bibernate repository")
+    @DisplayName("Should findAll using bibernate repository")
     @Test
-    void findByAgeGreaterThanEqual() {
+    void shouldFindAll() {
         //given
-        createTableWithData(5);
+        createTableWithData(4);
 
         List<User> expectedUsers = Arrays.asList(
-                createUser("Levik5", true, 18),
-                createUser("Nic5", false, 16),
-                createUser("John5", true, 21)
+                createUser("Levik4", true, 18),
+                createUser("Nic4", false, 16),
+                createUser("John4", true, 21),
+                createUser("Michael4", true, 12)
+
         );
 
 
@@ -37,14 +37,14 @@ class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInf
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByAgeGreaterthanequal(16);
+            List<User> users = userRepository.findAll();
 
             //then
             Assertions.assertThat(users).hasSize(expectedUsers.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedUsers);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE age >= ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users;"));
         }
     }
 
