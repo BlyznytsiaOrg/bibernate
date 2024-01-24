@@ -136,6 +136,13 @@ public class EntityReflectionUtils {
         return (T) primaryKey;
     }
 
+    public static List<Field> getInsertEntityFields(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+                .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
+                .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
+                .toList();
+    }
+
     private static Object convertToType(Object value, Class<?> targetType) {
         if (value instanceof Number number) {
             if (targetType.equals(Byte.class)) {

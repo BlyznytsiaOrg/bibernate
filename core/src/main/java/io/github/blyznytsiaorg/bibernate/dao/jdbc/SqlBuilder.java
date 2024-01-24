@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 
 
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
@@ -9,7 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder.*;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDynamicUpdate;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
  *
@@ -53,5 +54,12 @@ public class SqlBuilder {
 
         return update.whereCondition(fieldIdName + EQ + PARAMETER)
                 .buildUpdateStatement();
+    }
+
+    public String insert(Object entity, String tableName) {
+        var insert = InsertQueryBuilder.from(tableName);
+        getInsertEntityFields(entity).forEach(field -> insert.setField(columnName(field)));
+
+        return insert.buildInsertStatement();
     }
 }
