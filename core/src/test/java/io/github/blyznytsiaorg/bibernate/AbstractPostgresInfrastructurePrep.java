@@ -8,6 +8,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.sql.DataSource;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -26,10 +27,15 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
             .withDatabaseName(DB)
             .withUsername(USER)
             .withPassword(PASSWORD);
+    public static final String BIBERNATE_FLYWAY_ENABLED = "bibernate.flyway.enabled";
+    public static final String DB_MAX_POOL_SIZE = "db.maxPoolSize";
+    public static final String POOL_SIZE = "10";
+    public static final String BIBERNATE_SHOW_SQL = "bibernate.show_sql";
+    public static final String BIBERNATE_COLLECT_QUERIES = "bibernate.collect.queries";
 
     protected static DataSource dataSource;
 
-    protected static Persistent persistent = new Persistent();
+    protected static Persistent persistent;
 
     @BeforeAll
     public static void setup() {
@@ -41,11 +47,17 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         String username = POSTGRES_CONTAINER.getUsername();
         String password = POSTGRES_CONTAINER.getPassword();
 
-        Map<String, String> bibernateSettings = persistent.getBibernateSettings();
+        Map<String, String> bibernateSettings = new HashMap<>();
 
         bibernateSettings.put(DB_URL, jdbcUrl);
         bibernateSettings.put(DB_USER, username);
         bibernateSettings.put(DB_PASSWORD, password);
+        bibernateSettings.put(DB_MAX_POOL_SIZE, POOL_SIZE);
+        bibernateSettings.put(BIBERNATE_SHOW_SQL, Boolean.TRUE.toString());
+        bibernateSettings.put(BIBERNATE_COLLECT_QUERIES, Boolean.TRUE.toString());
+        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
+
+        persistent = new Persistent(bibernateSettings);
 
         dataSource = createDataSource(jdbcUrl, databaseName, username, password);
     }

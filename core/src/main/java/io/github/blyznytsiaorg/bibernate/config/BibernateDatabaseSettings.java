@@ -30,6 +30,7 @@ public class BibernateDatabaseSettings {
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
 
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
+    private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
 
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
 
@@ -94,6 +95,10 @@ public class BibernateDatabaseSettings {
 
     public boolean isCollectQueries() {
         return getProperty(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
+    }
+
+    public boolean isFlywayEnabled() {
+        return getProperty(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     private boolean getProperty(String key, String defaultValue) {
