@@ -88,12 +88,7 @@ public class EntityDao implements Dao {
                 log.info("Query {} bindValues {}", query, Arrays.toString(bindValues));
             }
 
-            if (Objects.nonNull(bindValues)) {
-                int index = 1;
-                for (Object bindValue : bindValues) {
-                    statement.setObject(index++, bindValue);
-                }
-            }
+            populatePreparedStatement(bindValues, statement);
 
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -119,12 +114,7 @@ public class EntityDao implements Dao {
                 log.info("Query {} bindValues {}", query, Arrays.toString(bindValues));
             }
 
-            if (Objects.nonNull(bindValues)) {
-                int index = 1;
-                for (Object bindValue : bindValues) {
-                    statement.setObject(index++, bindValue);
-                }
-            }
+            populatePreparedStatement(bindValues, statement);
 
             var resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -194,5 +184,15 @@ public class EntityDao implements Dao {
 
     private boolean isIdField(String fieldIdName, Field field) {
         return Objects.equals(fieldIdName, columnName(field));
+    }
+
+
+    private void populatePreparedStatement(Object[] bindValues, PreparedStatement statement) throws SQLException {
+        if (Objects.nonNull(bindValues)) {
+            int index = 1;
+            for (Object bindValue : bindValues) {
+                statement.setObject(index++, bindValue);
+            }
+        }
     }
 }
