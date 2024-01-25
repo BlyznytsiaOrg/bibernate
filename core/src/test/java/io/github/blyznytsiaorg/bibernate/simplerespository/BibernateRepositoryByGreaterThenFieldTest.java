@@ -4,7 +4,6 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
@@ -17,7 +16,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryByGreaterThenFieldTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should findByAgeGreaterThan using bibernate repository")
     @Test
     void shouldFindByAgeGreaterThan() {

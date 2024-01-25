@@ -15,7 +15,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryWithQueryTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should countUserDuplicate using bibernate repository with query")
     @Test
     void countUserDuplicate() {
