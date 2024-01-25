@@ -26,6 +26,7 @@
         <postgresql.version>42.7.1</postgresql.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <system-stubs-jupiter.version>2.1.6</system-stubs-jupiter.version>
+        <jetbrains.version>24.1.0</jetbrains.version>
     </properties>
 
     <dependencies>
@@ -86,7 +87,7 @@
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
+            <version>${jetbrains.version}</version>
             <scope>compile</scope>
         </dependency>
 
