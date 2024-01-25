@@ -26,7 +26,7 @@ public class PersistentList<T> implements List<T> {
     this.collectionSupplier = collectionSupplier;
   }
 
-  public List<T> getInternalList() {
+  private List<T> getInternalList() {
     return Optional.ofNullable(internalList).orElseGet(() -> {
       internalList = (List<T>) collectionSupplier.get();
       return internalList;
