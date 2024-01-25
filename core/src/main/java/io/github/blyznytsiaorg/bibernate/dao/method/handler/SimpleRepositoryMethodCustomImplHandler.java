@@ -30,11 +30,11 @@ public class SimpleRepositoryMethodCustomImplHandler implements SimpleRepository
     private final List<Object> customRepositoryImplementations;
 
     @Override
-    public boolean isMethodHandle(String methodName) {
+    public boolean isMethodHandle(Method method) {
         return customRepositoryImplementations.stream()
                 .flatMap(customRepositoryMethod -> Stream.of(customRepositoryMethod.getClass().getDeclaredMethods()))
                 .map(Method::getName)
-                .anyMatch(customRepositoryMethodName -> customRepositoryMethodName.equals(methodName));
+                .anyMatch(customRepositoryMethodName -> customRepositoryMethodName.equals(method.getName()));
     }
 
     @Override

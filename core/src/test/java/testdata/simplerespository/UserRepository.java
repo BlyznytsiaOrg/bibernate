@@ -1,6 +1,7 @@
 package testdata.simplerespository;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Param;
+import io.github.blyznytsiaorg.bibernate.annotation.Query;
 import io.github.blyznytsiaorg.bibernate.dao.BibernateRepository;
 
 import java.util.List;
@@ -20,4 +21,7 @@ public interface UserRepository extends BibernateRepository<User, Long> {
     List<User> findByUsernameNotnull();
 
     List<User> findByUsernameNull();
+
+    @Query("select count(*) from users group by username having count(username) > ?")
+    int countUserDuplicate(@Param("count") int count);
 }

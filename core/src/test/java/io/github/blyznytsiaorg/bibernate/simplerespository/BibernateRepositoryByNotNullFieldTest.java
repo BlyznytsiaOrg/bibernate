@@ -34,7 +34,7 @@ class BibernateRepositoryByNotNullFieldTest extends AbstractPostgresInfrastructu
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByUsernameNotnull();
