@@ -21,12 +21,12 @@ class FlywayConfigurationTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Flyway should create table 'persons'")
     @SneakyThrows
     void shouldCreateTables() {
+        createPersistentWithFlayWayEnabled();
 
         //when
         List<String> tableNames = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(SELECT_TABLE_NAMES);
+        try (var connection = dataSource.getConnection(); var statement = connection.createStatement()) {
+            var resultSet = statement.executeQuery(SELECT_TABLE_NAMES);
             while (resultSet.next()) {
                 String tableName = resultSet.getString(1);
                 tableNames.add(tableName);

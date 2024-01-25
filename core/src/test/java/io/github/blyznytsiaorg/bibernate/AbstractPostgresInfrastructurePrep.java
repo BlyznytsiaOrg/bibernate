@@ -1,8 +1,8 @@
 package io.github.blyznytsiaorg.bibernate;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -23,7 +23,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String PASSWORD = "password";
 
     @Container
-    private static final PostgreSQLContainer<?> POSTGRES_CONTAINER = new PostgreSQLContainer<>(POSTGRES_LATEST)
+    private final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(POSTGRES_LATEST)
             .withDatabaseName(DB)
             .withUsername(USER)
             .withPassword(PASSWORD);
@@ -33,21 +33,20 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     public static final String BIBERNATE_SHOW_SQL = "bibernate.show_sql";
     public static final String BIBERNATE_COLLECT_QUERIES = "bibernate.collect.queries";
 
-    protected static DataSource dataSource;
+    protected DataSource dataSource;
+    protected Map<String, String> bibernateSettings;
 
-    protected static Persistent persistent;
-
-    @BeforeAll
-    public static void setup() {
-        POSTGRES_CONTAINER.start();
+    @BeforeEach
+    public void setup() {
+        postgresContainer.start();
         log.info("Start postgres");
 
-        String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();
-        String databaseName = POSTGRES_CONTAINER.getDatabaseName();
-        String username = POSTGRES_CONTAINER.getUsername();
-        String password = POSTGRES_CONTAINER.getPassword();
+        String jdbcUrl = postgresContainer.getJdbcUrl();
+        String databaseName = postgresContainer.getDatabaseName();
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
 
-        Map<String, String> bibernateSettings = new HashMap<>();
+        bibernateSettings = new HashMap<>();
 
         bibernateSettings.put(DB_URL, jdbcUrl);
         bibernateSettings.put(DB_USER, username);
@@ -55,16 +54,22 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         bibernateSettings.put(DB_MAX_POOL_SIZE, POOL_SIZE);
         bibernateSettings.put(BIBERNATE_SHOW_SQL, Boolean.TRUE.toString());
         bibernateSettings.put(BIBERNATE_COLLECT_QUERIES, Boolean.TRUE.toString());
-        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        persistent = new Persistent(bibernateSettings);
 
         dataSource = createDataSource(jdbcUrl, databaseName, username, password);
-
     }
 
-    @AfterAll
-    public static void tearDown() {
-        POSTGRES_CONTAINER.stop();
+    public Persistent createPersistent() {
+        return new Persistent(bibernateSettings);
+    }
+
+    public Persistent createPersistentWithFlayWayEnabled() {
+        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
+        return new Persistent(bibernateSettings);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        postgresContainer.stop();
         log.info("Stop postgres");
     }
 
