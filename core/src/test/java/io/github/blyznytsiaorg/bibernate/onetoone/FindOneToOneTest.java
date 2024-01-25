@@ -14,12 +14,13 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FindOneToOneTest extends AbstractPostgresInfrastructurePrep {
+class FindOneToOneTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Should find exising person by ID with all one to one relations")
     @Test
     void shouldFindExistingPersonByIdWithRelations() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
+        var persistent = createPersistent();
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

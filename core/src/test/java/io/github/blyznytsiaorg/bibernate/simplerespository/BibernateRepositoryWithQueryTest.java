@@ -15,13 +15,13 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryWithQueryTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should countUserDuplicate using bibernate repository with query")
     @Test
     void countUserDuplicate() {
         //given
         createTableWithData(5);
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -37,7 +37,7 @@ class BibernateRepositoryWithQueryTest extends AbstractPostgresInfrastructurePre
         }
     }
 
-    private static void createTableWithData(int i) {
+    private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 18));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Nic" + i, false,  16));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 21));

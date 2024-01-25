@@ -23,7 +23,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         //given
         createTableWithData(4);
 
-
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -46,6 +46,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         //given
         createTableWithData(3);
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -73,6 +74,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         );
 
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -103,6 +105,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         );
 
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -120,7 +123,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         }
     }
 
-    private static void createTableWithData(int i) {
+    private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));
