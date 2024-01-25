@@ -19,6 +19,8 @@ public interface BibernateSession extends Closeable {
 
     int find(String query, Object[] bindValues);
 
+    <T> T save(Class<T> entityClass, Object entity);
+
     default void flush() {
 
     }

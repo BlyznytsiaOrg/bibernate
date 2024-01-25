@@ -19,4 +19,6 @@ public interface Dao {
     int find(String query, Object[] bindValues);
 
     <T> T update(Class<T> entityClass, Object primaryKey, List<ColumnSnapshot> diff);
+
+    <T> T save(Class<T> entityClass, Object entity);
 }

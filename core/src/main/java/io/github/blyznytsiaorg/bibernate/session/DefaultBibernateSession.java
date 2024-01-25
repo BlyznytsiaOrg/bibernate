@@ -36,6 +36,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> T save(Class<T> entityClass, Object entity) {
+        return dao.save(entityClass, entity);
+    }
+
+    @Override
     public void close() {
         log.info("Close session...");
     }
