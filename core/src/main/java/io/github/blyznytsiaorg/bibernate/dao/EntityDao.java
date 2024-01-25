@@ -25,8 +25,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 @Slf4j
 public class EntityDao implements Dao {
 
-    private static final String CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE =
-            "Cannot execute findById entityClass [%s] for primaryKey %s message %s";
     private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE =
             "Cannot execute findById entityClass [%s] message %s";
     private static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE =
@@ -39,7 +37,6 @@ public class EntityDao implements Dao {
     private static final String PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE = "PrimaryKey must be not null";
 
     private static final String QUERY_LOG = "Query {}";
-    private static final String QUERY_BIND_VALUE_LOG = QUERY_LOG + " bindValue {}={}";
     private static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
     private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
     private static final String SAVE_LOG = "Save entity clazz {}";
@@ -52,7 +49,7 @@ public class EntityDao implements Dao {
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
-        Objects.requireNonNull(primaryKey, "PrimaryKey must be not null");
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE);
 
         var fieldIdName = columnIdName(entityClass);
         

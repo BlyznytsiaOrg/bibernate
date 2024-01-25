@@ -48,21 +48,21 @@ public class PersistentList<T> implements List<T> {
     return getInternalList().contains(o);
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
   public Iterator<T> iterator() {
     return getInternalList().iterator();
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
   public Object [] toArray() {
     return getInternalList().toArray();
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
-  public <T1> T1 [] toArray(@org.jetbrains.annotations.NotNull T1[] a) {
+  public <T1> T1 [] toArray(@NotNull T1[] a) {
     return getInternalList().toArray(a);
   }
 
@@ -77,27 +77,27 @@ public class PersistentList<T> implements List<T> {
   }
 
   @Override
-  public boolean containsAll(@org.jetbrains.annotations.NotNull Collection<?> c) {
+  public boolean containsAll(@NotNull Collection<?> c) {
     return getInternalList().containsAll(c);
   }
 
   @Override
-  public boolean addAll(@org.jetbrains.annotations.NotNull Collection<? extends T> c) {
+  public boolean addAll(@NotNull Collection<? extends T> c) {
     return getInternalList().addAll(c);
   }
 
   @Override
-  public boolean addAll(int index, @org.jetbrains.annotations.NotNull Collection<? extends T> c) {
+  public boolean addAll(int index, @NotNull Collection<? extends T> c) {
     return getInternalList().addAll(index, c);
   }
 
   @Override
-  public boolean removeAll(@org.jetbrains.annotations.NotNull Collection<?> c) {
+  public boolean removeAll(@NotNull Collection<?> c) {
     return getInternalList().removeAll(c);
   }
 
   @Override
-  public boolean retainAll(@org.jetbrains.annotations.NotNull Collection<?> c) {
+  public boolean retainAll(@NotNull Collection<?> c) {
     return getInternalList().retainAll(c);
   }
 
@@ -156,19 +156,19 @@ public class PersistentList<T> implements List<T> {
     return getInternalList().lastIndexOf(o);
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
   public ListIterator<T> listIterator() {
     return getInternalList().listIterator();
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
   public ListIterator<T> listIterator(int index) {
     return getInternalList().listIterator(index);
   }
 
-  @org.jetbrains.annotations.NotNull
+  @NotNull
   @Override
   public List<T> subList(int fromIndex, int toIndex) {
     return getInternalList().subList(fromIndex, toIndex);
