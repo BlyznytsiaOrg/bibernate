@@ -10,6 +10,7 @@ import java.util.List;
  *  @since 1.0
  */
 abstract class QueryBuilder {
+    public static final String INSERT_INTO = "INSERT INTO %s ( %s ) VALUES ( %s );";
     public static final String SELECT = "SELECT ";
     public static final String UPDATE = "UPDATE ";
     public static final String SET = " SET ";

@@ -151,6 +151,13 @@ public class EntityReflectionUtils {
         return List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType());
     }
 
+    public static List<Field> getInsertEntityFields(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+                .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
+                .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
+                .toList();
+    }
+
     private static Object convertToType(Object value, Class<?> targetType) {
         if (value instanceof Number number) {
             if (targetType.equals(Byte.class)) {

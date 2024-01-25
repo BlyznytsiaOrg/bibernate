@@ -17,7 +17,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryByLessThenFieldTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should FindByLessThen using bibernate repository")
     @Test
     void shouldFindByLessThen() {
@@ -29,11 +28,11 @@ class BibernateRepositoryByLessThenFieldTest extends AbstractPostgresInfrastruct
                 createUser("Michael5", true, 12)
         );
 
-
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByAgeLessthan(17);
@@ -47,7 +46,7 @@ class BibernateRepositoryByLessThenFieldTest extends AbstractPostgresInfrastruct
         }
     }
 
-    private static void createTableWithData(int i) {
+    private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 18));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Nic" + i, false,  16));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("John" + i,true, 21));

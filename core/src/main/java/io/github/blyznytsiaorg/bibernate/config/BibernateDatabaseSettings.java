@@ -18,27 +18,19 @@ import java.util.Objects;
 public class BibernateDatabaseSettings {
 
     public static final String SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY = " should not be null. Please configure it %s";
-
     public static final String DB_URL = "db.url";
     public static final String DB_USER = "db.user";
     public static final String DB_PASSWORD = "db.password";
-
     public static final String DB_MAXIMUM_POOL_SIZE = "db.maxPoolSize";
     private static final String DEFAULT_MAXIMUM_POOL_SIZE = "20";
-
     private static final String SHOW_SQL = "bibernate.show_sql";
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
-
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
-
+    private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
-
     private final Map<String, String> bibernateSettingsProperties;
-    
     private final String configurationErrorMessage;
-    
     private final String bibernateFileName;
-
     private final HikariDataSource dataSource;
 
     public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, 
@@ -94,6 +86,10 @@ public class BibernateDatabaseSettings {
 
     public boolean isCollectQueries() {
         return getProperty(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
+    }
+
+    public boolean isFlywayEnabled() {
+        return getProperty(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     private boolean getProperty(String key, String defaultValue) {

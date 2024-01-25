@@ -1,13 +1,11 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
-import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
+import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
-
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -19,12 +17,8 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     private EntityDao entityDao;
 
-    public BibernateSessionFactory(Map<String, String> bibernateSettings, String bibernateFileName) {
-        super(bibernateSettings, bibernateFileName);
-    }
-
-    public BibernateSessionFactory(Map<String, String> bibernateSettings, String bibernateFileName, HikariDataSource dataSource) {
-        super(bibernateSettings, bibernateFileName, dataSource);
+    public BibernateSessionFactory(BibernateDatabaseSettings bibernateDatabaseSettings) {
+        super(bibernateDatabaseSettings);
     }
 
     public BibernateSession openSession() {

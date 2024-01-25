@@ -22,8 +22,10 @@
         <slf4j.version>2.0.11</slf4j.version>
         <mockito.version>5.9.0</mockito.version>
         <hikari.version>5.1.0</hikari.version>
+        <flyway.version>9.22.3</flyway.version>
         <postgresql.version>42.7.1</postgresql.version>
         <testcontainers.version>1.19.3</testcontainers.version>
+        <system-stubs-jupiter.version>2.1.6</system-stubs-jupiter.version>
     </properties>
 
     <dependencies>
@@ -70,6 +72,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
@@ -94,6 +102,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>uk.org.webcompere</groupId>
+            <artifactId>system-stubs-jupiter</artifactId>
+            <version>${system-stubs-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 
