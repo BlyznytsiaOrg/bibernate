@@ -14,7 +14,9 @@ public interface Dao {
 
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
-    <T> List<T> findBy(Class<T> clazz, String whereCondition, Object[] bindValues);
+    <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
+
+    <T> List<T> findBy(Class<T> clazz, String whereCondition, Object... bindValues);
 
     int find(String query, Object[] bindValues);
 
