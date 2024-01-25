@@ -16,9 +16,10 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
 
     @Test
     @DisplayName("Should save person")
-    public void shouldSavePerson() {
+    void shouldSavePerson() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
+        var persistent = createPersistent();
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
