@@ -26,7 +26,7 @@ public class SqlBuilder {
 
     public String selectById(String tableName, String fieldIdName) {
         return from(tableName)
-                .whereCondition(fieldIdName + EQ + PARAMETER)
+                .whereCondition(selectByIdWhereCondition(fieldIdName))
                 .buildSelectStatement();
     }
 
@@ -41,7 +41,7 @@ public class SqlBuilder {
                     .filter(fieldName -> !fieldName.equals(fieldIdName))
                     .forEach(fieldName -> update.setField(fieldName, PARAMETER));
 
-            return update.whereCondition(fieldIdName + EQ + PARAMETER)
+            return update.whereCondition(selectByIdWhereCondition(fieldIdName))
                     .buildUpdateStatement();
         }
 
@@ -51,7 +51,12 @@ public class SqlBuilder {
                 .filter(fieldName -> !fieldName.equals(fieldIdName))
                 .forEach(fieldName -> update.setField(fieldName, PARAMETER));
 
-        return update.whereCondition(fieldIdName + EQ + PARAMETER)
+        return update.whereCondition(selectByIdWhereCondition(fieldIdName))
                 .buildUpdateStatement();
     }
+    
+    public String selectByIdWhereCondition(String fieldIdName) {
+        return fieldIdName + EQ + PARAMETER;
+    }
+    
 }

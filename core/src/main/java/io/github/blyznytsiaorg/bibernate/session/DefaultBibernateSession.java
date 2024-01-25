@@ -26,6 +26,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
+        return dao.findAllById(entityClass, idColumnName, idColumnValue);
+    }
+
+    @Override
     public <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues) {
         return dao.findBy(entityClass, whereQuery, bindValues);
     }

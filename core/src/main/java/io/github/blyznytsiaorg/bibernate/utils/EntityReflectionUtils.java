@@ -8,11 +8,11 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -111,7 +111,7 @@ public class EntityReflectionUtils {
         return IntStream.range(0, currentEntitySnapshot.size())
                 .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
                 .mapToObj(currentEntitySnapshot::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static void setField(Field field, Object obj, Object value) {
@@ -134,6 +134,21 @@ public class EntityReflectionUtils {
         }
 
         return (T) primaryKey;
+    }
+    
+    public Class<?> getCollectionGenericType(Field field) {
+        if (isSupportedCollection(field)) {
+            var parametrizedType = (ParameterizedType) field.getGenericType();
+            return (Class<?>) parametrizedType.getActualTypeArguments()[0];
+        }
+        
+        throw new BibernateGeneralException(
+                "Unable to get Collection generic type for a field that is not a Collection(List/Set). Field type: [%s]"
+                        .formatted(field.getType()));
+    }
+    
+    public static boolean isSupportedCollection(Field field) {
+        return List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType());
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {
@@ -160,14 +175,6 @@ public class EntityReflectionUtils {
         }
         // Add more conditions for other types if needed
         return value;
-    }
-
-    public static boolean isRegularField(Field field) {
-        return !isEntityField(field);
-    }
-
-    public static boolean isEntityField(Field field) {
-        return field.isAnnotationPresent(OneToOne.class);
     }
 
     private String getSnakeString(String str) {

@@ -10,7 +10,8 @@ public class TypeResolverFactory {
     private final List<TypeFieldResolver> typeFieldResolvers = new ArrayList<>();
 
     public TypeResolverFactory() {
-        this.typeFieldResolvers.add(new EntityFieldFieldResolver());
+        this.typeFieldResolvers.add(new EntityFieldResolver());
         this.typeFieldResolvers.add(new RegularFieldFieldResolver());
+        this.typeFieldResolvers.add(new CollectionFieldResolver());
     }
 }

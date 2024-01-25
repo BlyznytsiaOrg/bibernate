@@ -36,6 +36,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         if (Objects.isNull(cachedEntity)) {
             var finalPrimaryKey = primaryKey;
+            log.info("Entity {} not found in firstLevel cache by id {}", entityClass.getSimpleName(), finalPrimaryKey);
 
             return bibernateSession.findById(entityClass, primaryKey)
                     .map(entityFromDb -> {
@@ -44,8 +45,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                         List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
                         snapshots.put(entityKey, entityCurrentSnapshot);
 
-                        log.info("Create snapshot for entity {} id {}", entityClass.getSimpleName(), finalPrimaryKey);
-                        log.info("Entity {} not found in firstLevel cache by id {}", entityClass.getSimpleName(), finalPrimaryKey);
+                        log.info("Created snapshot for entity {} id {}", entityClass.getSimpleName(), finalPrimaryKey);
 
                         return entityFromDb;
                     });
@@ -54,6 +54,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         log.info(ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), primaryKey);
 
         return Optional.of(entityClass.cast(cachedEntity));
+    }
+
+    @Override
+    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
+        return bibernateSession.findAllById(entityClass, idColumnName, idColumnValue);
     }
 
     @Override

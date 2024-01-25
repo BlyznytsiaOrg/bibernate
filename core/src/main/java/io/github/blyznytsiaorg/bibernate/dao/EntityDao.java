@@ -7,7 +7,6 @@ import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -26,11 +25,11 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 @Slf4j
 public class EntityDao implements Dao {
 
-    private static final String CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE =
-            "Cannot execute findById entityClass [%s] for primaryKey %s message %s";
+    private static final String CANNOT_EXECUTE_UPDATE_FOR_ENTITY_MESSAGE =
+      "Cannot execute update of entityClass [%s] with id [%s], message [%s]";
 
     private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS =
-            "Cannot execute findById entityClass [%s] message %s";
+            "Cannot execute findById entityClass [%s], message: %s";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
@@ -40,36 +39,24 @@ public class EntityDao implements Dao {
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
-        Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(primaryKey, "PrimaryKey must be not null");
 
-        var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
-        var query = sqlBuilder.selectById(tableName, fieldIdName);
-
-        if (bibernateDatabaseSettings.isCollectQueries()) {
-            executedQueries.add(query);
-        }
-
-        try (var connection = dataSource.getConnection(); var statement = connection.prepareStatement(query)) {
-            if (bibernateDatabaseSettings.isShowSql()) {
-                log.info("Query {} bindValue {}={}", query, fieldIdName, primaryKey);
-            }
-            statement.setObject(1, primaryKey);
-            var resultSet = statement.executeQuery();
-
-            return resultSet.next() ? Optional.of(this.entityPersistent.toEntity(resultSet, entityClass)) : Optional.empty();
-        } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_FIND_BY_ID_FOR_PRIMARY_KEY_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
-                    exe);
-        }
+        
+        return findAllById(entityClass, fieldIdName, primaryKey)
+                .stream()
+                .findFirst();
     }
 
     @Override
-    public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object[] bindValues) {
+    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
+        var whereCondition = sqlBuilder.selectByIdWhereCondition(idColumnName);
+        
+        return findBy(entityClass, whereCondition, idColumnValue);
+    }
+    
+    @Override
+    public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object... bindValues) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(whereCondition, "whereCondition must be not null");
 
@@ -107,8 +94,7 @@ public class EntityDao implements Dao {
         return items;
     }
 
-
-    @SneakyThrows
+    @Override
     public <T> T update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         Objects.requireNonNull(entityClass, "EntityClass must be not null");
         Objects.requireNonNull(entity, "Entity must be not null");
@@ -132,6 +118,10 @@ public class EntityDao implements Dao {
             var resultSet = statement.executeUpdate();
             log.info("Update effected row {} for entity clazz {} with id {}",
                     resultSet, entityClass.getSimpleName(), fieldIdValue);
+        } catch (SQLException exe) {
+            throw new BibernateGeneralException(
+              CANNOT_EXECUTE_UPDATE_FOR_ENTITY_MESSAGE.formatted(entityClass.getSimpleName(), fieldIdValue, exe.getMessage()), 
+              exe);
         }
 
         return entityClass.cast(entity);
