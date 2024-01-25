@@ -8,21 +8,26 @@ import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
-class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructurePrep {
+class BibernateRepositoryFindAllTest extends AbstractPostgresInfrastructurePrep {
 
-    @DisplayName("Should findByUsernameNull using bibernate repository")
+    @DisplayName("Should findAll using bibernate repository")
     @Test
-    void findByUsernameNull() {
+    void shouldFindAll() {
         //given
-        createTableWithData(5);
+        createTableWithData(4);
 
-        List<User> expectedPersons = List.of(
-                createUser(null, true, 12)
+        List<User> expectedUsers = Arrays.asList(
+                createUser("Levik4", true, 18),
+                createUser("Nic4", false, 16),
+                createUser("John4", true, 21),
+                createUser("Michael4", true, 12)
+
         );
 
         var persistent = createPersistent();
@@ -32,14 +37,14 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByUsernameNull();
+            List<User> users = userRepository.findAll();
 
             //then
-            Assertions.assertThat(users).hasSize(expectedPersons.size())
+            Assertions.assertThat(users).hasSize(expectedUsers.size())
                     .usingElementComparatorIgnoringFields("id")
-                    .containsExactlyInAnyOrderElementsOf(expectedPersons);
+                    .containsExactlyInAnyOrderElementsOf(expectedUsers);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username is null;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users;"));
         }
     }
 
@@ -47,7 +52,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 18));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Nic" + i, false,  16));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("John" + i,true, 21));
-        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_WITH_NULL_USERNAME_INSERT_STATEMENT.formatted( true, 12));
+        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, true, 12));
     }
 
     private User createUser(String username, boolean enabled, int age) {

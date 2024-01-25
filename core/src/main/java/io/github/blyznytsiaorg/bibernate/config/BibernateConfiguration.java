@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.config;
 
+import io.github.blyznytsiaorg.bibernate.utils.PropertyParser;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +61,6 @@ public class BibernateConfiguration {
     }
 
     private Function<String, String> getValue(Properties properties) {
-        return key -> Optional.ofNullable(properties.getProperty(key))
-                .orElse(properties.getProperty(key));
+        return key -> PropertyParser.processProperty(properties.getProperty(key));
     }
 }

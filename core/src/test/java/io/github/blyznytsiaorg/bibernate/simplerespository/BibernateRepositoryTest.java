@@ -23,11 +23,11 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         //given
         createTableWithData(4);
 
-
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             Optional<Person> persons = personRepository.findById(1L);
@@ -46,10 +46,11 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         //given
         createTableWithData(3);
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameEquals("John");
@@ -73,10 +74,11 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         );
 
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameEquals("John2");
@@ -103,10 +105,11 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         );
 
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameOrLastName("John1", "Jones1");
@@ -120,7 +123,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         }
     }
 
-    private static void createTableWithData(int i) {
+    private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Smith" + i));

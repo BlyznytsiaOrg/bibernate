@@ -4,7 +4,6 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
@@ -17,7 +16,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
 class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInfrastructurePrep {
 
-    @Order(2)
     @DisplayName("Should findByAgeGreaterThanEqual using bibernate repository")
     @Test
     void findByAgeGreaterThanEqual() {
@@ -31,10 +29,11 @@ class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInf
         );
 
 
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByAgeGreaterthanequal(16);
@@ -48,7 +47,7 @@ class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInf
         }
     }
 
-    private static void createTableWithData(int i) {
+    private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 18));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Nic" + i, false,  16));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("John" + i,true, 21));

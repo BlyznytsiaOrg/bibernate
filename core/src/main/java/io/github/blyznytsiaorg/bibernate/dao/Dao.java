@@ -16,5 +16,9 @@ public interface Dao {
 
     <T> List<T> findBy(Class<T> clazz, String whereCondition, Object[] bindValues);
 
+    int find(String query, Object[] bindValues);
+
     <T> T update(Class<T> entityClass, Object primaryKey, List<ColumnSnapshot> diff);
+
+    <T> T save(Class<T> entityClass, Object entity);
 }

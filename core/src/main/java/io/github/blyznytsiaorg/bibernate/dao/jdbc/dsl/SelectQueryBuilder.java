@@ -44,7 +44,9 @@ public class SelectQueryBuilder extends QueryBuilder {
     }
 
     public SelectQueryBuilder whereCondition(String condition) {
-        whereConditions.add(condition);
+        if (Objects.nonNull(condition)) {
+            whereConditions.add(condition);
+        }
         return this;
     }
 

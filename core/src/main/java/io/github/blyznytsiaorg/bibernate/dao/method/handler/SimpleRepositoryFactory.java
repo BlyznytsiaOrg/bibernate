@@ -5,7 +5,6 @@ import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.dao.method.ReturnType;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 
@@ -39,14 +38,13 @@ public class SimpleRepositoryFactory {
     private static final String IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED = "Implementation for method %s  not resolved";
     private static final String LOOKS_LIKE_METHOD_METADATA_NOT_FOUND_FOR_METHOD =
             "Looks like methodMetadata not found for {} method";
-    private final BibernateSessionFactory sessionFactory;
     private final List<SimpleRepositoryMethodHandler> simpleRepositoryMethodHandlers;
-
-    public SimpleRepositoryFactory(BibernateSessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public SimpleRepositoryFactory() {
         this.simpleRepositoryMethodHandlers = new ArrayList<>();
-        simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindByIdMethodHandler(sessionFactory));
-        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler(sessionFactory));
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindByIdMethodHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindAllHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodQueryHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
     }
 
@@ -99,7 +97,7 @@ public class SimpleRepositoryFactory {
 
             if (Objects.nonNull(methodMetadata)) {
                 return simpleRepositoryMethodHandlers.stream()
-                        .filter(handler -> handler.isMethodHandle(methodName))
+                        .filter(handler -> handler.isMethodHandle(method))
                         .findFirst()
                         .map(handler -> handler.execute(method, parameters, repositoryDetails, methodMetadata))
                         .orElseThrow(() -> {
@@ -117,8 +115,8 @@ public class SimpleRepositoryFactory {
 
     private Object createRepositoryInstance(Class<?> impl) {
         try {
-            Constructor<?> constructor = impl.getConstructor(BibernateSessionFactory.class);
-            return constructor.newInstance(sessionFactory);
+            Constructor<?> constructor = impl.getConstructor();
+            return constructor.newInstance();
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CUSTOM_REPOSITORY_SHOULD_HAVE_ONE_CONSTRUCTOR_WITH_BIBERNATE_SESSION_FACTORY_MESSAGE.formatted(exe.getMessage()),
