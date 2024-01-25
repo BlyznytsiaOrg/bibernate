@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
 
 import java.util.List;
@@ -14,50 +13,35 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 
-class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructurePrep {
+class BibernateRepositoryWithQueryTest extends AbstractPostgresInfrastructurePrep {
 
     @Order(2)
-    @DisplayName("Should findByUsernameNull using bibernate repository")
+    @DisplayName("Should countUserDuplicate using bibernate repository with query")
     @Test
-    void findByUsernameNull() {
+    void countUserDuplicate() {
         //given
         createTableWithData(5);
 
-        List<User> expectedPersons = List.of(
-                createUser(null, true, 12)
-        );
-
-        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByUsernameNull();
+            long userDuplicateCount = userRepository.countUserDuplicate(1);
 
             //then
-            Assertions.assertThat(users).hasSize(expectedPersons.size())
-                    .usingElementComparatorIgnoringFields("id")
-                    .containsExactlyInAnyOrderElementsOf(expectedPersons);
+            Assertions.assertThat(userDuplicateCount).isEqualTo(2);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username is null;"));
+            assertQueries(bibernateSessionFactory, List.of("select count(*) from users group by username having count(username) > ?"));
         }
     }
 
-    private void createTableWithData(int i) {
+    private static void createTableWithData(int i) {
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 18));
         setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Nic" + i, false,  16));
-        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("John" + i,true, 21));
-        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_WITH_NULL_USERNAME_INSERT_STATEMENT.formatted( true, 12));
-    }
-
-    private User createUser(String username, boolean enabled, int age) {
-        var user = new User();
-        user.setUsername(username);
-        user.setAge(age);
-        user.setEnabled(enabled);
-        return user;
+        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Levik" + i,true, 21));
+        setupTables(dataSource, CREATE_USERS_TABLE, CREATE_USERS_GENERAL_INSERT_STATEMENT.formatted("Michael" + i, true, 12));
     }
 
 }

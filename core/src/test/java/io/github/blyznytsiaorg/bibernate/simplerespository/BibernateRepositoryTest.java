@@ -27,7 +27,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             Optional<Person> persons = personRepository.findById(1L);
@@ -50,7 +50,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameEquals("John");
@@ -78,7 +78,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameEquals("John2");
@@ -109,7 +109,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameOrLastName("John1", "Jones1");

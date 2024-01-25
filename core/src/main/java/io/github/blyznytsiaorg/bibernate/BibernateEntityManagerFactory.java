@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +33,8 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
     }
 
     public BibernateSessionFactory getBibernateSessionFactory() {
-        return new BibernateSessionFactory(bibernateSettings);
+        var bibernateSessionFactory = new BibernateSessionFactory(bibernateSettings);
+        BibernateSessionFactoryContextHolder.setBibernateSessionFactory(bibernateSessionFactory);
+        return bibernateSessionFactory;
     }
 }

@@ -32,7 +32,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler(bibernateSessionFactory);
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
             //when
             List<Person> persons = personRepository.findByFirstNameLike("John%");
