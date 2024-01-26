@@ -41,6 +41,10 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(entityClass.getSimpleName()));
     }
 
+    public static boolean isImmutable(Class<?> entityClass) {
+        return entityClass.isAnnotationPresent(Immutable.class);
+    }
+
     public static boolean isDynamicUpdate(Class<?> entityClass) {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
     }
