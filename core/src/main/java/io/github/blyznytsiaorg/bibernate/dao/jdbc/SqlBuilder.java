@@ -26,12 +26,6 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
-    public String selectById(String tableName, String fieldIdName) {
-        return from(tableName)
-                .whereCondition(selectByIdWhereCondition(fieldIdName))
-                .buildSelectStatement();
-    }
-
     public String update(Object entity, String tableName, String fieldIdName, List<ColumnSnapshot> diff) {
         var entityClass = entity.getClass();
         var update = UpdateQueryBuilder.update(tableName);
