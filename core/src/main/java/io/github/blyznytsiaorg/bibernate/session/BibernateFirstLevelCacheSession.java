@@ -85,10 +85,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         bibernateSession.delete(entityClass, primaryKey);
 
         if (Objects.nonNull(firstLevelCache.remove(entityKey))) {
-            log.info("Deleted entityClass [{}] with primaryKey {} from firstLevelCache", entityClass, primaryKey);
+            log.trace("Deleted entityClass [{}] with primaryKey {} from firstLevelCache", entityClass, primaryKey);
         }
         if (Objects.nonNull(snapshots.remove(entityKey))) {
-            log.info("Deleted entityClass [{}] with primaryKey {} from snapshot", entityClass, primaryKey);
+            log.trace("Deleted entityClass [{}] with primaryKey {} from snapshot", entityClass, primaryKey);
         }
     }
 
@@ -99,15 +99,17 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     @Override
     public void close() {
-        log.info("Session is closing. Performing dirty checking...");
+        log.trace("Session is closing. Performing dirty checking...");
         performDirtyChecking();
         BibernateSessionContextHolder.resetBibernateSession();
 
-        log.info("FirstLevelCache is clearing...");
+        log.trace("FirstLevelCache is clearing...");
         firstLevelCache.clear();
 
-        log.info("Snapshots are clearing...");
+        log.trace("Snapshots are clearing...");
         snapshots.clear();
+
+        bibernateSession.close();
     }
 
     @Override

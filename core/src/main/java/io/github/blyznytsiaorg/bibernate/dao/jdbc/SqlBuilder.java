@@ -71,7 +71,7 @@ public class SqlBuilder {
 
     public String delete(String tableName, String fieldIdName) {
         return DeleteQueryBuilder.from(tableName)
-                .whereCondition(fieldIdName + EQ + PARAMETER)
+                .whereCondition(selectByIdWhereCondition(fieldIdName))
                 .buildDeleteStatement();
     }
 }

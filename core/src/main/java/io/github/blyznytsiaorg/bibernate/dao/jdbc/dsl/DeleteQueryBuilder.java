@@ -1,18 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinClause;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
-import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
-
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  *
- * @author Blyzhnytsia Team
- * @since 1.0
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
  */
 public class DeleteQueryBuilder extends QueryBuilder {
 

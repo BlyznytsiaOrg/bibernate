@@ -32,7 +32,7 @@ public class EntityDao implements Dao {
     private static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
             "Cannot execute save entityClass [%s] message %s";
     private static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute delete entityClass [%s] for primaryKey %s message %s";
+            "Cannot execute delete entityClass [%s] with primaryKey %s message %s";
     private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s message %s";
     private static final String ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE = "EntityClass must be not null";
     private static final String ENTITY_MUST_BE_NOT_NULL_MESSAGE = "Entity must be not null";
@@ -43,6 +43,7 @@ public class EntityDao implements Dao {
     private static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
     private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
     private static final String SAVE_LOG = "Save entity clazz {}";
+    private static final String DELETE_LOG = "Delete entity {} with primaryKey {}";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
@@ -82,7 +83,7 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.info(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
+            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
 
             populatePreparedStatement(bindValues, statement);
 
@@ -107,7 +108,7 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.info(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
+            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
 
             populatePreparedStatement(bindValues, statement);
 
@@ -141,11 +142,11 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.info(QUERY_LOG, query));
+            showSql(() -> log.debug(QUERY_LOG, query));
 
             populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, diff);
             var resultSet = statement.executeUpdate();
-            log.info(UPDATE_LOG, resultSet, entityClass.getSimpleName(), fieldIdValue);
+            log.trace(UPDATE_LOG, resultSet, entityClass.getSimpleName(), fieldIdValue);
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE.formatted(entityClass, fieldIdValue, exe.getMessage()),
@@ -169,14 +170,14 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.info(QUERY_LOG, query));
+            showSql(() -> log.debug(QUERY_LOG, query));
 
             populatePreparedStatement(entity, statement);
 
             // TODO set id to Entity
             // TODO set to cash
             statement.execute();
-            log.info(SAVE_LOG, entityClass.getSimpleName());
+            log.trace(SAVE_LOG, entityClass.getSimpleName());
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
@@ -201,12 +202,12 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.info(QUERY_BIND_VALUE_LOG, query, fieldIdName, primaryKey));
+            showSql(() -> log.debug(QUERY_BIND_VALUE_LOG, query, fieldIdName, primaryKey));
 
             statement.setObject(1, primaryKey);
 
             statement.execute();
-            log.info(SAVE_LOG, entityClass.getSimpleName());
+            log.trace(DELETE_LOG, entityClass.getSimpleName(), primaryKey);
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
