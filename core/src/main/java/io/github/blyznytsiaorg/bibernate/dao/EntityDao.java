@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.dao.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
@@ -44,6 +45,8 @@ public class EntityDao implements Dao {
     private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
     private static final String SAVE_LOG = "Save entity clazz {}";
     private static final String DELETE_LOG = "Delete entity {} with primaryKey {}";
+    public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
+            = "Entity %s was change need to get new data findBy%s[%s]";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
@@ -135,6 +138,12 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
+        boolean isVersionFound = isColumnVersionFound(entityClass);
+        Number fieldVersionValue = null;
+
+        if (isVersionFound) {
+            fieldVersionValue = (Number) columnVersionValue(entityClass, entity);
+        }
 
         String query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
         addToExecutedQueries(query);
@@ -144,9 +153,16 @@ public class EntityDao implements Dao {
 
             showSql(() -> log.debug(QUERY_LOG, query));
 
-            populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, diff);
+            populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, fieldVersionValue, diff);
             var resultSet = statement.executeUpdate();
             log.trace(UPDATE_LOG, resultSet, entityClass.getSimpleName(), fieldIdValue);
+
+            if (isVersionFound && resultSet == 0) {
+                throw new EntityStateWasChangeException(
+                        ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
+                                .formatted(entity.getClass(), fieldIdName, fieldIdValue)
+                );
+            }
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE.formatted(entityClass, fieldIdValue, exe.getMessage()),
@@ -244,7 +260,7 @@ public class EntityDao implements Dao {
     }
 
     private void populatePreparedStatement(Object entity, PreparedStatement statement,
-                                           String fieldIdName, Object fieldIdValue,
+                                           String fieldIdName, Object fieldIdValue, Number fieldVersionValue,
                                            List<ColumnSnapshot> diff) throws SQLException {
         int parameterIndex = 1;
 
@@ -252,17 +268,19 @@ public class EntityDao implements Dao {
             for (var columnSnapshot : diff) {
                 statement.setObject(parameterIndex++, columnSnapshot.value());
             }
-
-            statement.setObject(parameterIndex, fieldIdValue);
         } else {
             for (var field : entity.getClass().getDeclaredFields()) {
-                if (!isIdField(fieldIdName, field)) {
+                if (!isIdField(fieldIdName, field) && !isColumnWithVersion(field)) {
                     var fieldValue = getValueFromObject(entity, field);
                     statement.setObject(parameterIndex++, fieldValue);
                 }
             }
+        }
 
-            statement.setObject(parameterIndex, fieldIdValue);
+        statement.setObject(parameterIndex++, fieldIdValue);
+
+        if (Objects.nonNull(fieldVersionValue)) {
+            statement.setObject(parameterIndex, fieldVersionValue);
         }
     }
 
