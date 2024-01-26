@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 
 
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.DeleteQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
@@ -82,5 +83,11 @@ public class SqlBuilder {
         getInsertEntityFields(entity).forEach(field -> insert.setField(columnName(field)));
 
         return insert.buildInsertStatement();
+    }
+
+    public String delete(String tableName, String fieldIdName) {
+        return DeleteQueryBuilder.from(tableName)
+                .whereCondition(selectByIdWhereCondition(fieldIdName))
+                .buildDeleteStatement();
     }
 }

@@ -28,7 +28,7 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
         return session;
     }
 
-    public EntityDao entityDao() {
+    private EntityDao entityDao() {
         return new EntityDao(new SqlBuilder(), getBibernateSettings());
     }
 

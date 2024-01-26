@@ -23,4 +23,6 @@ public interface Dao {
     <T> T update(Class<T> entityClass, Object primaryKey, List<ColumnSnapshot> diff);
 
     <T> T save(Class<T> entityClass, Object entity);
+
+    <T> void delete(Class<T> entityClass, Object primaryKey);
 }
