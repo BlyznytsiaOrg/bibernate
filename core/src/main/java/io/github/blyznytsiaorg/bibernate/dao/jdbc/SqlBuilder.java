@@ -58,15 +58,6 @@ public class SqlBuilder {
         return updateQueryBuilder.buildUpdateStatement();
     }
 
-    private static void populateFieldOrIncVersion(String fieldName, boolean isVersionFound,
-                                                  String finalFieldVersionName, UpdateQueryBuilder update) {
-        if (isVersionFound && finalFieldVersionName.equals(fieldName)) {
-            update.setFieldIncrementVersion(fieldName);
-        } else {
-            update.setField(fieldName, PARAMETER);
-        }
-    }
-
     public String selectByIdWhereCondition(String fieldIdName) {
         return fieldIdName + EQ + PARAMETER;
     }
@@ -83,5 +74,14 @@ public class SqlBuilder {
         return DeleteQueryBuilder.from(tableName)
                 .whereCondition(selectByIdWhereCondition(fieldIdName))
                 .buildDeleteStatement();
+    }
+
+    private void populateFieldOrIncVersion(String fieldName, boolean isVersionFound,
+                                           String finalFieldVersionName, UpdateQueryBuilder update) {
+        if (isVersionFound && finalFieldVersionName.equals(fieldName)) {
+            update.setFieldIncrementVersion(fieldName);
+        } else {
+            update.setField(fieldName, PARAMETER);
+        }
     }
 }
