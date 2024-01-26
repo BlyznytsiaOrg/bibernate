@@ -34,28 +34,44 @@ public class SqlBuilder {
     public String update(Object entity, String tableName, String fieldIdName, List<ColumnSnapshot> diff) {
         var entityClass = entity.getClass();
         var update = UpdateQueryBuilder.update(tableName);
+        boolean isVersionFound = isColumnVersionFound(entityClass);
+        String fieldVersionName = null;
 
+        if (isVersionFound) {
+            fieldVersionName = columnVersionName(entityClass);
+        }
+
+        final String finalFieldVersionName = fieldVersionName;
         if (!isDynamicUpdate(entityClass)) {
             var declaredFields = entityClass.getDeclaredFields();
             Arrays.stream(declaredFields)
                     .map(EntityReflectionUtils::columnName)
                     .filter(fieldName -> !fieldName.equals(fieldIdName))
-                    .forEach(fieldName -> update.setField(fieldName, PARAMETER));
-
-            return update.whereCondition(selectByIdWhereCondition(fieldIdName))
-                    .buildUpdateStatement();
+                    .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
+        } else {
+            diff.stream()
+                    .map(ColumnSnapshot::name)
+                    .filter(fieldName -> !fieldName.equals(fieldIdName))
+                    .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
         }
 
+        var updateQueryBuilder = update.whereCondition(selectByIdWhereCondition(fieldIdName));
+        if (isVersionFound) {
+            updateQueryBuilder.andCondition(fieldVersionName + EQ + PARAMETER);
+        }
 
-        diff.stream()
-                .map(ColumnSnapshot::name)
-                .filter(fieldName -> !fieldName.equals(fieldIdName))
-                .forEach(fieldName -> update.setField(fieldName, PARAMETER));
-
-        return update.whereCondition(selectByIdWhereCondition(fieldIdName))
-                .buildUpdateStatement();
+        return updateQueryBuilder.buildUpdateStatement();
     }
-    
+
+    private static void populateFieldOrIncVersion(String fieldName, boolean isVersionFound,
+                                                  String finalFieldVersionName, UpdateQueryBuilder update) {
+        if (isVersionFound && finalFieldVersionName.equals(fieldName)) {
+            update.setFieldIncrementVersion(fieldName);
+        } else {
+            update.setField(fieldName, PARAMETER);
+        }
+    }
+
     public String selectByIdWhereCondition(String fieldIdName) {
         return fieldIdName + EQ + PARAMETER;
     }

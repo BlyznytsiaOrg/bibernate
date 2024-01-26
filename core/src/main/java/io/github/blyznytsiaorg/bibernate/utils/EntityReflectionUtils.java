@@ -7,6 +7,7 @@ import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
@@ -26,6 +27,8 @@ public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
 
+    public static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
     public static final String ID_POSTFIX = "_id";
@@ -40,6 +43,10 @@ public class EntityReflectionUtils {
 
     public static boolean isDynamicUpdate(Class<?> entityClass) {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
+    }
+
+    public static boolean isColumnWithVersion(Field field) {
+        return field.isAnnotationPresent(Version.class);
     }
 
     public static String columnName(Field field) {
@@ -57,12 +64,43 @@ public class EntityReflectionUtils {
     }
 
     public static String columnIdName(Class<?> entityClass) {
+        return findColumnNameByAnnotation(entityClass, Id.class, UNABLE_TO_GET_ID_NAME_FOR_ENTITY);
+    }
+
+    public static String columnVersionName(Class<?> entityClass) {
+        return findColumnNameByAnnotation(entityClass, Version.class, UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY);
+    }
+
+    private static String findColumnNameByAnnotation(Class<?> entityClass,
+                                                     Class<? extends Annotation> annotationClass,
+                                                     String errorMessage
+    ) {
         return Arrays.stream(entityClass.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Id.class))
+                .filter(field -> field.isAnnotationPresent(annotationClass))
                 .map(EntityReflectionUtils::columnName)
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
-                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+                        errorMessage.formatted(entityClass.getSimpleName())));
+    }
+
+    public static Object columnVersionValue(Class<?> entityClass,
+                                            Object entity) {
+        return findColumnValueByAnnotation(entityClass, Version.class, entity);
+    }
+
+    private static Object findColumnValueByAnnotation(Class<?> entityClass, Class<? extends Annotation> annotationClass, Object entity) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(annotationClass))
+                .map(field -> getValueFromObject(entity, field))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static boolean isColumnVersionFound(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .anyMatch(field -> field.isAnnotationPresent(Version.class));
+
     }
 
     public static Object columnIdValue(Class<?> entityClass, Object entity) {

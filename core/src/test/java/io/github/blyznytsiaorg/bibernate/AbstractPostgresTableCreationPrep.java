@@ -2,6 +2,15 @@ package io.github.blyznytsiaorg.bibernate;
 
 public interface AbstractPostgresTableCreationPrep {
 
+    String CREATE_EMPLOYEE_TABLE = """
+            CREATE TABLE IF NOT EXISTS employees (
+                id bigserial primary key,
+                first_name varchar(255),
+                last_name varchar(255),
+                version int
+            );
+            """;
+
     String CREATE_PERSONS_TABLE = """
             CREATE TABLE IF NOT EXISTS persons (
                 id bigserial primary key,
@@ -42,6 +51,10 @@ public interface AbstractPostgresTableCreationPrep {
                 enabled bool,
                 age int
             );
+            """;
+
+    String CREATE_EMPLOYEE_INSERT_STATEMENT = """
+            insert into employees(id, first_name, last_name, version) values (1, 'Levik', 'P', 1);
             """;
 
     String CREATE_PERSONS_INSERT_STATEMENT = """

@@ -15,6 +15,11 @@ import java.util.*;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @Slf4j
 @UtilityClass
 public class RepositoryParserUtils {
@@ -22,8 +27,7 @@ public class RepositoryParserUtils {
     private static final Paranamer info = new CachingParanamer(new ParamAnnotationParanamer(new BytecodeReadingParanamer()));
 
     private static final Set<String> SUPPORTED_OPERATIONS = new HashSet<>(Set.of(
-            "And", "Or", "Equals",
-            "True", "False", "Like",
+            "And", "Or", "Equals", "Like",
             "Null", "Notnull", "Lessthan",
             "Lessthanequal", "Greaterthan",  "Greaterthanequal"
     ));
