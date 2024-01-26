@@ -30,7 +30,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         var fieldIdType = columnIdType(entityClass);
-        primaryKey  = castIdToEntityId(entityClass, primaryKey);
+        primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
         var cachedEntity = firstLevelCache.get(entityKey);
 
@@ -74,6 +74,45 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public <T> T save(Class<T> entityClass, Object entity) {
         return bibernateSession.save(entityClass, entity);
+    }
+
+    @Override
+    public <T> void delete(Class<T> entityClass, Object primaryKey) {
+        var fieldIdType = columnIdType(entityClass);
+        primaryKey = castIdToEntityId(entityClass, primaryKey);
+        var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
+
+        bibernateSession.delete(entityClass, primaryKey);
+
+        if (Objects.nonNull(firstLevelCache.remove(entityKey))) {
+            log.info("Deleted entityClass [{}] with primaryKey {} from firstLevelCache", entityClass, primaryKey);
+        }
+        if (Objects.nonNull(snapshots.remove(entityKey))) {
+            log.info("Deleted entityClass [{}] with primaryKey {} from snapshot", entityClass, primaryKey);
+        }
+    }
+
+    @Override
+    public void flush() {
+        performDirtyChecking();
+    }
+
+    @Override
+    public void close() {
+        log.info("Session is closing. Performing dirty checking...");
+        performDirtyChecking();
+        BibernateSessionContextHolder.resetBibernateSession();
+
+        log.info("FirstLevelCache is clearing...");
+        firstLevelCache.clear();
+
+        log.info("Snapshots are clearing...");
+        snapshots.clear();
+    }
+
+    @Override
+    public Dao getDao() {
+        return bibernateSession.getDao();
     }
 
     private List<ColumnSnapshot> buildEntitySnapshot(Object entityClass) {
@@ -120,27 +159,5 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 log.info("Dirty entity not found for entityKey {} no changes", entityKey);
             }
         });
-    }
-    @Override
-    public void flush() {
-        performDirtyChecking();
-    }
-
-    @Override
-    public void close() {
-        log.info("Session is closing. Performing dirty checking...");
-        performDirtyChecking();
-        BibernateSessionContextHolder.resetBibernateSession();
-
-        log.info("FirstLevelCache is clearing...");
-        firstLevelCache.clear();
-
-        log.info("Snapshots are clearing...");
-        snapshots.clear();
-    }
-
-    @Override
-    public Dao getDao() {
-        return bibernateSession.getDao();
     }
 }

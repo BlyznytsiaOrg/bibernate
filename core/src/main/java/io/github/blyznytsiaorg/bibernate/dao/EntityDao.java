@@ -31,12 +31,15 @@ public class EntityDao implements Dao {
             "Cannot execute update entityClass [%s] for primaryKey %s message %s";
     private static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
             "Cannot execute save entityClass [%s] message %s";
+    private static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE =
+            "Cannot execute delete entityClass [%s] for primaryKey %s message %s";
     private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s message %s";
     private static final String ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE = "EntityClass must be not null";
     private static final String ENTITY_MUST_BE_NOT_NULL_MESSAGE = "Entity must be not null";
     private static final String PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE = "PrimaryKey must be not null";
 
     private static final String QUERY_LOG = "Query {}";
+    private static final String QUERY_BIND_VALUE_LOG = QUERY_LOG + " bindValue {}={}";
     private static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
     private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
     private static final String SAVE_LOG = "Save entity clazz {}";
@@ -181,6 +184,34 @@ public class EntityDao implements Dao {
         }
 
         return entityClass.cast(entity);
+    }
+
+    @Override
+    public <T> void delete(Class<T> entityClass, Object primaryKey) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE);
+
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        var query = sqlBuilder.delete(tableName, fieldIdName);
+        addToExecutedQueries(query);
+
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+
+            showSql(() -> log.info(QUERY_BIND_VALUE_LOG, query, fieldIdName, primaryKey));
+
+            statement.setObject(1, primaryKey);
+
+            statement.execute();
+            log.info(SAVE_LOG, entityClass.getSimpleName());
+        } catch (Exception exe) {
+            throw new BibernateGeneralException(
+                    CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
+                    exe);
+        }
     }
 
     private void addToExecutedQueries(String query) {

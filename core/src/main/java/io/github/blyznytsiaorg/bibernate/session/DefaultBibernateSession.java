@@ -46,6 +46,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> void delete(Class<T> entityClass, Object primaryKey) {
+        dao.delete(entityClass, primaryKey);
+    }
+
+    @Override
     public void close() {
         log.info("Close session...");
     }
