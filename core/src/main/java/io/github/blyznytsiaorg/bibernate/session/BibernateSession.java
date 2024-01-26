@@ -27,6 +27,8 @@ public interface BibernateSession extends Closeable {
 
     }
 
+    <T> void delete(Class<T> entityClass, Object primaryKey);
+
     @Override
     void close();
 
