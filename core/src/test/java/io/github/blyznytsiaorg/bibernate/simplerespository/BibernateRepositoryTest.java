@@ -123,6 +123,35 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         }
     }
 
+    @Test
+    void shouldFindByFirstNameViaHQL() {
+        //given
+        createTableWithData(1);
+
+        List<Person> expectedPersons = Arrays.asList(
+                createPerson("John1", "Doe1"),
+                createPerson("John1", "Smith1")
+        );
+
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+            //when
+            List<Person> persons = personRepository.findByFirstName("John1");
+
+            //then
+            Assertions.assertThat(persons).hasSize(expectedPersons.size())
+                    .usingElementComparatorIgnoringFields("id")
+                    .containsExactlyInAnyOrderElementsOf(expectedPersons);
+
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
+        }
+    }
+
     private void createTableWithData(int i) {
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("John" + i, "Doe" + i));
         setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_GENERAL_INSERT_STATEMENT.formatted("Jane" + i, "Smith" + i));

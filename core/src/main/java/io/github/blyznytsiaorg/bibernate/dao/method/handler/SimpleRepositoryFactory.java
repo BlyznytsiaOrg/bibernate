@@ -39,12 +39,14 @@ public class SimpleRepositoryFactory {
     private static final String LOOKS_LIKE_METHOD_METADATA_NOT_FOUND_FOR_METHOD =
             "Looks like methodMetadata not found for {} method";
     private final List<SimpleRepositoryMethodHandler> simpleRepositoryMethodHandlers;
+
     public SimpleRepositoryFactory() {
         this.simpleRepositoryMethodHandlers = new ArrayList<>();
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodNativeQueryHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodHqlQueryHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindByIdMethodHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindAllHandler());
-        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodQueryHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
     }
 

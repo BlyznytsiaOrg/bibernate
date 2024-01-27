@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.utils;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
@@ -14,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -39,6 +41,10 @@ public class EntityReflectionUtils {
                 .map(Table::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(getSnakeString(entityClass.getSimpleName()));
+    }
+
+    public static boolean isImmutable(Class<?> entityClass) {
+        return entityClass.isAnnotationPresent(Immutable.class);
     }
 
     public static boolean isDynamicUpdate(Class<?> entityClass) {
@@ -194,6 +200,12 @@ public class EntityReflectionUtils {
                 .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
                 .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
                 .toList();
+    }
+
+    public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .map(field -> new EntityColumn(field.getName(), columnName(field)))
+                .collect(Collectors.toList());
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {

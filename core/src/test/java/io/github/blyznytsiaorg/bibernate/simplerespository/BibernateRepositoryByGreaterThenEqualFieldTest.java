@@ -36,7 +36,7 @@ class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInf
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByAgeGreaterthanequal(16);
+            List<User> users = userRepository.findByAgeGreaterThanEqual(16);
 
             //then
             Assertions.assertThat(users).hasSize(expectedUsers.size())

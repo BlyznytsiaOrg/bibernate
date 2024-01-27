@@ -17,7 +17,9 @@ public interface BibernateSession extends Closeable {
 
     <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
 
-    <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues);
+    <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues);
+
+    <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues);
 
     int find(String query, Object[] bindValues);
 
