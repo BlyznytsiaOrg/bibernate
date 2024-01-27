@@ -71,31 +71,31 @@ public class RepositoryParserUtils {
         Queue<String> fields = new ArrayDeque<>();
         Queue<String> operations = new ArrayDeque<>();
 
-        StringBuilder builder = new StringBuilder();
-        StringBuilder fullOperationName = new StringBuilder();
+        var field = new StringBuilder();
+        var operation = new StringBuilder();
 
         for (var partName : methodSplit) {
             if (PART_SQL_CONDITIONS.contains(partName)) {
-                fullOperationName.append(partName);
+                operation.append(partName);
             } else {
                 if (SUPPORTED_OPERATIONS.contains(partName)) {
-                    fields.add(builder.toString());
-                    builder.setLength(0);
-                    var currentOperation = fullOperationName.toString();
+                    fields.add(field.toString());
+                    field.setLength(0);
+                    var currentOperation = operation.toString();
                     operations.add(currentOperation.isBlank() ? partName : currentOperation);
-                    fullOperationName.setLength(0);
+                    operation.setLength(0);
                 } else {
-                    builder.append(partName);
+                    field.append(partName);
                 }
             }
         }
 
-        if (!builder.isEmpty()) {
-            fields.add(builder.toString());
+        if (!field.isEmpty()) {
+            fields.add(field.toString());
         }
 
-        if (!fullOperationName.isEmpty()) {
-            operations.add(fullOperationName.toString());
+        if (!operation.isEmpty()) {
+            operations.add(operation.toString());
         }
 
         log.debug("fields {} operations {}", fields, operations);
