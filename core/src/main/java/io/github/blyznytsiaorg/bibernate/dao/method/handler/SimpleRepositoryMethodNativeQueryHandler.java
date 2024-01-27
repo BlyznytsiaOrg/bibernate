@@ -7,10 +7,12 @@ import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextH
 
 import java.lang.reflect.Method;
 
-public class SimpleRepositoryMethodQueryHandler implements SimpleRepositoryMethodHandler {
+public class SimpleRepositoryMethodNativeQueryHandler implements SimpleRepositoryMethodHandler {
     @Override
     public boolean isMethodHandle(Method method) {
-        return method.isAnnotationPresent(Query.class);
+        return method.isAnnotationPresent(Query.class) &&
+                method.getAnnotation(Query.class).nativeQuery() &&
+                method.getAnnotation(Query.class).hql();
     }
 
     @Override

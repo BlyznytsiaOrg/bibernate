@@ -69,17 +69,45 @@ public class EntityDao implements Dao {
     public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
         var whereCondition = sqlBuilder.selectByIdWhereCondition(idColumnName);
         
-        return findBy(entityClass, whereCondition, idColumnValue);
+        return this.findByWhere(entityClass, whereCondition, idColumnValue);
     }
 
     @Override
-    public <T> List<T> findBy(Class<T> entityClass, String whereCondition, Object... bindValues) {
+    public <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
 
         var tableName = table(entityClass);
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
         var query = sqlBuilder.selectBy(tableName, whereCondition);
+        addToExecutedQueries(query);
+
+        List<T> items = new ArrayList<>();
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+
+            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
+
+            populatePreparedStatement(bindValues, statement);
+
+            var resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+            }
+        } catch (Exception exe) {
+            throw new BibernateGeneralException(
+                    CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
+                    exe);
+        }
+
+        return items;
+    }
+
+    @Override
+    public <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
+
+        var dataSource = bibernateDatabaseSettings.getDataSource();
         addToExecutedQueries(query);
 
         List<T> items = new ArrayList<>();

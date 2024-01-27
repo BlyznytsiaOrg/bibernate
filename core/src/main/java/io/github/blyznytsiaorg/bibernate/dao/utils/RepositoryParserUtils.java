@@ -36,6 +36,7 @@ public class RepositoryParserUtils {
     public static final String EQ = " = ";
     public static final String PARAMETER = "?";
     public static final String UNDERSCORE = "_";
+    public static final String METHOD_DON_T_HAVE_PARAMETERS = "Method {} don't have parameters";
 
     static {
         OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
@@ -129,7 +130,7 @@ public class RepositoryParserUtils {
     public static List<String> getParameterNames(AccessibleObject methodOrConstructor) {
         String[] parameterNames = info.lookupParameterNames(methodOrConstructor, false);
         if (parameterNames.length == 0) {
-            log.info("Method {} don't have parameters", methodOrConstructor);
+            log.debug(METHOD_DON_T_HAVE_PARAMETERS, methodOrConstructor);
             return Collections.emptyList();
         }
         return Arrays.stream(parameterNames).toList();

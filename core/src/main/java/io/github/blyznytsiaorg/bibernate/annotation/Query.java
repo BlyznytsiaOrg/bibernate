@@ -14,4 +14,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Query {
     String value();
+
+    boolean nativeQuery() default false;
+
+    boolean hql() default true;
 }

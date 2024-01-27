@@ -27,7 +27,7 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
     public void close() {
         HikariDataSource dataSource = bibernateSettings.getDataSource();
         if (dataSource != null) {
-            log.info("Close dataSource...");
+            log.trace("Close dataSource...");
             dataSource.close();
         }
     }

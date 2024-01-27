@@ -22,6 +22,6 @@ public interface UserRepository extends BibernateRepository<User, Long> {
 
     List<User> findByUsernameNull();
 
-    @Query("select count(*) from users group by username having count(username) > ?")
+    @Query(value = "select count(*) from users group by username having count(username) > ?", nativeQuery = true)
     int countUserDuplicate(@Param("count") int count);
 }

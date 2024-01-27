@@ -37,9 +37,15 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues) {
+    public <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues) {
         verifySessionNotClosed();
-        return dao.findBy(entityClass, whereQuery, bindValues);
+        return dao.findByWhere(entityClass, whereQuery, bindValues);
+    }
+
+    @Override
+    public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
+        verifySessionNotClosed();
+        return dao.findByQuery(entityClass, query, bindValues);
     }
 
     @Override
@@ -72,7 +78,7 @@ public class DefaultBibernateSession implements BibernateSession {
     @Override
     public void close() {
         closed = true;
-        log.info("Close session...");
+        log.trace("Close session...");
     }
 
     @Override

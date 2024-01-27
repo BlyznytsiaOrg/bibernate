@@ -51,7 +51,7 @@ public class BibernateDatabaseSettings {
     }
 
     private HikariDataSource createDataSource() {
-        log.info("Creating dataSource...");
+        log.trace("Creating dataSource...");
         String url = bibernateSettingsProperties.get(DB_URL);
         String user = bibernateSettingsProperties.get(DB_USER);
         String password = bibernateSettingsProperties.get(DB_PASSWORD);

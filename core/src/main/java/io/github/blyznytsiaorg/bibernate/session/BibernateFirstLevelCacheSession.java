@@ -42,7 +42,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                     .map(entityFromDb -> persistentContext(entityClass, entityFromDb, entityKey, finalPrimaryKey));
         }
 
-        log.info(ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), primaryKey);
+        log.trace(ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), primaryKey);
 
         return Optional.of(entityClass.cast(cachedEntity));
     }
@@ -53,8 +53,13 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     @Override
-    public <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues) {
-        return bibernateSession.findBy(entityClass, whereQuery, bindValues);
+    public <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues) {
+        return bibernateSession.findByWhere(entityClass, whereQuery, bindValues);
+    }
+
+    @Override
+    public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
+        return bibernateSession.findByQuery(entityClass, query, bindValues);
     }
 
     @Override
