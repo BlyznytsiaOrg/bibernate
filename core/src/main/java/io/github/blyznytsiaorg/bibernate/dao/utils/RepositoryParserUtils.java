@@ -28,11 +28,14 @@ public class RepositoryParserUtils {
 
     private static final Set<String> SUPPORTED_OPERATIONS = new HashSet<>(Set.of(
             "And", "Or", "Equals", "Like",
-            "Null", "Notnull", "Lessthan",
-            "Lessthanequal", "Greaterthan",  "Greaterthanequal"
+            "Null", "NotNull", "LessThan",
+            "LessThanEqual", "GreaterThan",  "GreaterThanEqual"
     ));
 
     private static final Map<String, String> OPERATION_TO_SQL_CONDITIONS = new HashMap<>();
+
+    private static final Set<String> PART_SQL_CONDITIONS = new HashSet<>();
+
     public static final String EQ = " = ";
     public static final String PARAMETER = "?";
     public static final String UNDERSCORE = "_";
@@ -42,13 +45,20 @@ public class RepositoryParserUtils {
         OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
         OPERATION_TO_SQL_CONDITIONS.put("Or", " = ? Or ");
         OPERATION_TO_SQL_CONDITIONS.put("Equals", " = ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthan", " < ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthanequal", " <= ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthan", " > ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthanequal", " >= ?");
+        OPERATION_TO_SQL_CONDITIONS.put("LessThan", " < ?");
+        OPERATION_TO_SQL_CONDITIONS.put("LessThanEqual", " <= ?");
+        OPERATION_TO_SQL_CONDITIONS.put("GreaterThan", " > ?");
+        OPERATION_TO_SQL_CONDITIONS.put("GreaterThanEqual", " >= ?");
         OPERATION_TO_SQL_CONDITIONS.put("Null", " is null");
-        OPERATION_TO_SQL_CONDITIONS.put("Notnull", " is not null");
+        OPERATION_TO_SQL_CONDITIONS.put("NotNull", " is not null");
         OPERATION_TO_SQL_CONDITIONS.put("Like", " like ?");
+
+        PART_SQL_CONDITIONS.add("Less");
+        PART_SQL_CONDITIONS.add("Than");
+        PART_SQL_CONDITIONS.add("Equal");
+        PART_SQL_CONDITIONS.add("Greater");
+        PART_SQL_CONDITIONS.add("Not");
+        PART_SQL_CONDITIONS.add("Null");
     }
 
     private static final String EMPTY = "";
@@ -62,23 +72,30 @@ public class RepositoryParserUtils {
         Queue<String> operations = new ArrayDeque<>();
 
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < methodSplit.length; i++) {
-            String partName = methodSplit[i];
+        StringBuilder fullOperationName = new StringBuilder();
 
-            if (!SUPPORTED_OPERATIONS.contains(partName)) {
-                builder.append(partName);
+        for (var partName : methodSplit) {
+            if (PART_SQL_CONDITIONS.contains(partName)) {
+                fullOperationName.append(partName);
             } else {
-                fields.add(builder.toString());
-                builder = new StringBuilder();
-                operations.add(partName);
-            }
-
-            if (i == methodSplit.length - 1) {
-                String lastPart = builder.toString();
-                if (!lastPart.isEmpty()) {
-                    fields.add(lastPart);
+                if (SUPPORTED_OPERATIONS.contains(partName)) {
+                    fields.add(builder.toString());
+                    builder.setLength(0);
+                    var currentOperation = fullOperationName.toString();
+                    operations.add(currentOperation.isBlank() ? partName : currentOperation);
+                    fullOperationName.setLength(0);
+                } else {
+                    builder.append(partName);
                 }
             }
+        }
+
+        if (!builder.isEmpty()) {
+            fields.add(builder.toString());
+        }
+
+        if (!fullOperationName.isEmpty()) {
+            operations.add(fullOperationName.toString());
         }
 
         log.debug("fields {} operations {}", fields, operations);
