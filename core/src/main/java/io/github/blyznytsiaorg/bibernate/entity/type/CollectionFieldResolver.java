@@ -1,10 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
-import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
-import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -13,7 +10,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
+import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
+import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 
 public class CollectionFieldResolver implements TypeFieldResolver {
     
@@ -32,7 +33,7 @@ public class CollectionFieldResolver implements TypeFieldResolver {
         }
         
         var collectionGenericType = getCollectionGenericType(field); 
-        var joinColumnName = joinColumnName(field);
+        var joinColumnName = mappedByJoinColumnName(field);
 
         var session = BibernateSessionContextHolder.getBibernateSession();
         Supplier<List<?>> collectionSupplier = () -> 

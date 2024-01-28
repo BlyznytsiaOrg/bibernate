@@ -1,22 +1,33 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.annotation.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -24,6 +35,7 @@ import java.util.stream.IntStream;
  *  @author Blyzhnytsia Team
  *  @since 1.0
  */
+@Slf4j
 @UtilityClass
 public class EntityReflectionUtils {
 
@@ -60,6 +72,25 @@ public class EntityReflectionUtils {
                 .map(Column::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(getSnakeString(field.getName()));
+    }
+
+    public static String mappedByJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+          .map(OneToMany::mappedBy)
+          .filter(Predicate.not(String::isEmpty))
+          .flatMap(mappedByName -> {
+              Class<?> collectionGenericType = getCollectionGenericType(field);
+              
+              return getMappedByColumnName(mappedByName, collectionGenericType);
+          })
+          .orElse(joinColumnName(field));
+    }
+    
+    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
+        return Arrays.stream(collectionGenericType.getDeclaredFields())
+          .filter(f -> Objects.equals(f.getName(), mappedByName))
+          .findFirst()
+          .map(EntityReflectionUtils::joinColumnName);
     }
 
     public static String joinColumnName(Field field) {
@@ -146,8 +177,10 @@ public class EntityReflectionUtils {
         try {
             return resultSet.getObject(fieldName, field.getType());
         } catch (SQLException e) {
-            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+            log.warn("Cannot set [{}]", field.getName(), e);
         }
+        
+        return null;
     }
 
     public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
@@ -180,19 +213,19 @@ public class EntityReflectionUtils {
         return (T) primaryKey;
     }
     
-    public Class<?> getCollectionGenericType(Field field) {
+    public static Class<?> getCollectionGenericType(Field field) {
         if (isSupportedCollection(field)) {
             var parametrizedType = (ParameterizedType) field.getGenericType();
             return (Class<?>) parametrizedType.getActualTypeArguments()[0];
         }
         
         throw new BibernateGeneralException(
-                "Unable to get Collection generic type for a field that is not a Collection(List/Set). Field type: [%s]"
+                "Unable to get Collection generic type for a field that is not a supported Collection. Field type: [%s]"
                         .formatted(field.getType()));
     }
     
     public static boolean isSupportedCollection(Field field) {
-        return List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType());
+        return List.class.isAssignableFrom(field.getType());
     }
 
     public static List<Field> getInsertEntityFields(Object entity) {
