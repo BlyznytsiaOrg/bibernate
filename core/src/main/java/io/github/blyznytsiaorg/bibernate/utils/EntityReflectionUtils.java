@@ -7,6 +7,7 @@ import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -24,6 +25,7 @@ import java.util.stream.IntStream;
  *  @author Blyzhnytsia Team
  *  @since 1.0
  */
+@Slf4j
 @UtilityClass
 public class EntityReflectionUtils {
 
@@ -146,8 +148,10 @@ public class EntityReflectionUtils {
         try {
             return resultSet.getObject(fieldName, field.getType());
         } catch (SQLException e) {
-            throw new BibernateGeneralException(String.format("Cannot set %s", field.getName()), e);
+            log.warn("Cannot set [{}]", field.getName(), e);
         }
+        
+        return null;
     }
 
     public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
@@ -187,12 +191,12 @@ public class EntityReflectionUtils {
         }
         
         throw new BibernateGeneralException(
-                "Unable to get Collection generic type for a field that is not a Collection(List/Set). Field type: [%s]"
+                "Unable to get Collection generic type for a field that is not a supported Collection. Field type: [%s]"
                         .formatted(field.getType()));
     }
     
     public static boolean isSupportedCollection(Field field) {
-        return List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType());
+        return List.class.isAssignableFrom(field.getType());
     }
 
     public static List<Field> getInsertEntityFields(Object entity) {

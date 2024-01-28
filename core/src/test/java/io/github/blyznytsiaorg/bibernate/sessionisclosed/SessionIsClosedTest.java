@@ -2,7 +2,7 @@ package io.github.blyznytsiaorg.bibernate.sessionisclosed;
 
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ class SessionIsClosedTest extends AbstractPostgresInfrastructurePrep {
             bibernateSession.close();
 
             //when
-            assertThrows(BibernateGeneralException.class,
+            assertThrows(BibernateSessionClosedException.class,
                     () -> bibernateSession.delete(Person.class, 1L));
 
             //then

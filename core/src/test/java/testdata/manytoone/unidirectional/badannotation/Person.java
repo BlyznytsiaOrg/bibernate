@@ -1,4 +1,4 @@
-package testdata.onetomany.unidirectional.error;
+package testdata.manytoone.unidirectional.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
@@ -14,9 +14,5 @@ public class Person {
     private String firstName;
     
     private String lastName;
-    
-    @OneToMany
-    @JoinColumn(name = "person_id") // This column is in the Notes table
-    private Note note;
     
 }

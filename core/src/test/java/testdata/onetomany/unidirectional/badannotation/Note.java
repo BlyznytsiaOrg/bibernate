@@ -1,4 +1,4 @@
-package testdata.onetomany.unidirectional.error;
+package testdata.onetomany.unidirectional.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
