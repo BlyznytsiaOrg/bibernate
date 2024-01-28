@@ -6,7 +6,6 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.manytoone.unidirectional.Note;
-import testdata.manytoone.unidirectional.notannotated.Person;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +14,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ManyToOneTest extends AbstractPostgresInfrastructurePrep {
+class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should retrieve note and person")
     @Test

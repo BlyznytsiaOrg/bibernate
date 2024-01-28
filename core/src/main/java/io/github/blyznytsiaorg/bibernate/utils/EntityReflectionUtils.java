@@ -64,6 +64,21 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(field.getName()));
     }
 
+    public static String mappedByJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+          .map(OneToMany::mappedBy)
+          .filter(Predicate.not(String::isEmpty))
+          .flatMap(mappedByName -> {
+              Class<?> collectionGenericType = getCollectionGenericType(field);
+              
+              return Arrays.stream(collectionGenericType.getDeclaredFields())
+                .filter(f -> Objects.equals(f.getName(), mappedByName))
+                .findFirst()
+                .map(EntityReflectionUtils::joinColumnName);
+          })
+          .orElse(joinColumnName(field));
+    }
+    
     public static String joinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
                 .map(JoinColumn::name)
@@ -184,7 +199,7 @@ public class EntityReflectionUtils {
         return (T) primaryKey;
     }
     
-    public Class<?> getCollectionGenericType(Field field) {
+    public static Class<?> getCollectionGenericType(Field field) {
         if (isSupportedCollection(field)) {
             var parametrizedType = (ParameterizedType) field.getGenericType();
             return (Class<?>) parametrizedType.getActualTypeArguments()[0];

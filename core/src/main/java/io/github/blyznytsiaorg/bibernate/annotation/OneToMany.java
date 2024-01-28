@@ -8,4 +8,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OneToMany {
+
+    /**
+     * The field that owns the relationship. Required unless the relationship is unidirectional.
+     */
+    String mappedBy() default "";
 }

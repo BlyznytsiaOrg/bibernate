@@ -16,7 +16,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class OneToManyTest extends AbstractPostgresInfrastructurePrep {
+class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
     
     @DisplayName("Should retrieve person and notes only when requested")
     @Test
