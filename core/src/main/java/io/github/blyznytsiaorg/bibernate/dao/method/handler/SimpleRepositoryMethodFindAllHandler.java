@@ -44,7 +44,7 @@ public class SimpleRepositoryMethodFindAllHandler implements SimpleRepositoryMet
         if (nonNull(returnType.getGenericEntityClass()) && List.class.isAssignableFrom((Class<?>)returnType.getGenericEntityClass().getRawType())) {
             try (var bringSession = sessionFactory.openSession()) {
                 var entityClass  = (Class<?>) repositoryDetails.entityType();
-                return bringSession.findBy(entityClass, null, parameters);
+                return bringSession.findByWhere(entityClass, null, parameters);
             }
         } else {
             log.warn(NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME, returnType, methodName);

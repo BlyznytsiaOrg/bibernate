@@ -2,12 +2,15 @@ package io.github.blyznytsiaorg.bibernate.utils;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -26,6 +29,8 @@ public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
 
+    public static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
     public static final String ID_POSTFIX = "_id";
@@ -38,8 +43,16 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(entityClass.getSimpleName()));
     }
 
+    public static boolean isImmutable(Class<?> entityClass) {
+        return entityClass.isAnnotationPresent(Immutable.class);
+    }
+
     public static boolean isDynamicUpdate(Class<?> entityClass) {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
+    }
+
+    public static boolean isColumnWithVersion(Field field) {
+        return field.isAnnotationPresent(Version.class);
     }
 
     public static String columnName(Field field) {
@@ -57,12 +70,43 @@ public class EntityReflectionUtils {
     }
 
     public static String columnIdName(Class<?> entityClass) {
+        return findColumnNameByAnnotation(entityClass, Id.class, UNABLE_TO_GET_ID_NAME_FOR_ENTITY);
+    }
+
+    public static String columnVersionName(Class<?> entityClass) {
+        return findColumnNameByAnnotation(entityClass, Version.class, UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY);
+    }
+
+    private static String findColumnNameByAnnotation(Class<?> entityClass,
+                                                     Class<? extends Annotation> annotationClass,
+                                                     String errorMessage
+    ) {
         return Arrays.stream(entityClass.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Id.class))
+                .filter(field -> field.isAnnotationPresent(annotationClass))
                 .map(EntityReflectionUtils::columnName)
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
-                        UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+                        errorMessage.formatted(entityClass.getSimpleName())));
+    }
+
+    public static Object columnVersionValue(Class<?> entityClass,
+                                            Object entity) {
+        return findColumnValueByAnnotation(entityClass, Version.class, entity);
+    }
+
+    private static Object findColumnValueByAnnotation(Class<?> entityClass, Class<? extends Annotation> annotationClass, Object entity) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(annotationClass))
+                .map(field -> getValueFromObject(entity, field))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static boolean isColumnVersionFound(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .anyMatch(field -> field.isAnnotationPresent(Version.class));
+
     }
 
     public static Object columnIdValue(Class<?> entityClass, Object entity) {
@@ -111,7 +155,7 @@ public class EntityReflectionUtils {
         return IntStream.range(0, currentEntitySnapshot.size())
                 .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
                 .mapToObj(currentEntitySnapshot::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static void setField(Field field, Object obj, Object value) {
@@ -135,12 +179,33 @@ public class EntityReflectionUtils {
 
         return (T) primaryKey;
     }
+    
+    public Class<?> getCollectionGenericType(Field field) {
+        if (isSupportedCollection(field)) {
+            var parametrizedType = (ParameterizedType) field.getGenericType();
+            return (Class<?>) parametrizedType.getActualTypeArguments()[0];
+        }
+        
+        throw new BibernateGeneralException(
+                "Unable to get Collection generic type for a field that is not a Collection(List/Set). Field type: [%s]"
+                        .formatted(field.getType()));
+    }
+    
+    public static boolean isSupportedCollection(Field field) {
+        return List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType());
+    }
 
     public static List<Field> getInsertEntityFields(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
                 .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
                 .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
                 .toList();
+    }
+
+    public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .map(field -> new EntityColumn(field.getName(), columnName(field)))
+                .collect(Collectors.toList());
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {
@@ -167,14 +232,6 @@ public class EntityReflectionUtils {
         }
         // Add more conditions for other types if needed
         return value;
-    }
-
-    public static boolean isRegularField(Field field) {
-        return !isEntityField(field);
-    }
-
-    public static boolean isEntityField(Field field) {
-        return field.isAnnotationPresent(OneToOne.class);
     }
 
     private String getSnakeString(String str) {

@@ -15,6 +15,11 @@ import java.util.*;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @Slf4j
 @UtilityClass
 public class RepositoryParserUtils {
@@ -22,28 +27,38 @@ public class RepositoryParserUtils {
     private static final Paranamer info = new CachingParanamer(new ParamAnnotationParanamer(new BytecodeReadingParanamer()));
 
     private static final Set<String> SUPPORTED_OPERATIONS = new HashSet<>(Set.of(
-            "And", "Or", "Equals",
-            "True", "False", "Like",
-            "Null", "Notnull", "Lessthan",
-            "Lessthanequal", "Greaterthan",  "Greaterthanequal"
+            "And", "Or", "Equals", "Like",
+            "Null", "NotNull", "LessThan",
+            "LessThanEqual", "GreaterThan",  "GreaterThanEqual"
     ));
 
     private static final Map<String, String> OPERATION_TO_SQL_CONDITIONS = new HashMap<>();
+
+    private static final Set<String> PART_SQL_CONDITIONS = new HashSet<>();
+
     public static final String EQ = " = ";
     public static final String PARAMETER = "?";
     public static final String UNDERSCORE = "_";
+    public static final String METHOD_DON_T_HAVE_PARAMETERS = "Method {} don't have parameters";
 
     static {
         OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
         OPERATION_TO_SQL_CONDITIONS.put("Or", " = ? Or ");
         OPERATION_TO_SQL_CONDITIONS.put("Equals", " = ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthan", " < ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Lessthanequal", " <= ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthan", " > ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Greaterthanequal", " >= ?");
+        OPERATION_TO_SQL_CONDITIONS.put("LessThan", " < ?");
+        OPERATION_TO_SQL_CONDITIONS.put("LessThanEqual", " <= ?");
+        OPERATION_TO_SQL_CONDITIONS.put("GreaterThan", " > ?");
+        OPERATION_TO_SQL_CONDITIONS.put("GreaterThanEqual", " >= ?");
         OPERATION_TO_SQL_CONDITIONS.put("Null", " is null");
-        OPERATION_TO_SQL_CONDITIONS.put("Notnull", " is not null");
+        OPERATION_TO_SQL_CONDITIONS.put("NotNull", " is not null");
         OPERATION_TO_SQL_CONDITIONS.put("Like", " like ?");
+
+        PART_SQL_CONDITIONS.add("Less");
+        PART_SQL_CONDITIONS.add("Than");
+        PART_SQL_CONDITIONS.add("Equal");
+        PART_SQL_CONDITIONS.add("Greater");
+        PART_SQL_CONDITIONS.add("Not");
+        PART_SQL_CONDITIONS.add("Null");
     }
 
     private static final String EMPTY = "";
@@ -56,24 +71,31 @@ public class RepositoryParserUtils {
         Queue<String> fields = new ArrayDeque<>();
         Queue<String> operations = new ArrayDeque<>();
 
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < methodSplit.length; i++) {
-            String partName = methodSplit[i];
+        var field = new StringBuilder();
+        var operation = new StringBuilder();
 
-            if (!SUPPORTED_OPERATIONS.contains(partName)) {
-                builder.append(partName);
+        for (var partName : methodSplit) {
+            if (PART_SQL_CONDITIONS.contains(partName)) {
+                operation.append(partName);
             } else {
-                fields.add(builder.toString());
-                builder = new StringBuilder();
-                operations.add(partName);
-            }
-
-            if (i == methodSplit.length - 1) {
-                String lastPart = builder.toString();
-                if (!lastPart.isEmpty()) {
-                    fields.add(lastPart);
+                if (SUPPORTED_OPERATIONS.contains(partName)) {
+                    fields.add(field.toString());
+                    field.setLength(0);
+                    var currentOperation = operation.toString();
+                    operations.add(currentOperation.isBlank() ? partName : currentOperation);
+                    operation.setLength(0);
+                } else {
+                    field.append(partName);
                 }
             }
+        }
+
+        if (!field.isEmpty()) {
+            fields.add(field.toString());
+        }
+
+        if (!operation.isEmpty()) {
+            operations.add(operation.toString());
         }
 
         log.debug("fields {} operations {}", fields, operations);
@@ -125,7 +147,7 @@ public class RepositoryParserUtils {
     public static List<String> getParameterNames(AccessibleObject methodOrConstructor) {
         String[] parameterNames = info.lookupParameterNames(methodOrConstructor, false);
         if (parameterNames.length == 0) {
-            log.info("Method {} don't have parameters", methodOrConstructor);
+            log.debug(METHOD_DON_T_HAVE_PARAMETERS, methodOrConstructor);
             return Collections.emptyList();
         }
         return Arrays.stream(parameterNames).toList();

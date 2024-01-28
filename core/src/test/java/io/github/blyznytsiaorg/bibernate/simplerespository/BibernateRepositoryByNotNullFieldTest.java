@@ -36,7 +36,7 @@ class BibernateRepositoryByNotNullFieldTest extends AbstractPostgresInfrastructu
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByUsernameNotnull();
+            List<User> users = userRepository.findByUsernameNotNull();
 
             //then
             Assertions.assertThat(users).hasSize(expectedPersons.size())

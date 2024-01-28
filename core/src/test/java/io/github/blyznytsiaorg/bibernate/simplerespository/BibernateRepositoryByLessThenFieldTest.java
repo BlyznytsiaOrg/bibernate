@@ -35,7 +35,7 @@ class BibernateRepositoryByLessThenFieldTest extends AbstractPostgresInfrastruct
             var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
-            List<User> users = userRepository.findByAgeLessthan(17);
+            List<User> users = userRepository.findByAgeLessThan(17);
 
             //then
             Assertions.assertThat(users).hasSize(expectedPersons.size())

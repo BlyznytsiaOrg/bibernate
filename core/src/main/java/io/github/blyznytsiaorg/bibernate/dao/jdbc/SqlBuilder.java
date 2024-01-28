@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 
 
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.DeleteQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
@@ -25,41 +26,62 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
-    public String selectById(String tableName, String fieldIdName) {
-        return from(tableName)
-                .whereCondition(fieldIdName + EQ + PARAMETER)
-                .buildSelectStatement();
-    }
-
     public String update(Object entity, String tableName, String fieldIdName, List<ColumnSnapshot> diff) {
         var entityClass = entity.getClass();
         var update = UpdateQueryBuilder.update(tableName);
+        boolean isVersionFound = isColumnVersionFound(entityClass);
+        String fieldVersionName = null;
 
+        if (isVersionFound) {
+            fieldVersionName = columnVersionName(entityClass);
+        }
+
+        final String finalFieldVersionName = fieldVersionName;
         if (!isDynamicUpdate(entityClass)) {
             var declaredFields = entityClass.getDeclaredFields();
             Arrays.stream(declaredFields)
                     .map(EntityReflectionUtils::columnName)
                     .filter(fieldName -> !fieldName.equals(fieldIdName))
-                    .forEach(fieldName -> update.setField(fieldName, PARAMETER));
-
-            return update.whereCondition(fieldIdName + EQ + PARAMETER)
-                    .buildUpdateStatement();
+                    .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
+        } else {
+            diff.stream()
+                    .map(ColumnSnapshot::name)
+                    .filter(fieldName -> !fieldName.equals(fieldIdName))
+                    .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
         }
 
+        var updateQueryBuilder = update.whereCondition(selectByIdWhereCondition(fieldIdName));
+        if (isVersionFound) {
+            updateQueryBuilder.andCondition(fieldVersionName + EQ + PARAMETER);
+        }
 
-        diff.stream()
-                .map(ColumnSnapshot::name)
-                .filter(fieldName -> !fieldName.equals(fieldIdName))
-                .forEach(fieldName -> update.setField(fieldName, PARAMETER));
-
-        return update.whereCondition(fieldIdName + EQ + PARAMETER)
-                .buildUpdateStatement();
+        return updateQueryBuilder.buildUpdateStatement();
     }
+
+    public String selectByIdWhereCondition(String fieldIdName) {
+        return fieldIdName + EQ + PARAMETER;
+    }
+    
 
     public String insert(Object entity, String tableName) {
         var insert = InsertQueryBuilder.from(tableName);
         getInsertEntityFields(entity).forEach(field -> insert.setField(columnName(field)));
 
         return insert.buildInsertStatement();
+    }
+
+    public String delete(String tableName, String fieldIdName) {
+        return DeleteQueryBuilder.from(tableName)
+                .whereCondition(selectByIdWhereCondition(fieldIdName))
+                .buildDeleteStatement();
+    }
+
+    private void populateFieldOrIncVersion(String fieldName, boolean isVersionFound,
+                                           String finalFieldVersionName, UpdateQueryBuilder update) {
+        if (isVersionFound && finalFieldVersionName.equals(fieldName)) {
+            update.setFieldIncrementVersion(fieldName);
+        } else {
+            update.setField(fieldName, PARAMETER);
+        }
     }
 }

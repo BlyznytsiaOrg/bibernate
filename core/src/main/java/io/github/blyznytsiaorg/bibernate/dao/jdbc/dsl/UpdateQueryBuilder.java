@@ -11,7 +11,9 @@ import java.util.List;
  *  @since 1.0
  */
 public class UpdateQueryBuilder extends QueryBuilder {
-    
+
+    private static final String ONE = "1";
+    private static final String PLUS = " + ";
     private final List<UpdateField> updateFields;
 
     public UpdateQueryBuilder(String tableName) {
@@ -21,6 +23,12 @@ public class UpdateQueryBuilder extends QueryBuilder {
 
     public static UpdateQueryBuilder update(String tableName) {
         return new UpdateQueryBuilder(tableName);
+    }
+
+    public UpdateQueryBuilder setFieldIncrementVersion(String fieldName) {
+        var updateField = new UpdateField(fieldName, fieldName + PLUS + ONE);
+        updateFields.add(updateField);
+        return this;
     }
 
     public UpdateQueryBuilder setField(String fieldName, Object value) {

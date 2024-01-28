@@ -2,6 +2,15 @@ package io.github.blyznytsiaorg.bibernate;
 
 public interface AbstractPostgresTableCreationPrep {
 
+    String CREATE_EMPLOYEE_TABLE = """
+            CREATE TABLE IF NOT EXISTS employees (
+                id bigserial primary key,
+                first_name varchar(255),
+                last_name varchar(255),
+                version int
+            );
+            """;
+
     String CREATE_PERSONS_TABLE = """
             CREATE TABLE IF NOT EXISTS persons (
                 id bigserial primary key,
@@ -44,6 +53,10 @@ public interface AbstractPostgresTableCreationPrep {
             );
             """;
 
+    String CREATE_EMPLOYEE_INSERT_STATEMENT = """
+            insert into employees(id, first_name, last_name, version) values (1, 'Levik', 'P', 1);
+            """;
+
     String CREATE_PERSONS_INSERT_STATEMENT = """
             insert into persons(first_name, last_name) values ('FirstName', 'LastName');
             """;
@@ -63,6 +76,24 @@ public interface AbstractPostgresTableCreationPrep {
     String CREATE_INSERT_USERS_ADRESSES_STATEMENT = """
             insert into houses(id, name) values (1, 'big');
             insert into addresses(id, name, house_id) values (1, 'street', 1);
-            insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1);
+            insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1)
+            """;
+            
+    String CREATE_NOTES_TABLE = """
+            CREATE TABLE IF NOT EXISTS notes (
+                id bigserial primary key,
+                person_id bigint not null,
+                text varchar(255),
+                CONSTRAINT notes_persons_FK FOREIGN KEY (person_id) REFERENCES persons
+            );
+            """;
+
+    String CREATE_INSERT_NOTES_STATEMENT = """
+            insert into notes(person_id, text) values (1, 'My First Note');
+            insert into notes(person_id, text) values (1, 'My Second Note');
+            """;
+
+    String CREATE_DELETE_NOTES_STATEMENT = """
+            delete from notes where person_id = 1;
             """;
 }

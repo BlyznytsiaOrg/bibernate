@@ -1,6 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
+import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -11,7 +11,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getV
 public class RegularFieldFieldResolver implements TypeFieldResolver {
     @Override
     public boolean isAppropriate(Field field) {
-        return EntityReflectionUtils.isRegularField(field);
+        return EntityRelationsUtils.isRegularField(field);
     }
 
     @Override

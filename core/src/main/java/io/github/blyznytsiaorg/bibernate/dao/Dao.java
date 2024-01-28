@@ -14,11 +14,17 @@ public interface Dao {
 
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
-    <T> List<T> findBy(Class<T> clazz, String whereCondition, Object[] bindValues);
+    <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
+
+    <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues);
+
+    <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues);
 
     int find(String query, Object[] bindValues);
 
     <T> T update(Class<T> entityClass, Object primaryKey, List<ColumnSnapshot> diff);
 
     <T> T save(Class<T> entityClass, Object entity);
+
+    <T> void delete(Class<T> entityClass, Object primaryKey);
 }

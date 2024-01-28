@@ -15,7 +15,11 @@ public interface BibernateSession extends Closeable {
 
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
-    <T> List<T> findBy(Class<T> entityClass, String whereQuery, Object[] bindValues);
+    <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
+
+    <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues);
+
+    <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues);
 
     int find(String query, Object[] bindValues);
 
@@ -24,6 +28,8 @@ public interface BibernateSession extends Closeable {
     default void flush() {
 
     }
+
+    <T> void delete(Class<T> entityClass, Object primaryKey);
 
     @Override
     void close();
