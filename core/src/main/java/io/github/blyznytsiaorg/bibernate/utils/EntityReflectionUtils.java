@@ -1,6 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.*;
+
 import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
@@ -25,6 +28,8 @@ import java.util.stream.IntStream;
 public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
+    public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id name for entity [%s]";
+
 
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
@@ -136,11 +141,20 @@ public class EntityReflectionUtils {
         return (T) primaryKey;
     }
 
-    public static List<Field> getInsertEntityFields(Object entity) {
+    public static List<Field> getInsertEntityFieldsOld(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
                 .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
                 .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
                 .toList();
+    }
+
+    public static List<Field> getInsertEntityFields(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
+            && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
+            //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
+            //TODO: ADD utility jdbc class to insert all types or null
+            .toList();
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {
@@ -176,6 +190,15 @@ public class EntityReflectionUtils {
     public static boolean isEntityField(Field field) {
         return field.isAnnotationPresent(OneToOne.class);
     }
+
+    public static Field getIdField(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(Id.class))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
 
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();

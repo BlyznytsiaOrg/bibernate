@@ -2,9 +2,14 @@ package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.IdGenerator;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +19,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.*;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.IdGenerator.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static java.sql.Statement.*;
 
 /**
  *
@@ -174,19 +182,34 @@ public class EntityDao implements Dao {
 
         var tableName = table(entityClass);
         var query = sqlBuilder.insert(entity, tableName);
+        var idGenerator = createIdGenerator(entity, tableName, dataSource);
+        idGenerator.getQueries().values().forEach(this::addToExecutedQueries);
         addToExecutedQueries(query);
 
         try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+             var statement = connection.prepareStatement(query, RETURN_GENERATED_KEYS)) {
 
             showSql(() -> log.info(QUERY_LOG, query));
 
-            populatePreparedStatement(entity, statement);
+            if(SEQUENCE.equals(idGenerator.getStrategy())) {
+                populatePreparedStatement(entity, statement, idGenerator.getGeneratedFields());
 
-            // TODO set id to Entity
-            // TODO set to cash
-            statement.execute();
-            log.info(SAVE_LOG, entityClass.getSimpleName());
+                statement.execute();
+                Field idField = getIdField(entityClass);
+                setField(idField, entity, idGenerator.getGeneratedFields().get(idField));
+                log.info(SAVE_LOG, entityClass.getSimpleName());
+            } else if (IDENTITY.equals(idGenerator.getStrategy())){
+                populatePreparedStatement(entity, statement);
+                statement.execute();
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    Field idField = getIdField(entityClass);
+                    setField(idField, entity, generatedKeys.getObject(1));
+                }
+            } else {
+                populatePreparedStatement(entity, statement);
+                statement.execute();
+            }
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
@@ -194,6 +217,11 @@ public class EntityDao implements Dao {
         }
 
         return entityClass.cast(entity);
+    }
+
+    private <T> void setIdToEntity(Class<T> entityClass, Object entity, Object value) {
+        Field idField = getIdField(entityClass);
+        setField(idField, entity, value);
     }
 
     private void addToExecutedQueries(String query) {
@@ -213,6 +241,17 @@ public class EntityDao implements Dao {
         for (Field field : getInsertEntityFields(entity)) {
             statement.setObject(index++, getValueFromObject(entity, field));
         }
+    }
+
+    private void populatePreparedStatement(Object entity, PreparedStatement statement, Map<Field, Object> generatedFields) throws SQLException {
+        int index = 1;
+        for (Field field : getInsertEntityFields(entity)) {
+            statement.setObject(index++, getGeneratedValue(field, generatedFields).orElse(getValueFromObject(entity, field)));
+        }
+    }
+
+    private Optional<Object> getGeneratedValue (Field field, Map<Field, Object> generatedFieldsMap) {
+        return Optional.ofNullable(generatedFieldsMap.get(field));
     }
 
     private void populatePreparedStatement(Object[] bindValues, PreparedStatement statement) throws SQLException {

@@ -36,4 +36,13 @@ public class QueryUtils {
             }
         }
     }
+
+    @SneakyThrows
+    public static void setupSequences(DataSource dataSource, String createSequence) {
+        try (Connection connection = dataSource.getConnection()) {
+            try (Statement statement = connection.createStatement()) {
+                statement.executeUpdate(createSequence);
+            }
+        }
+    }
 }

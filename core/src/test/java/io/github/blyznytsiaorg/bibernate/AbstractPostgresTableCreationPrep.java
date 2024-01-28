@@ -65,4 +65,6 @@ public interface AbstractPostgresTableCreationPrep {
             insert into addresses(id, name, house_id) values (1, 'street', 1);
             insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1);
             """;
+
+    String CREATE_PERSON_ID_SEQUENCE = "create sequence if not exists persons_id_seq start with 1 increment by 1";
 }
