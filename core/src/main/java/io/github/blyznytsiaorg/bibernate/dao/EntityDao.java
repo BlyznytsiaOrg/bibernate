@@ -6,6 +6,7 @@ import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +28,14 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 public class EntityDao implements Dao {
 
     private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE =
-            "Cannot execute findById entityClass [%s] message %s";
+            "Cannot execute findById entityClass [%s]. Message: %s";
     private static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute update entityClass [%s] for primaryKey %s message %s";
+            "Cannot execute update entityClass [%s] for primaryKey %s. Message: %s";
     private static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute save entityClass [%s] message %s";
+            "Cannot execute save entityClass [%s]. Message: %s";
     private static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute delete entityClass [%s] with primaryKey %s message %s";
-    private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s message %s";
+            "Cannot execute delete entityClass [%s] with primaryKey %s. Message: %s";
+    private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s. Message: %s";
     private static final String ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE = "EntityClass must be not null";
     private static final String ENTITY_MUST_BE_NOT_NULL_MESSAGE = "Entity must be not null";
     private static final String PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE = "PrimaryKey must be not null";
@@ -47,6 +48,7 @@ public class EntityDao implements Dao {
     private static final String DELETE_LOG = "Delete entity {} with primaryKey {}";
     public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
             = "Entity %s was change need to get new data findBy%s[%s]";
+    public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
@@ -60,9 +62,13 @@ public class EntityDao implements Dao {
 
         var fieldIdName = columnIdName(entityClass);
         
-        return findAllById(entityClass, fieldIdName, primaryKey)
-                .stream()
-                .findFirst();
+        List<T> resultList = findAllById(entityClass, fieldIdName, primaryKey);
+
+        if (resultList.size() > 1) {
+            throw new NonUniqueResultException(NON_UNIQUE_RESULT_FOR_FIND_BY_ID.formatted(entityClass.getSimpleName()));
+        }
+
+        return resultList.stream().findFirst();
     }
 
     @Override
@@ -95,9 +101,8 @@ public class EntityDao implements Dao {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
 
         return items;
@@ -123,9 +128,8 @@ public class EntityDao implements Dao {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
 
         return items;
@@ -148,9 +152,8 @@ public class EntityDao implements Dao {
                 return resultSet.getInt(1);
             }
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_QUERY_MESSAGE.formatted(query, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_QUERY_MESSAGE.formatted(query, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
 
         return 0;
@@ -192,9 +195,9 @@ public class EntityDao implements Dao {
                 );
             }
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE.formatted(entityClass, fieldIdValue, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE
+                    .formatted(entityClass, fieldIdValue, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
 
         return entityClass.cast(entity);
@@ -223,9 +226,8 @@ public class EntityDao implements Dao {
             statement.execute();
             log.trace(SAVE_LOG, entityClass.getSimpleName());
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
 
         return entityClass.cast(entity);
@@ -253,9 +255,9 @@ public class EntityDao implements Dao {
             statement.execute();
             log.trace(DELETE_LOG, entityClass.getSimpleName(), primaryKey);
         } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE.formatted(entityClass, primaryKey, exe.getMessage()),
-                    exe);
+            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE
+                    .formatted(entityClass, primaryKey, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
     }
 
@@ -314,5 +316,10 @@ public class EntityDao implements Dao {
 
     private boolean isIdField(String fieldIdName, Field field) {
         return Objects.equals(fieldIdName, columnName(field));
+    }
+    
+    private void throwErrorMessage(String errorMessage, Exception exe) {
+        log.error(errorMessage);
+        throw new BibernateGeneralException(errorMessage, exe);
     }
 }

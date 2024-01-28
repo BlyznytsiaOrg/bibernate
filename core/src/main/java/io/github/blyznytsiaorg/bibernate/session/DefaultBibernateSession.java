@@ -1,7 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
 import io.github.blyznytsiaorg.bibernate.exception.ImmutableEntityException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +89,8 @@ public class DefaultBibernateSession implements BibernateSession {
 
     private void verifySessionNotClosed() {
         if (closed) {
-            throw new BibernateGeneralException("Session is closed");
+            log.error("Session is closed: unable to perform calls to the database.");
+            throw new BibernateSessionClosedException();
         }
     }
 }
