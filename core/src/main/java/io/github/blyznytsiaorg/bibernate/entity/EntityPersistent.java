@@ -21,11 +21,10 @@ public class EntityPersistent {
         T entity = entityClass.getDeclaredConstructor().newInstance();
 
         for (var field : entityClass.getDeclaredFields()) {
-            Optional<TypeFieldResolver> typeFieldResolver = typeResolverFactory.getTypeFieldResolvers().stream()
+            typeResolverFactory.getTypeFieldResolvers().stream()
                     .filter(valueType -> valueType.isAppropriate(field))
-                    .findAny();
-            
-            typeFieldResolver.ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet));
+                    .findAny()
+                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet));
         }
 
         return entity;

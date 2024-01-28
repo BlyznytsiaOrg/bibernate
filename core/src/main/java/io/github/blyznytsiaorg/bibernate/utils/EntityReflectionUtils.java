@@ -1,6 +1,26 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.annotation.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -8,16 +28,6 @@ import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 
 /**
@@ -71,14 +81,18 @@ public class EntityReflectionUtils {
           .flatMap(mappedByName -> {
               Class<?> collectionGenericType = getCollectionGenericType(field);
               
-              return Arrays.stream(collectionGenericType.getDeclaredFields())
-                .filter(f -> Objects.equals(f.getName(), mappedByName))
-                .findFirst()
-                .map(EntityReflectionUtils::joinColumnName);
+              return getMappedByColumnName(mappedByName, collectionGenericType);
           })
           .orElse(joinColumnName(field));
     }
     
+    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
+        return Arrays.stream(collectionGenericType.getDeclaredFields())
+          .filter(f -> Objects.equals(f.getName(), mappedByName))
+          .findFirst()
+          .map(EntityReflectionUtils::joinColumnName);
+    }
+
     public static String joinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
                 .map(JoinColumn::name)
