@@ -13,14 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Column;
-import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
-import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
-import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
-import io.github.blyznytsiaorg.bibernate.annotation.Table;
-import io.github.blyznytsiaorg.bibernate.annotation.Version;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -31,9 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Slf4j
 @UtilityClass
@@ -75,22 +67,23 @@ public class EntityReflectionUtils {
     }
 
     public static String mappedByJoinColumnName(Field field) {
-        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-          .map(OneToMany::mappedBy)
-          .filter(Predicate.not(String::isEmpty))
-          .flatMap(mappedByName -> {
-              Class<?> collectionGenericType = getCollectionGenericType(field);
-              
-              return getMappedByColumnName(mappedByName, collectionGenericType);
-          })
-          .orElse(joinColumnName(field));
+        return Optional.ofNullable(field.getAnnotation(OneToOne.class))
+                .map(OneToOne::mappedBy)
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
+                .orElse(joinColumnName(field));
     }
-    
-    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
-        return Arrays.stream(collectionGenericType.getDeclaredFields())
-          .filter(f -> Objects.equals(f.getName(), mappedByName))
-          .findFirst()
-          .map(EntityReflectionUtils::joinColumnName);
+
+    private static Optional<String> getMappedByColumnName(String mappedByName, Field field) {
+        var mappedByType = field.getType();
+        if (EntityRelationsUtils.isCollectionField(field)) {
+            mappedByType = getCollectionGenericType(field);
+        }
+
+        return Arrays.stream(mappedByType.getDeclaredFields())
+                .filter(f -> Objects.equals(f.getName(), mappedByName))
+                .findFirst()
+                .map(EntityReflectionUtils::joinColumnName);
     }
 
     public static String joinColumnName(Field field) {
@@ -179,11 +172,11 @@ public class EntityReflectionUtils {
         } catch (SQLException e) {
             log.warn("Cannot set [{}]", field.getName(), e);
         }
-        
+
         return null;
     }
 
-    public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
+    public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot,
                                                      List<ColumnSnapshot> oldEntitySnapshot) {
         return IntStream.range(0, currentEntitySnapshot.size())
                 .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
@@ -212,18 +205,18 @@ public class EntityReflectionUtils {
 
         return (T) primaryKey;
     }
-    
+
     public static Class<?> getCollectionGenericType(Field field) {
         if (isSupportedCollection(field)) {
             var parametrizedType = (ParameterizedType) field.getGenericType();
             return (Class<?>) parametrizedType.getActualTypeArguments()[0];
         }
-        
+
         throw new BibernateGeneralException(
                 "Unable to get Collection generic type for a field that is not a supported Collection. Field type: [%s]"
                         .formatted(field.getType()));
     }
-    
+
     public static boolean isSupportedCollection(Field field) {
         return List.class.isAssignableFrom(field.getType());
     }
@@ -260,7 +253,7 @@ public class EntityReflectionUtils {
             return value;
         } else if (value instanceof Character && targetType.equals(Character.class)) {
             return value;
-        } else  if (value instanceof String valueString && targetType.equals(Long.class)) {
+        } else if (value instanceof String valueString && targetType.equals(Long.class)) {
             return Long.valueOf(valueString);
         }
         // Add more conditions for other types if needed

@@ -5,9 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Relation
-public @interface OneToOne {
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Relation {
+    /**
+     * The field that owns the relationship. Required unless the relationship is unidirectional.
+     */
     String mappedBy() default "";
 }
