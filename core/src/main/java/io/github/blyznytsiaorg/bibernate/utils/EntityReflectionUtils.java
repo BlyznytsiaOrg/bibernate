@@ -63,8 +63,8 @@ public class EntityReflectionUtils {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
     }
 
-    public static boolean isColumnWithVersion(Field field) {
-        return field.isAnnotationPresent(Version.class);
+    public static boolean isColumnHasAnnotation(Field field, Class<? extends Annotation> annotationClass) {
+        return field.isAnnotationPresent(annotationClass);
     }
 
     public static String columnName(Field field) {

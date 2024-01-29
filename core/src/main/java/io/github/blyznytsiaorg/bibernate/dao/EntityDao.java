@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
+import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
@@ -300,7 +301,7 @@ public class EntityDao implements Dao {
             }
         } else {
             for (var field : entity.getClass().getDeclaredFields()) {
-                if (!isIdField(fieldIdName, field) && !isColumnWithVersion(field)) {
+                if (!isIdField(fieldIdName, field) && !isColumnHasAnnotation(field, Version.class)) {
                     var fieldValue = getValueFromObject(entity, field);
                     statement.setObject(parameterIndex++, fieldValue);
                 }
