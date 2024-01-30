@@ -28,7 +28,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
                 assertQueries(bibernateSessionFactory, List.of("SELECT * FROM employees WHERE id = ?;"));
@@ -45,7 +45,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
                 assertThat(employeeEntity).isNotNull();
@@ -54,9 +54,9 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
         }
     }
 
-    @DisplayName("Should skip delete if version match")
+    @DisplayName("Should delete if version match")
     @Test
-    void shouldSkipDeleteIfVersionMatch() {
+    void shouldDeleteIfVersionMatch() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_EMPLOYEE_TABLE, CREATE_EMPLOYEE_INSERT_STATEMENT);
 
@@ -68,7 +68,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
                 assertQueries(bibernateSessionFactory, List.of("SELECT * FROM employees WHERE id = ?;"));
@@ -84,7 +84,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                Optional<EmployeeEntity> emp = bibernateSession.findById(EmployeeEntity.class, 1L);
+                Optional<EmployeeEntity> emp = bibernateSession.findById(EmployeeEntity.class, 10L);
 
                 //then
                 assertThat(emp).isEmpty();

@@ -170,6 +170,10 @@ public class EntityDao implements Dao {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
+        if (isColumnVersionFound(entityClass)) {
+            setVersionValueIfNull(entityClass, entity);
+        }
+
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
         var tableName = table(entityClass);
