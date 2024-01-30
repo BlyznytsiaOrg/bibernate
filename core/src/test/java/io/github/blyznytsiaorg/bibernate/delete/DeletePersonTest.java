@@ -14,8 +14,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
 
     @Test
-    @DisplayName("Should delete person")
-    void shouldSavePerson() {
+    @DisplayName("Should delete person by ID")
+    void shouldDeletePersonById() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         var persistent = createPersistent();
@@ -25,10 +25,34 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
 
                 //when
-                bibernateSession.delete(Person.class, 1L);
+                bibernateSession.deleteById(Person.class, 1L);
 
                 //then
                 assertQueries(bibernateSessionFactory, List.of("DELETE FROM persons WHERE id = ?;"));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Should delete person by entity")
+    void shouldDeletePersonByEntity() {
+        //given
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
+        var persistent = createPersistent();
+
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+            try (var bibernateSession = bibernateSessionFactory.openSession()) {
+
+                var person = bibernateSession.findById(Person.class, 1L).orElseThrow();
+
+                //when
+                bibernateSession.delete(Person.class, person);
+
+                //then
+                assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * FROM persons WHERE id = ?;",
+                        "DELETE FROM persons WHERE id = ?;"));
             }
         }
     }

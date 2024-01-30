@@ -48,6 +48,7 @@ public class SimpleRepositoryFactory {
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindByHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindAllHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodUpdateHandler());
     }
 
     public  <T> void registerRepository(Class<T> repositoryInterface) {

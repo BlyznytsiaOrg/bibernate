@@ -13,6 +13,11 @@ import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isSupportedCollection;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @UtilityClass
 public class EntityRelationsUtils {
 

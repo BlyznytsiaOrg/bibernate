@@ -5,6 +5,11 @@ import lombok.experimental.UtilityClass;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @UtilityClass
 public class PropertyParser {
     private static final String PATTERN = "\\$\\{(.*?)}";

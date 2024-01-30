@@ -5,6 +5,11 @@ import lombok.experimental.UtilityClass;
 import java.util.Collection;
 import java.util.Objects;
 
+/**
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
 @UtilityClass
 public class CollectionUtils {
     
