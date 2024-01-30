@@ -18,7 +18,6 @@ public class EntityMetadataCollector {
     private final Reflections reflections;
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
 
-
     public EntityMetadataCollector(String baseEntityPackage) {
         this.reflections = new Reflections(baseEntityPackage);
         this.inMemoryEntityMetadata = new HashMap<>();
