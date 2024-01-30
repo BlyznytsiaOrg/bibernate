@@ -26,7 +26,6 @@ import static io.github.blyznytsiaorg.bibernate.dao.utils.RepositoryParserUtils.
 public class SimpleRepositoryFactory {
     private static final String CUSTOM_REPOSITORY_SHOULD_HAVE_ONE_CONSTRUCTOR_WITH_BIBERNATE_SESSION_FACTORY_MESSAGE
             = "Custom repository should have one constructor with bibernateSessionFactory message %s";
-
     private static final Map<String, RepositoryDetails> REPOSITORY_MEDATA = new HashMap<>();
     private static final List<Object> CUSTOM_REPOSITORY_IMPLEMENTATIONS = new ArrayList<>();
 
@@ -49,6 +48,11 @@ public class SimpleRepositoryFactory {
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodFindAllHandler());
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodUpdateHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodDeleteHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodDeleteAllHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryFindOneMethodHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodSaveHandler());
+        simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodSaveAllHandler());
     }
 
     public  <T> void registerRepository(Class<T> repositoryInterface) {

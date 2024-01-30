@@ -2,18 +2,22 @@ package io.github.blyznytsiaorg.bibernate.simplerespository;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
-import org.assertj.core.api.Assertions;
+import io.github.blyznytsiaorg.bibernate.exception.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import testdata.simplerespository.Person;
 import testdata.simplerespository.PersonRepository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
@@ -33,8 +37,8 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             Optional<Person> persons = personRepository.findById(1L);
 
             //then
-            Assertions.assertThat(persons).isPresent();
-            Assertions.assertThat(persons).get().isNotNull();
+            assertThat(persons).isPresent();
+            assertThat(persons).get().isNotNull();
 
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
         }
@@ -56,7 +60,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstNameEquals("John");
 
             //then
-            Assertions.assertThat(persons).hasSize(0);
+            assertThat(persons).hasSize(0);
 
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
         }
@@ -84,7 +88,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstNameEquals("John2");
 
             //then
-            Assertions.assertThat(persons).hasSize(expectedPersons.size())
+            assertThat(persons).hasSize(expectedPersons.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
@@ -115,7 +119,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstNameOrLastName("John1", "Jones1");
 
             //then
-            Assertions.assertThat(persons).hasSize(3)
+            assertThat(persons).hasSize(3)
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
@@ -144,11 +148,163 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstName("John1");
 
             //then
-            Assertions.assertThat(persons).hasSize(expectedPersons.size())
+            assertThat(persons).hasSize(expectedPersons.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
+        }
+    }
+
+    @DisplayName("Should saveAll via repositories")
+    @Test
+    void shouldSaveAll() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+
+            //when
+            var newPerson1 = createPerson(7L, "NEW_FIRST_NAME7", "NEW_LAST_NAME7");
+            var newPerson2 = createPerson(8L, "NEW_FIRST_NAME8", "NEW_LAST_NAME8");
+
+            List<Person> persons = new ArrayList<>();
+            persons.add(newPerson1);
+            persons.add(newPerson2);
+
+            personRepository.saveAll(persons);
+
+            //then
+            assertThat(personRepository.findAll()).hasSize(6);
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
+        }
+    }
+
+    @DisplayName("Should findOne method without optional")
+    @Test
+    void shouldFindOneMethodWithoutOptional() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+            //when
+            Person person = personRepository.findOne(1L);
+
+            assertThat(person).isNotNull();
+
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+        }
+    }
+
+    @DisplayName("Should not findOne entity and get exception")
+    @Test
+    void shouldNotFindOneEntityAndGetException() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+            //when
+            Executable executable = () -> personRepository.findOne(5L);
+
+
+            //then
+            var entityStateWasChangeException = assertThrows(EntityNotFoundException.class, executable);
+            assertThat(entityStateWasChangeException.getMessage())
+                    .isEqualTo("Entity Person not found by ID 5");
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+        }
+    }
+
+    @DisplayName("Should save new entity using repository save")
+    @Test
+    void shouldSaveNewEntityUsingRepositorySave() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+
+            //when
+            var newPerson = createPerson(7L, "NEW_FIRST_NAME", "NEW_LAST_NAME");
+
+            Person savePerson = personRepository.save(newPerson);
+
+            //then
+            assertThat(savePerson).isNotNull();
+            assertThat(savePerson.getId()).isNotNull();
+            assertThat(savePerson.getLastName()).isEqualTo("NEW_LAST_NAME");
+            assertThat(savePerson.getFirstName()).isEqualTo("NEW_FIRST_NAME");
+
+            assertQueries(bibernateSessionFactory, List.of("INSERT INTO persons ( first_name, last_name ) VALUES ( ?, ? );"));
+        }
+    }
+
+    @DisplayName("Should delete via repository by Id")
+    @Test
+    void shouldDeleteViaRepositoryById() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+
+            //when
+            personRepository.delete(1L);
+            assertQueries(bibernateSessionFactory, List.of("DELETE FROM persons WHERE id = ?;"));
+
+            //then
+            assertThat(personRepository.findAll()).hasSize(3);
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
+        }
+    }
+
+    @DisplayName("Should deleteAll via repository by Ids")
+    @Test
+    void shouldDeleteAllViaRepositoryByIds() {
+        //given
+        createTableWithData(4);
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var personRepository = simpleRepositoryProxy.registerRepository(PersonRepository.class);
+
+            //when
+            List<Long> ids = Arrays.asList(1L, 2L);
+            personRepository.deleteAll(ids);
+            assertQueries(bibernateSessionFactory, List.of(
+                    "DELETE FROM persons WHERE id = ?;",
+                    "DELETE FROM persons WHERE id = ?;"
+            ));
+
+            //then
+            assertThat(personRepository.findAll()).hasSize(2);
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
         }
     }
 
@@ -164,5 +320,13 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
         person.setFirstName(firstName);
         person.setLastName(lastName);
         return person;
+    }
+
+    private Person createPerson(Long id, String firstName, String lastName) {
+        var newPerson = new Person();
+        newPerson.setId(id);
+        newPerson.setFirstName(firstName);
+        newPerson.setLastName(lastName);
+        return newPerson;
     }
 }

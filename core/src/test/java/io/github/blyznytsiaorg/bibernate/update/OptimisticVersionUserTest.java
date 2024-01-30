@@ -28,7 +28,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 employeeEntity.setLastName("Update " + employeeEntity.getLastName());
             }
@@ -41,7 +41,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
                 assertThat(employeeEntity.getVersion()).isEqualTo(2);
@@ -66,7 +66,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
                 try (var bibernateSession = bibernateSessionFactory.openSession()) {
                     //when
-                    EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 1L).orElseThrow();
+                    EmployeeEntity employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                     assertQueries(bibernateSessionFactory, List.of(
                             "SELECT * FROM employees WHERE id = ?;"
@@ -82,7 +82,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
         var entityStateWasChangeException = assertThrows(BibernateGeneralException.class, executable);
         assertThat(entityStateWasChangeException.getCause().getMessage())
-                .isEqualTo("Entity class testdata.update.EmployeeEntity was change need to get new data findByid[1]");
+                .isEqualTo("Entity class testdata.update.EmployeeEntity was change need to get new data findByid[10]");
 
     }
 }

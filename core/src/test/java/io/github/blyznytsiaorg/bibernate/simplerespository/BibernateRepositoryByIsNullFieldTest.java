@@ -2,16 +2,17 @@ package io.github.blyznytsiaorg.bibernate.simplerespository;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.simplerespository.User;
 import testdata.simplerespository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructurePrep {
 
@@ -35,11 +36,37 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
             List<User> users = userRepository.findByUsernameNull();
 
             //then
-            Assertions.assertThat(users).hasSize(expectedPersons.size())
+            assertThat(users).hasSize(expectedPersons.size())
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username is null;"));
+        }
+    }
+
+    @DisplayName("Should findByUsernameAndAge using bibernate repository")
+    @Test
+    void findByUsernameAndAgeWithOptionalReturn() {
+        //given
+        createTableWithData(5);
+
+        List<User> expectedPersons = List.of(
+                createUser(null, true, 12)
+        );
+
+        var persistent = createPersistent();
+        try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
+            var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
+
+            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
+            //when
+            Optional<User> user = userRepository.findByUsernameAndAge("Levik5", 18);
+
+            //then
+            assertThat(user).isPresent();
+
+            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username = ? And age = ?;"));
         }
     }
 

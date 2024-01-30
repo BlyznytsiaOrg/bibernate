@@ -5,6 +5,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.Query;
 import io.github.blyznytsiaorg.bibernate.dao.BibernateRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends BibernateRepository<User, Long> {
 
@@ -21,6 +22,8 @@ public interface UserRepository extends BibernateRepository<User, Long> {
     List<User> findByUsernameNotNull();
 
     List<User> findByUsernameNull();
+
+    Optional<User> findByUsernameAndAge(@Param("username") String username, @Param("age") int age);
 
     @Query(value = "select count(*) from users group by username having count(username) > ?", nativeQuery = true)
     int countUserDuplicate(@Param("count") int count);

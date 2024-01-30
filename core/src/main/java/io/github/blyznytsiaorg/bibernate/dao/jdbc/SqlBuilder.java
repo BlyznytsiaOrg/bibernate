@@ -50,7 +50,7 @@ public class SqlBuilder {
                     .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
         }
 
-        var updateQueryBuilder = update.whereCondition(selectByIdWhereCondition(fieldIdName));
+        var updateQueryBuilder = update.whereCondition(selectFieldNameWhereCondition(fieldIdName));
         if (isVersionFound) {
             updateQueryBuilder.andCondition(fieldVersionName + EQ + PARAMETER);
         }
@@ -58,8 +58,8 @@ public class SqlBuilder {
         return updateQueryBuilder.buildUpdateStatement();
     }
 
-    public String selectByIdWhereCondition(String fieldIdName) {
-        return fieldIdName + EQ + PARAMETER;
+    public String selectFieldNameWhereCondition(String fieldName) {
+        return fieldName + EQ + PARAMETER;
     }
     
 
@@ -72,7 +72,14 @@ public class SqlBuilder {
 
     public String delete(String tableName, String fieldIdName) {
         return DeleteQueryBuilder.from(tableName)
-                .whereCondition(selectByIdWhereCondition(fieldIdName))
+                .whereCondition(selectFieldNameWhereCondition(fieldIdName))
+                .buildDeleteStatement();
+    }
+
+    public String delete(String tableName, String fieldIdName, String version) {
+        return DeleteQueryBuilder.from(tableName)
+                .whereCondition(selectFieldNameWhereCondition(fieldIdName))
+                .andCondition(selectFieldNameWhereCondition(version))
                 .buildDeleteStatement();
     }
 

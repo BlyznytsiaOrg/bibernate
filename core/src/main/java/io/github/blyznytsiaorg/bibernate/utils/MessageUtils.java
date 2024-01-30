@@ -33,6 +33,7 @@ public class MessageUtils {
     public static class LogMessage {
         public static final String QUERY = "Query {}";
         public static final String QUERY_BIND_VALUE = QUERY + " bindValue {}={}";
+        public static final String QUERY_BIND_TWO_VALUES = QUERY + " bindValue {}={}, {}={}";
         public static final String QUERY_BIND_VALUES = QUERY + " bindValues {}";
         public static final String UPDATE = "Update effected row {} for entity clazz {} with id {}";
         public static final String SAVE = "Save entity clazz {}";
