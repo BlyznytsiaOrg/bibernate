@@ -116,9 +116,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
-        var fieldIdValue = columnIdValue(entityClass, entity);
-
-        this.deleteById(entityClass, fieldIdValue);
+        bibernateSession.delete(entityClass, entity);
     }
 
     @Override

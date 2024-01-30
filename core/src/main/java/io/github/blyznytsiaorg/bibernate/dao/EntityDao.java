@@ -53,7 +53,7 @@ public class EntityDao implements Dao {
 
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
-        var whereCondition = sqlBuilder.selectByIdWhereCondition(idColumnName);
+        var whereCondition = sqlBuilder.selectFieldNameWhereCondition(idColumnName);
 
         return this.findByWhere(entityClass, whereCondition, idColumnValue);
     }
@@ -228,9 +228,50 @@ public class EntityDao implements Dao {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
-        var fieldIdValue = columnIdValue(entityClass, entity);
+        var primaryKey = columnIdValue(entityClass, entity);
+        boolean isVersionFound = isColumnVersionFound(entityClass);
+        Number fieldVersionValue;
 
-        deleteById(entityClass, fieldIdValue);
+        if (isVersionFound) {
+            fieldVersionValue = (Number) columnVersionValue(entityClass, entity);
+
+        } else {
+            fieldVersionValue = null;
+        }
+
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        String query;
+
+        if (isVersionFound) {
+            String columnVersionName =  columnVersionName(entityClass);
+            query = sqlBuilder.delete(tableName, fieldIdName, columnVersionName);
+            showSql(() -> log.debug(QUERY_BIND_TWO_VALUES, query, fieldIdName, primaryKey, columnVersionName, fieldVersionValue));
+        } else {
+            query = sqlBuilder.delete(tableName, fieldIdName);
+            showSql(() -> log.debug(QUERY_BIND_VALUE, query, fieldIdName, primaryKey));
+        }
+
+        addToExecutedQueries(query);
+
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+
+            statement.setObject(1, primaryKey);
+
+            if (isVersionFound) {
+                statement.setObject(2, fieldVersionValue);
+            }
+
+            statement.execute();
+            log.trace(DELETE, entityClass.getSimpleName(), primaryKey);
+        } catch (Exception exe) {
+            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
+                    .formatted(entityClass, primaryKey, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
+        }
     }
 
     private void addToExecutedQueries(String query) {
