@@ -22,9 +22,11 @@ public interface Dao {
 
     int find(String query, Object[] bindValues);
 
-    <T> T update(Class<T> entityClass, Object primaryKey, List<ColumnSnapshot> diff);
+    <T> int update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff);
 
     <T> T save(Class<T> entityClass, Object entity);
 
-    <T> void delete(Class<T> entityClass, Object primaryKey);
+    <T> void deleteById(Class<T> entityClass, Object primaryKey);
+
+    <T> void delete(Class<T> entityClass, Object entity);
 }

@@ -97,7 +97,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                bibernateSession.delete(PersonImmutable.class, 1L);
+                bibernateSession.deleteById(PersonImmutable.class, 1L);
             }
 
             //then

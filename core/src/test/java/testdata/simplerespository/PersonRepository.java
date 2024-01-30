@@ -15,4 +15,6 @@ public interface PersonRepository extends BibernateRepository<Person, Long>, Per
 
     @Query(value = "SELECT p FROM Person p WHERE p.firstName = ?")
     List<Person> findByFirstName(@Param("first_name") String firstName);
+
+    Person findByFirstNameAndLastName(@Param("first_name") String firstName, @Param("last_name") String lastName);
 }

@@ -55,8 +55,8 @@ public class EntityReflectionUtils {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
     }
 
-    public static boolean isColumnWithVersion(Field field) {
-        return field.isAnnotationPresent(Version.class);
+    public static boolean isColumnHasAnnotation(Field field, Class<? extends Annotation> annotationClass) {
+        return field.isAnnotationPresent(annotationClass);
     }
 
     public static String columnName(Field field) {
@@ -121,6 +121,18 @@ public class EntityReflectionUtils {
                         errorMessage.formatted(entityClass.getSimpleName())));
     }
 
+    public static void setVersionValueIfNull(Class<?> entityClass,
+                                               Object entity) {
+        Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(Version.class))
+                .forEach(field -> {
+                    Object value = getValueFromObject(entity, field);
+                    if (Objects.isNull(value)) {
+                        setValueForObject(entity, field, 1);
+                    }
+                });
+    }
+
     public static Object columnVersionValue(Class<?> entityClass,
                                             Object entity) {
         return findColumnValueByAnnotation(entityClass, Version.class, entity);
@@ -163,6 +175,12 @@ public class EntityReflectionUtils {
     public static Object getValueFromObject(Object entity, Field field) {
         field.setAccessible(true);
         return field.get(entity);
+    }
+
+    @SneakyThrows
+    public static void setValueForObject(Object entity, Field field, Object value) {
+        field.setAccessible(true);
+        field.set(entity, value);
     }
 
     public static Object getValueFromResultSetByColumn(ResultSet resultSet, String joinColumnName) {

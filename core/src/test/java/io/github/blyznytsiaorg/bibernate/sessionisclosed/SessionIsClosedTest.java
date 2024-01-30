@@ -28,7 +28,7 @@ class SessionIsClosedTest extends AbstractPostgresInfrastructurePrep {
 
             //when
             assertThrows(BibernateSessionClosedException.class,
-                    () -> bibernateSession.delete(Person.class, 1L));
+                    () -> bibernateSession.deleteById(Person.class, 1L));
 
             //then
             assertThat(bibernateSessionFactory.getExecutedQueries()).isEmpty();

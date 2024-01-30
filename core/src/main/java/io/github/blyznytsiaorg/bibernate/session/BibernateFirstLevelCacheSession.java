@@ -11,6 +11,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
  *
@@ -21,14 +23,15 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 @Slf4j
 public class BibernateFirstLevelCacheSession implements BibernateSession {
 
-    public static final String ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID = "Entity {} found in firstLevel cache by id {}";
-
     private final BibernateSession bibernateSession;
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
+
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
@@ -36,7 +39,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         if (Objects.isNull(cachedEntity)) {
             var finalPrimaryKey = primaryKey;
-            log.trace("Entity {} not found in firstLevel cache by id {}", entityClass.getSimpleName(), finalPrimaryKey);
+            log.trace(ENTITY_NOT_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), finalPrimaryKey);
 
             return bibernateSession.findById(entityClass, primaryKey)
                     .map(entityFromDb -> persistentContext(entityClass, entityFromDb, entityKey, finalPrimaryKey));
@@ -49,17 +52,31 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
-        return bibernateSession.findAllById(entityClass, idColumnName, idColumnValue);
+        var entities = bibernateSession.findAllById(entityClass, idColumnName, idColumnValue);
+        persistentContext(entityClass, entities);
+
+        return entities;
     }
 
     @Override
     public <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues) {
-        return bibernateSession.findByWhere(entityClass, whereQuery, bindValues);
+        var entities = bibernateSession.findByWhere(entityClass, whereQuery, bindValues);
+        persistentContext(entityClass, entities);
+
+        return entities;
     }
 
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
-        return bibernateSession.findByQuery(entityClass, query, bindValues);
+        var entities = bibernateSession.findByQuery(entityClass, query, bindValues);
+        persistentContext(entityClass, entities);
+
+        return entities;
+    }
+
+    @Override
+    public <T> int update(Class<T> entityClass, Object entity) {
+        return this.update(entityClass, entity, List.of());
     }
 
     @Override
@@ -69,23 +86,37 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     @Override
     public <T> T save(Class<T> entityClass, Object entity) {
-        return bibernateSession.save(entityClass, entity);
+        T entityFromDb = bibernateSession.save(entityClass, entity);
+        persistentContext(entityClass, Collections.singletonList(entityFromDb));
+
+        return entityFromDb;
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object primaryKey) {
+    public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
+
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
 
-        bibernateSession.delete(entityClass, primaryKey);
+        bibernateSession.deleteById(entityClass, primaryKey);
 
         if (Objects.nonNull(firstLevelCache.remove(entityKey))) {
-            log.trace("Deleted entityClass [{}] with primaryKey {} from firstLevelCache", entityClass, primaryKey);
+            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEY_FROM_FIRST_LEVEL_CACHE, entityClass, primaryKey);
         }
         if (Objects.nonNull(snapshots.remove(entityKey))) {
-            log.trace("Deleted entityClass [{}] with primaryKey {} from snapshot", entityClass, primaryKey);
+            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEY_FROM_SNAPSHOT, entityClass, primaryKey);
         }
+    }
+
+    @Override
+    public <T> void delete(Class<T> entityClass, Object entity) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
+
+        bibernateSession.delete(entityClass, entity);
     }
 
     @Override
@@ -95,14 +126,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     @Override
     public void close() {
-        log.trace("Session is closing. Performing dirty checking...");
+        log.trace(SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING);
         performDirtyChecking();
         BibernateSessionContextHolder.resetBibernateSession();
 
-        log.trace("FirstLevelCache is clearing...");
+        log.trace(FIRST_LEVEL_CACHE_IS_CLEARING);
         firstLevelCache.clear();
 
-        log.trace("Snapshots are clearing...");
+        log.trace(SNAPSHOTS_ARE_CLEARING);
         snapshots.clear();
 
         bibernateSession.close();
@@ -113,14 +144,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return bibernateSession.getDao();
     }
 
-    private List<ColumnSnapshot> buildEntitySnapshot(Object entityClass) {
-        Objects.requireNonNull(entityClass, "entityClass should not be null");
-        Class<?> aClass = entityClass.getClass();
-        Field[] declaredFields = aClass.getDeclaredFields();
+    private List<ColumnSnapshot> buildEntitySnapshot(Object entity) {
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
+
+        Class<?> entityClass = entity.getClass();
+        Field[] declaredFields = entityClass.getDeclaredFields();
         List<ColumnSnapshot> snapshot = new ArrayList<>(declaredFields.length);
 
         for (var field : declaredFields) {
-            Object value = getValueFromObject(entityClass, field);
+            Object value = getValueFromObject(entity, field);
             String columnName = columnName(field);
             snapshot.add(new ColumnSnapshot(columnName, value, field.getType()));
         }
@@ -128,18 +160,23 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return snapshot;
     }
 
-    private <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
+    private <T> int update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         var fieldIdType = columnIdType(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
 
         var entityKey = new EntityKey<>(entityClass, fieldIdValue, fieldIdType);
-        T insertEntityFromDb = getDao().update(entityClass, entity, diff);
-        firstLevelCache.put(entityKey, insertEntityFromDb);
-        log.trace("Update Entity {} in firstLevel cache by id {}", entityClass.getSimpleName(), fieldIdValue);
+        var resultOfUpdate = getDao().update(entityClass, entity, diff);
 
-        List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(insertEntityFromDb);
-        snapshots.put(entityKey, entityCurrentSnapshot);
-        log.trace("Update snapshot for entity {} id {}", entityClass.getSimpleName(), fieldIdValue);
+        if (resultOfUpdate > 0) {
+            firstLevelCache.put(entityKey, entity);
+            log.trace(UPDATE_ENTITY_IN_FIRST_LEVEL_CACHE_BY_ID, entityClass.getSimpleName(), fieldIdValue);
+
+            List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entity);
+            snapshots.put(entityKey, entityCurrentSnapshot);
+            log.trace(UPDATE_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), fieldIdValue);
+        }
+
+        return resultOfUpdate;
     }
 
     private void performDirtyChecking() {
@@ -150,16 +187,32 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
             var diff = getDifference(entityInFirstLevelCacheCurrentSnapshot, entityOldSnapshot);
 
             if (CollectionUtils.isNotEmpty(diff)) {
-                log.trace("Dirty entity found need to generate update for entityKey {} and entity {}",
+                log.trace(DIRTY_ENTITY_FOUND_NEED_TO_GENERATE_UPDATE_FOR_ENTITY_KEY_AND_ENTITY,
                         entityKey, entityInFirstLevelCache);
                 update(entityInFirstLevelCache.getClass(), entityInFirstLevelCache, diff);
             } else {
-                log.trace("Dirty entity not found for entityKey {} no changes", entityKey);
+                log.trace(DIRTY_ENTITY_NOT_FOUND_FOR_ENTITY_KEY_NO_CHANGES, entityKey);
             }
         });
     }
 
-    private <T> T persistentContext(Class<T> entityClass, T entityFromDb, EntityKey<T> entityKey,
+    private <T> void persistentContext(Class<T> entityClass, List<T> entities) {
+        for (int i = 0; i < entities.size(); i++) {
+            var entityFromDb = entities.get(i);
+            var fieldIdType = columnIdType(entityClass);
+            var fieldIdValue = columnIdValue(entityClass, entityFromDb);
+            var entityKey = new EntityKey<>(entityClass, fieldIdValue, fieldIdType);
+            var entityCashed = firstLevelCache.get(entityKey);
+
+            if (Objects.nonNull(entityCashed)) {
+                entities.set(i, entityClass.cast(entityCashed));
+            } else {
+                persistentContext(entityClass, entityFromDb, entityKey, fieldIdValue);
+            }
+        }
+    }
+
+    private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
             firstLevelCache.put(entityKey, entityFromDb);
@@ -167,7 +220,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
             List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
             snapshots.put(entityKey, entityCurrentSnapshot);
 
-            log.trace("Created snapshot for entity {} id {}", entityClass.getSimpleName(), finalPrimaryKey);
+            log.trace(CREATED_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), finalPrimaryKey);
         }
 
         return entityFromDb;

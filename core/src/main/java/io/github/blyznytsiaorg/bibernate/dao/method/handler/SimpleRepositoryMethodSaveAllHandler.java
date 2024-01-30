@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Objects.nonNull;
 
 /**
  *
@@ -19,16 +16,15 @@ import static java.util.Objects.nonNull;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class SimpleRepositoryMethodFindAllHandler implements SimpleRepositoryMethodHandler {
+public class SimpleRepositoryMethodSaveAllHandler implements SimpleRepositoryMethodHandler {
 
-    private static final String FIND_ALL = "findAll";
+    private static final String SAVE_ALL = "saveAll";
     private static final String HANDLE_GENERIC_METHOD = "Handle generic method {}";
-    private static final String NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME =
-            "Not supported returnType{} for methodName {}";
-
+    private static final String DELETE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID =
+            "SaveAll method should have one parameter entities";
     @Override
     public boolean isMethodHandle(Method method) {
-        return method.getName().equals(FIND_ALL);
+        return method.getName().equals(SAVE_ALL);
     }
 
     @Override
@@ -36,16 +32,21 @@ public class SimpleRepositoryMethodFindAllHandler implements SimpleRepositoryMet
                           MethodMetadata methodMetadata) {
         var methodName = method.getName();
         log.trace(HANDLE_GENERIC_METHOD, methodName);
-        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-        var returnType = methodMetadata.getReturnType();
-        if (nonNull(returnType.getGenericEntityClass()) && List.class.isAssignableFrom((Class<?>)returnType.getGenericEntityClass().getRawType())) {
+        if (parameters.length > 0) {
+            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
             try (var bringSession = sessionFactory.openSession()) {
                 var entityClass  = (Class<?>) repositoryDetails.entityType();
-                return bringSession.findByWhere(entityClass, null, parameters);
+                var parameter = parameters[0];
+                if (parameter instanceof List<?> entities) {
+                    //TODO change to batch later
+                    entities.forEach(entity -> bringSession.save(entityClass, entity));
+                }
+
+                return Void.TYPE;
             }
         }
 
-        log.warn(NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME, returnType, methodName);
-        return Collections.emptyList();
+        log.warn(DELETE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
+        return null;
     }
 }

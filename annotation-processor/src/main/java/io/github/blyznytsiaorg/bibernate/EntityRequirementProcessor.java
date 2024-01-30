@@ -1,5 +1,8 @@
 package io.github.blyznytsiaorg.bibernate;
 
+import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.IgnoreEntity;
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 
 import javax.annotation.processing.*;
@@ -12,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @SupportedAnnotationTypes("io.github.blyznytsiaorg.bibernate.annotation.Entity")
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
@@ -31,10 +35,19 @@ public class EntityRequirementProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         roundEnv.getElementsAnnotatedWith(Entity.class)
                 .forEach(element -> entities.add(element.asType()));
+        Set<? extends Element> ignoreEntities = roundEnv.getElementsAnnotatedWith(IgnoreEntity.class);
+
+        // Get class names of entities to be ignored
+        Set<String> ignoredEntityNames = ignoreEntities.stream()
+                .filter(element -> element.getKind() == ElementKind.CLASS)
+                .map(Element::getSimpleName)
+                .map(Name::toString)
+                .collect(Collectors.toSet());
 
         roundEnv.getElementsAnnotatedWith(Entity.class)
                 .stream()
                 .filter(element -> element.getKind() == ElementKind.CLASS)
+                .filter(element -> !ignoredEntityNames.contains(element.getSimpleName().toString()))
                 .forEach(this::validate);
 
         return true;
@@ -62,7 +75,6 @@ public class EntityRequirementProcessor extends AbstractProcessor {
             messager.printMessage(Diagnostic.Kind.ERROR, entities.toString() + " Entity  field should have relation annotation", typeElement);
         }
     }
-
 
     private boolean hasRelationAnnotationOnEntityField(TypeElement typeElement) {
         for (Element enclosedElement : typeElement.getEnclosedElements()) {

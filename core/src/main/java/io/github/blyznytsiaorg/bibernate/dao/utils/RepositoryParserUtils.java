@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 import static java.lang.Character.isUpperCase;
@@ -39,7 +41,8 @@ public class RepositoryParserUtils {
     public static final String EQ = " = ";
     public static final String PARAMETER = "?";
     public static final String UNDERSCORE = "_";
-    public static final String METHOD_DON_T_HAVE_PARAMETERS = "Method {} don't have parameters";
+    public static final String WILL_RESOLVE_AS_REGULAR_METHOD_PARAMETERS =
+            "Method {} don't have parameters that annotation @Param. Will resolve as regular method parameters";
 
     static {
         OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
@@ -147,8 +150,10 @@ public class RepositoryParserUtils {
     public static List<String> getParameterNames(AccessibleObject methodOrConstructor) {
         String[] parameterNames = info.lookupParameterNames(methodOrConstructor, false);
         if (parameterNames.length == 0) {
-            log.debug(METHOD_DON_T_HAVE_PARAMETERS, methodOrConstructor);
-            return Collections.emptyList();
+            log.debug(WILL_RESOLVE_AS_REGULAR_METHOD_PARAMETERS, methodOrConstructor);
+            return Arrays.stream(((Method) methodOrConstructor).getParameters())
+                    .map(Parameter::getName)
+                    .toList();
         }
         return Arrays.stream(parameterNames).toList();
     }

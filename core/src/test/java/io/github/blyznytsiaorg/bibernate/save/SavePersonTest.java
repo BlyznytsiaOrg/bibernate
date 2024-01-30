@@ -26,6 +26,7 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
 
                 var person = new Person();
+                person.setId(1L);
                 person.setFirstName("Rake");
                 person.setLastName("Tell");
 
@@ -34,8 +35,7 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
 
                 //then
                 assertThat(savedPerson).isNotNull();
-                // TODO uncomment when GeneratedValue is done
-//                assertThat(savedPerson.getId()).isNotNull();
+                assertThat(savedPerson.getId()).isNotNull();
                 assertThat(savedPerson.getFirstName()).isEqualTo(person.getFirstName());
                 assertThat(savedPerson.getLastName()).isEqualTo(person.getLastName());
             }

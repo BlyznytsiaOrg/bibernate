@@ -49,6 +49,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> int update(Class<T> entityClass, Object entity) {
+        return dao.update(entityClass, entity, List.of());
+    }
+
+    @Override
     public int find(String query, Object[] bindValues) {
         verifySessionNotClosed();
         return dao.find(query, bindValues);
@@ -66,13 +71,23 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object primaryKey) {
+    public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
             log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
             return;
         }
-        dao.delete(entityClass, primaryKey);
+        dao.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> void delete(Class<T> entityClass, Object entity) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return;
+        }
+        dao.delete(entityClass, entity);
     }
 
     @Override
