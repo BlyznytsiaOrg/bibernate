@@ -66,7 +66,15 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(field.getName()));
     }
 
-    public static String mappedByJoinColumnName(Field field) {
+    public static String mappedByCollectionJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+                .map(OneToMany::mappedBy)
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
+                .orElse(joinColumnName(field));
+    }
+
+    public static String mappedByEntityJoinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(OneToOne.class))
                 .map(OneToOne::mappedBy)
                 .filter(Predicate.not(String::isEmpty))
@@ -234,6 +242,10 @@ public class EntityReflectionUtils {
                 .collect(Collectors.toList());
     }
 
+    public static boolean isBidirectionalOwnerSide(Field field) {
+        return !field.getAnnotation(OneToOne.class).mappedBy().isBlank();
+    }
+
     private static Object convertToType(Object value, Class<?> targetType) {
         if (value instanceof Number number) {
             if (targetType.equals(Byte.class)) {
@@ -263,4 +275,5 @@ public class EntityReflectionUtils {
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();
     }
+
 }

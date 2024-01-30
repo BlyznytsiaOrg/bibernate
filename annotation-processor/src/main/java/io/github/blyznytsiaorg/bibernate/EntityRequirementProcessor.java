@@ -1,15 +1,17 @@
 package io.github.blyznytsiaorg.bibernate;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Entity;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import java.util.*;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @SupportedAnnotationTypes("io.github.blyznytsiaorg.bibernate.annotation.Entity")
 @SupportedSourceVersion(SourceVersion.RELEASE_17)
@@ -17,6 +19,7 @@ public class EntityRequirementProcessor extends AbstractProcessor {
 
     private Messager messager;
     private Set<TypeMirror> entities = new HashSet<>();
+    private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class, OneToMany.class);
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -40,7 +43,6 @@ public class EntityRequirementProcessor extends AbstractProcessor {
     private void validate(Element element) {
         TypeElement typeElement = (TypeElement) element;
 
-//        list.add(typeElement.getSimpleName().toString());
         boolean hasRequiredField = element.getEnclosedElements()
                 .stream()
                 .anyMatch(this::isIdAnnotatedField);
@@ -57,8 +59,7 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         }
 
         if (!hasRelationAnnotationOnEntityField(typeElement)) {
-            messager.printMessage(Diagnostic.Kind.ERROR,
-                    entities.toString() + "Entity field should have relation annotation", typeElement);
+            messager.printMessage(Diagnostic.Kind.ERROR, entities.toString() + " Entity  field should have relation annotation", typeElement);
         }
     }
 
@@ -68,41 +69,19 @@ public class EntityRequirementProcessor extends AbstractProcessor {
             if (enclosedElement.getKind() == ElementKind.FIELD) {
                 VariableElement variableElement = (VariableElement) enclosedElement;
 
-//                messager.printMessage(Diagnostic.Kind.ERROR,
-//                        list.toString());
-//                messager.printMessage(Diagnostic.Kind.ERROR,
-//                        list.toString() + "Just showing list ot classes", typeElement);
-
-
-//                if (entities.contains(variableElement.asType())) {
-//                    if (!Objects.nonNull(variableElement.getAnnotation(OneToOne.class))) {
-//                        return false;
-//                    }
-//                }
-
+                if (entities.contains(variableElement.asType())) {
+                    if (entityAnnotations.stream()
+                            .noneMatch(relationAnnotation ->
+                                    Objects.nonNull(variableElement.getAnnotation(relationAnnotation)))) {
+                        return false;
+                    }
+                }
             }
         }
 
         return true;
     }
 
-//    private boolean hasOneToOneAnnotation(VariableElement variableElement) {
-//        for (AnnotationMirror annotationMirror : variableElement.getAnnotationMirrors()) {
-//            TypeElement annotationElement = (TypeElement) annotationMirror.getAnnotationType().asElement();
-//
-//            if (annotationElement.getClass().isAnnotationPresent(Entity.class)) {
-//                // Check if the annotation is @OneToOne
-//                return Objects.nonNull(variableElement.getAnnotation(OneToOne.class));
-//                }
-//            }
-//
-//        return true;
-//    }
-
-    //    private boolean hasOneToOneAnnotation(TypeElement typeElement) {
-//        return elementUtils.getTypeElement(OneToOne.class.getCanonicalName())
-//                .equals(elementUtils.getTypeElement(typeElement.getQualifiedName()));
-//    }
     private boolean isIdAnnotatedField(Element field) {
         return field.getKind() == ElementKind.FIELD && Objects.nonNull(field.getAnnotation(Id.class));
     }

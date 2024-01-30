@@ -1,4 +1,4 @@
-package testdata.findbyid;
+package testdata.onetoone.unidirectional;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;

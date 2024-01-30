@@ -6,8 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.ANNOTATION_TYPE)
-public @interface Relation {
+@Target(ElementType.FIELD)
+public @interface OneToMany {
+
     /**
      * The field that owns the relationship. Required unless the relationship is unidirectional.
      */

@@ -1,7 +1,10 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
+import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
+import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
+import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
@@ -10,14 +13,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
-import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
-import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByCollectionJoinColumnName;
 
 public class CollectionFieldResolver implements TypeFieldResolver {
-    
+
     @Override
     public boolean isAppropriate(Field field) {
         return EntityRelationsUtils.isCollectionField(field);
@@ -31,17 +31,17 @@ public class CollectionFieldResolver implements TypeFieldResolver {
             throw new BibernateGeneralException("Unable to get [%s] from entity [%s] without having the entity id."
                     .formatted(field.getName(), field.getDeclaringClass()));
         }
-        
-        var collectionGenericType = getCollectionGenericType(field); 
-        var joinColumnName = mappedByJoinColumnName(field);
+
+        var collectionGenericType = getCollectionGenericType(field);
+        var joinColumnName = mappedByCollectionJoinColumnName(field);
 
         var session = BibernateSessionContextHolder.getBibernateSession();
-        Supplier<List<?>> collectionSupplier = () -> 
+        Supplier<List<?>> collectionSupplier = () ->
                 session.findAllById(collectionGenericType, joinColumnName, entityId);
-        
+
         return new PersistentList<>(collectionSupplier);
     }
-    
+
     private Object getEntityId(Field field, ResultSet resultSet) {
         try {
             var idFieldName = EntityReflectionUtils.columnIdName(field.getDeclaringClass());

@@ -10,8 +10,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 public class EntityFieldResolver implements TypeFieldResolver {
 
-    public static final String SELECT_QUERY = "%s = ?";
-
     @Override
     public boolean isAppropriate(Field field) {
         return EntityRelationsUtils.isEntityField(field);
@@ -20,17 +18,16 @@ public class EntityFieldResolver implements TypeFieldResolver {
     @Override
     public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
         var session = BibernateSessionContextHolder.getBibernateSession();
+
+        if (isBidirectionalOwnerSide(field)) {
+            var columnIdName = columnIdName(field.getDeclaringClass());
+            var idValue = getValueFromResultSetByColumn(resultSet, columnIdName);
+            return session.findAllById(field.getType(), mappedByEntityJoinColumnName(field), idValue)
+                    .get(0);
+        }
+
         var joinColumnName = joinColumnName(field);
         var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
-
-//        if (isBidirectionalOwnerSide(field)) {
-//            Class<?> type = field.getType();
-//            Class<?> declaringClass = field.getDeclaringClass();
-//            var columnIdName = columnIdName(declaringClass);
-//            var idValue = getValueFromResultSetByColumn(resultSet, columnIdName);
-//            return session.findByWhere(type, mappedByJoinColumnName(field) + " = ?", idValue);
-//        }
-
         return session.findById(field.getType(), joinColumnValue)
                 .orElse(null);
     }

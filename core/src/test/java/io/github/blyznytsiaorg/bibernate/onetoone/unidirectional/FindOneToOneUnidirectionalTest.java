@@ -1,12 +1,12 @@
-package io.github.blyznytsiaorg.bibernate.onetoone;
+package io.github.blyznytsiaorg.bibernate.onetoone.unidirectional;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.findbyid.Address;
-import testdata.findbyid.House;
-import testdata.findbyid.User;
+import testdata.onetoone.unidirectional.Address;
+import testdata.onetoone.unidirectional.House;
+import testdata.onetoone.unidirectional.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FindOneToOneTest extends AbstractPostgresInfrastructurePrep {
+class FindOneToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Should find exising person by ID with all one to one relations")
     @Test
     void shouldFindExistingPersonByIdWithRelations() {

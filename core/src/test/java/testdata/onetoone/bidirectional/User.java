@@ -1,4 +1,4 @@
-package testdata.findbyid;
+package testdata.onetoone.bidirectional;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
