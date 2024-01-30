@@ -50,7 +50,7 @@ public class SimpleRepositoryFindByIdMethodHandler implements SimpleRepositoryMe
                     if (nonNull(returnType.getEntityClass())) {
                         return bringSession.findById(entityClass, primaryKey);
                     } else if (Optional.class.isAssignableFrom((Class<?>)returnType.getGenericEntityClass().getRawType())) {
-                        return Optional.ofNullable(bringSession.findById(entityClass, primaryKey));
+                        return bringSession.findById(entityClass, primaryKey);
                     } else {
                         throw new IllegalArgumentException("Cannot return " + returnType.getGenericEntityClass() +
                                 " should be Optional<" + repositoryDetails.entityType() +

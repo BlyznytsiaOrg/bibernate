@@ -15,4 +15,6 @@ public interface BibernateRepository<T, ID> {
     Optional<T> findById(@Param("id") ID primaryKey);
 
     List<T> findAll();
+
+    int update(T entity);
 }

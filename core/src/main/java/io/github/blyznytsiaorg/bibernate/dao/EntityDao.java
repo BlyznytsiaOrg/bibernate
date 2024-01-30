@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
  *
@@ -28,29 +30,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 @Slf4j
 public class EntityDao implements Dao {
 
-    private static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE =
-            "Cannot execute findById entityClass [%s]. Message: %s";
-    private static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute update entityClass [%s] for primaryKey %s. Message: %s";
-    private static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute save entityClass [%s]. Message: %s";
-    private static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE =
-            "Cannot execute delete entityClass [%s] with primaryKey %s. Message: %s";
-    private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s. Message: %s";
-    private static final String ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE = "EntityClass must be not null";
-    private static final String ENTITY_MUST_BE_NOT_NULL_MESSAGE = "Entity must be not null";
-    private static final String PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE = "PrimaryKey must be not null";
-
-    private static final String QUERY_LOG = "Query {}";
-    private static final String QUERY_BIND_VALUE_LOG = QUERY_LOG + " bindValue {}={}";
-    private static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
-    private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
-    private static final String SAVE_LOG = "Save entity clazz {}";
-    private static final String DELETE_LOG = "Delete entity {} with primaryKey {}";
-    public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
-            = "Entity %s was change need to get new data findBy%s[%s]";
-    public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
-
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
     private final EntityPersistent entityPersistent = new EntityPersistent();
@@ -59,10 +38,10 @@ public class EntityDao implements Dao {
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
-        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE);
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
         var fieldIdName = columnIdName(entityClass);
-        
+
         List<T> resultList = findAllById(entityClass, fieldIdName, primaryKey);
 
         if (resultList.size() > 1) {
@@ -75,43 +54,23 @@ public class EntityDao implements Dao {
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
         var whereCondition = sqlBuilder.selectByIdWhereCondition(idColumnName);
-        
+
         return this.findByWhere(entityClass, whereCondition, idColumnValue);
     }
 
     @Override
     public <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var tableName = table(entityClass);
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
         var query = sqlBuilder.selectBy(tableName, whereCondition);
-        addToExecutedQueries(query);
 
-        List<T> items = new ArrayList<>();
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
-            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
-
-            populatePreparedStatement(bindValues, statement);
-
-            var resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
-            }
-        } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
-        }
-
-        return items;
+        return this.findByQuery(entityClass, query, bindValues);
     }
 
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
         addToExecutedQueries(query);
@@ -120,7 +79,7 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
+            showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
 
             populatePreparedStatement(bindValues, statement);
 
@@ -129,7 +88,7 @@ public class EntityDao implements Dao {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
+            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
 
@@ -144,7 +103,7 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.debug(QUERY_BIND_VALUES_LOG, query, Arrays.toString(bindValues)));
+            showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
 
             populatePreparedStatement(bindValues, statement);
 
@@ -153,7 +112,7 @@ public class EntityDao implements Dao {
                 return resultSet.getInt(1);
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_QUERY_MESSAGE.formatted(query, exe.getMessage());
+            String errorMessage = CANNOT_EXECUTE_QUERY.formatted(query, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
 
@@ -161,9 +120,9 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> T update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
-        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL_MESSAGE);
+    public <T> int update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
@@ -183,11 +142,11 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.debug(QUERY_LOG, query));
+            showSql(() -> log.debug(QUERY, query));
 
             populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, fieldVersionValue, diff);
             var resultSet = statement.executeUpdate();
-            log.trace(UPDATE_LOG, resultSet, entityClass.getSimpleName(), fieldIdValue);
+            log.trace(UPDATE, resultSet, entityClass.getSimpleName(), fieldIdValue);
 
             if (isVersionFound && resultSet == 0) {
                 throw new EntityStateWasChangeException(
@@ -195,19 +154,21 @@ public class EntityDao implements Dao {
                                 .formatted(entity.getClass(), fieldIdName, fieldIdValue)
                 );
             }
+
+            return resultSet;
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE
+            String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
                     .formatted(entityClass, fieldIdValue, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
 
-        return entityClass.cast(entity);
+        return 0;
     }
 
     @Override
     public <T> T save(Class<T> entityClass, Object entity) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
-        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL_MESSAGE);
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
@@ -218,16 +179,16 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.debug(QUERY_LOG, query));
+            showSql(() -> log.debug(QUERY, query));
 
             populatePreparedStatement(entity, statement);
 
             // TODO set id to Entity
             // TODO set to cash
             statement.execute();
-            log.trace(SAVE_LOG, entityClass.getSimpleName());
+            log.trace(SAVE, entityClass.getSimpleName());
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage());
+            String errorMessage = CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
 
@@ -235,9 +196,9 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object primaryKey) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
-        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE);
+    public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
@@ -249,17 +210,27 @@ public class EntityDao implements Dao {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            showSql(() -> log.debug(QUERY_BIND_VALUE_LOG, query, fieldIdName, primaryKey));
+            showSql(() -> log.debug(QUERY_BIND_VALUE, query, fieldIdName, primaryKey));
 
             statement.setObject(1, primaryKey);
 
             statement.execute();
-            log.trace(DELETE_LOG, entityClass.getSimpleName(), primaryKey);
+            log.trace(DELETE, entityClass.getSimpleName(), primaryKey);
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS_MESSAGE
+            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
                     .formatted(entityClass, primaryKey, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
+    }
+
+    @Override
+    public <T> void delete(Class<T> entityClass, Object entity) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
+
+        var fieldIdValue = columnIdValue(entityClass, entity);
+
+        deleteById(entityClass, fieldIdValue);
     }
 
     private void addToExecutedQueries(String query) {
@@ -318,7 +289,7 @@ public class EntityDao implements Dao {
     private boolean isIdField(String fieldIdName, Field field) {
         return Objects.equals(fieldIdName, columnName(field));
     }
-    
+
     private void throwErrorMessage(String errorMessage, Exception exe) {
         log.error(errorMessage);
         throw new BibernateGeneralException(errorMessage, exe);
