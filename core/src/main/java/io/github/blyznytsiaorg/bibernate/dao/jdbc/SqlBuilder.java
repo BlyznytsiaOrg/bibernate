@@ -63,7 +63,7 @@ public class SqlBuilder {
     }
     
 
-    public String insert(Object entity, String tableName) {
+    public static String insert(Object entity, String tableName) {
         var insert = InsertQueryBuilder.from(tableName);
         getInsertEntityFields(entity).forEach(field -> insert.setField(columnName(field)));
 

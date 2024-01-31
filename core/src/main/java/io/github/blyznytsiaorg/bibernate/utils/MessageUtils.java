@@ -25,8 +25,11 @@ public class MessageUtils {
         public static final String ENTITY_MUST_BE_NOT_NULL = "Entity must be not null";
         public static final String PRIMARY_KEY_MUST_BE_NOT_NULL = "PrimaryKey must be not null";
         public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
-        public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
-                = "Entity %s was change need to get new data findBy%s[%s]";
+        public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA = "Entity %s was change need to get new data findBy%s[%s]";
+        public static final String CANNOT_FIND_SEQUENCE_STRATEGY =
+            "Cannot find SEQUENCE strategy for entity entityClass [%s]";
+        public static final String CANNOT_GENERATE_ID_FOR_ENTITY =
+            "Cannot generate Id for entity: [%s]";
     }
 
     @UtilityClass

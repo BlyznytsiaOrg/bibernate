@@ -4,6 +4,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.Identity;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -33,8 +34,10 @@ public class EntityDao implements Dao {
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
     private final EntityPersistent entityPersistent = new EntityPersistent();
+    private final Identity identity;
+
     @Getter
-    private final List<String> executedQueries = new ArrayList<>();
+    private final List<String> executedQueries;
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
@@ -173,29 +176,8 @@ public class EntityDao implements Dao {
         if (isColumnVersionFound(entityClass)) {
             setVersionValueIfNull(entityClass, entity);
         }
-
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
-        var tableName = table(entityClass);
-        var query = sqlBuilder.insert(entity, tableName);
-        addToExecutedQueries(query);
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
-            showSql(() -> log.debug(QUERY, query));
-
-            populatePreparedStatement(entity, statement);
-
-            // TODO set id to Entity
-            // TODO set to cash
-            statement.execute();
-            log.trace(SAVE, entityClass.getSimpleName());
-        } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
-        }
-
+        identity.saveWithIdentity(entity);
+        log.trace(SAVE, entityClass.getSimpleName());
         return entityClass.cast(entity);
     }
 
