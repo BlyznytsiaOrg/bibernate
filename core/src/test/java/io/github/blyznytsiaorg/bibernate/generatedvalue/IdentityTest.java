@@ -12,8 +12,8 @@ import testdata.generatedvalue.identity.Person;
 
 public class IdentityTest extends AbstractPostgresInfrastructurePrep {
   @Test
-  @DisplayName("Should get id from the columnt of the persons table")
-  public void shouldGenerateIdFromSequenceAndSetItToEntity() {
+  @DisplayName("Should get id from the serial column of the persons table")
+  public void shouldGetIdFromSerialColumnAndSetItToEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 

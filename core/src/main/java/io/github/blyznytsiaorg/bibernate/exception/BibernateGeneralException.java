@@ -10,4 +10,8 @@ public class BibernateGeneralException extends RuntimeException {
     public BibernateGeneralException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public BibernateGeneralException(String message) {
+        super(message);
+    }
 }

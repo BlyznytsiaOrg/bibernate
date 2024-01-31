@@ -4,6 +4,7 @@ import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.IdGenerator;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.Identity;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -39,24 +40,26 @@ public class EntityDao implements Dao {
             "Cannot execute findById entityClass [%s] message %s";
     private static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS_MESSAGE =
             "Cannot execute update entityClass [%s] for primaryKey %s message %s";
-    private static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
+    public static final String CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE =
             "Cannot execute save entityClass [%s] message %s";
     private static final String CANNOT_EXECUTE_QUERY_MESSAGE = "Cannot execute query %s message %s";
     private static final String ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE = "EntityClass must be not null";
     private static final String ENTITY_MUST_BE_NOT_NULL_MESSAGE = "Entity must be not null";
     private static final String PRIMARY_KEY_MUST_BE_NOT_NULL_MESSAGE = "PrimaryKey must be not null";
 
-    private static final String QUERY_LOG = "Query {}";
-    private static final String QUERY_BIND_VALUE_LOG = QUERY_LOG + " bindValue {}={}";
-    private static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
+    public static final String QUERY_LOG = "Query {}";
+    public static final String QUERY_BIND_VALUE_LOG = QUERY_LOG + " bindValue {}={}";
+    public static final String QUERY_BIND_VALUES_LOG = QUERY_LOG + " bindValues {}";
     private static final String UPDATE_LOG = "Update effected row {} for entity clazz {} with id {}";
     private static final String SAVE_LOG = "Save entity clazz {}";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
+    private final Identity identity;
     private final EntityPersistent entityPersistent = new EntityPersistent();
+
     @Getter
-    private final List<String> executedQueries = new ArrayList<>();
+    private final List<String> executedQueries;
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
@@ -177,45 +180,7 @@ public class EntityDao implements Dao {
     public <T> T save(Class<T> entityClass, Object entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL_MESSAGE);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL_MESSAGE);
-
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
-        var tableName = table(entityClass);
-        var query = sqlBuilder.insert(entity, tableName);
-        var idGenerator = createIdGenerator(entity, tableName, dataSource);
-        idGenerator.getQueries().values().forEach(this::addToExecutedQueries);
-        addToExecutedQueries(query);
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query, RETURN_GENERATED_KEYS)) {
-
-            showSql(() -> log.info(QUERY_LOG, query));
-
-            if(SEQUENCE.equals(idGenerator.getStrategy())) {
-                populatePreparedStatement(entity, statement, idGenerator.getGeneratedFields());
-
-                statement.execute();
-                Field idField = getIdField(entityClass);
-                setField(idField, entity, idGenerator.getGeneratedFields().get(idField));
-                log.info(SAVE_LOG, entityClass.getSimpleName());
-            } else if (IDENTITY.equals(idGenerator.getStrategy())){
-                populatePreparedStatement(entity, statement);
-                statement.execute();
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    Field idField = getIdField(entityClass);
-                    setField(idField, entity, generatedKeys.getObject(1));
-                }
-            } else {
-                populatePreparedStatement(entity, statement);
-                statement.execute();
-            }
-        } catch (Exception exe) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_SAVE_ENTITY_CLASS_MESSAGE.formatted(entityClass, exe.getMessage()),
-                    exe);
-        }
-
+        identity.generateIdEntity(entityClass, entity);
         return entityClass.cast(entity);
     }
 

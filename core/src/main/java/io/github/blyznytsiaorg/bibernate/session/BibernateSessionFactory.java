@@ -5,6 +5,9 @@ import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.Identity;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.PostgresIdentity;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,9 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
     }
 
     public EntityDao entityDao() {
-        return new EntityDao(new SqlBuilder(), getBibernateSettings());
+        List<String> executedQueries = new ArrayList<>();
+        Identity identity = new PostgresIdentity(getBibernateSettings(), executedQueries);
+        return new EntityDao(new SqlBuilder(), getBibernateSettings(), identity, executedQueries);
     }
 
     public List<String> getExecutedQueries() {

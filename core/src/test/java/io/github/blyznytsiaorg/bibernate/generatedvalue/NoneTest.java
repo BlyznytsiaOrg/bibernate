@@ -14,7 +14,7 @@ public class NoneTest extends AbstractPostgresInfrastructurePrep {
 
   @Test
   @DisplayName("Should get id from the entity")
-  public void shouldGenerateIdFromSequenceAndSetItToEntity() {
+  public void shouldGenerateIdFromEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
