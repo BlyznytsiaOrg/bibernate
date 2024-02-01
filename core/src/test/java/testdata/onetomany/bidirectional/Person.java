@@ -1,5 +1,6 @@
 package testdata.onetomany.bidirectional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
@@ -21,6 +22,6 @@ public class Person {
     private String lastName;
     
     @OneToMany(mappedBy = "person")
-    private List<Note> notes;
+    private List<Note> notes = new ArrayList<>();
 
 }

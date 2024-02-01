@@ -22,6 +22,7 @@ abstract class QueryBuilder {
     public static final String HAVING = " HAVING ";
     public static final String UNION = " UNION ";
     public static final String COMA = ", ";
+    public static final String DOT = ".";
     public static final String SEMICOLON = ";";
     public static final String SPACE = " ";
     public static final String AND = "AND ";

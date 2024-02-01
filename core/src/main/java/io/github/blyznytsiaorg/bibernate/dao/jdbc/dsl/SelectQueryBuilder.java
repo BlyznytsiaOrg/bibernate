@@ -7,6 +7,7 @@ import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  *
@@ -34,6 +35,21 @@ public class SelectQueryBuilder extends QueryBuilder {
 
     public SelectQueryBuilder selectField(String fieldName) {
         selectedFields.add(fieldName);
+        return this;
+    }
+
+    public SelectQueryBuilder selectFieldsFromTable(String tableName) {
+        selectFieldFromTable(tableName, null);
+        return this;
+    }
+    
+    public SelectQueryBuilder selectFieldFromTable(String tableName, String fieldName) {
+        Objects.requireNonNull(tableName);
+        
+        var notNullFieldName = Optional.ofNullable(fieldName).orElse(ALL_FIELDS);
+        var tableFieldName = tableName.concat(DOT).concat(notNullFieldName);
+        selectedFields.add(tableFieldName);
+        
         return this;
     }
 
