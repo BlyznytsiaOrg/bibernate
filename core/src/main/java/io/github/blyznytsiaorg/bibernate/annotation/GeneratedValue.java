@@ -17,4 +17,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface GeneratedValue {
   GenerationType strategy() default IDENTITY;
+  String generator() default "";
 }

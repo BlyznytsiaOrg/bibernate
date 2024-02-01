@@ -99,4 +99,6 @@ public interface AbstractPostgresTableCreationPrep {
 
     String CREATE_PERSON_ID_SEQUENCE = "create sequence if not exists persons_id_seq start with 1 increment by 1";
 
+    String CREATE_PERSON_ID_CUSTOM_SEQ = "create sequence if not exists person_id_custom_seq minvalue 6 start 6 increment by 5";
+
 }

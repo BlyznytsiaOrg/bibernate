@@ -2,7 +2,6 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,9 +15,9 @@ public class PostgresIdentity implements Identity {
       List<String> executedQueries) {
     this.bibernateDatabaseSettings = bibernateDatabaseSettings;
     this.executedQueries = executedQueries;
-    generators.add(new NoneGenerator(bibernateDatabaseSettings, executedQueries));
-    generators.add(new SequenceGenerator(bibernateDatabaseSettings, executedQueries));
-    generators.add(new IdentityGenerator(bibernateDatabaseSettings, executedQueries));
+    generators.add(new NoneIdGenerator(bibernateDatabaseSettings, executedQueries));
+    generators.add(new SequenceIdGenerator(bibernateDatabaseSettings, executedQueries));
+    generators.add(new IdentityIdGenerator(bibernateDatabaseSettings, executedQueries));
   }
 
   @Override

@@ -1,8 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SequenceConf;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -296,6 +300,40 @@ public class EntityReflectionUtils {
                 UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY.formatted(
                     entity.getClass().getSimpleName())));
 
+    }
+
+    public static Field getGeneratedValueSequenceStrategyField(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    public static SequenceConf getGeneratedValueSequenceConfig(Object entity, String tableName) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .map(field -> getSequenceConfFromField(field, tableName))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    private static SequenceConf getSequenceConfFromField(Field field, String tableName) {
+        var generatorName = field.getAnnotation(GeneratedValue.class).generator();
+        if(!generatorName.isEmpty() && generatorName.equals(field.getAnnotation(SequenceGenerator.class).name())) {
+            var sequenceName = field.getAnnotation(SequenceGenerator.class).sequenceName();
+            var initialValue = field.getAnnotation(SequenceGenerator.class).initialValue();
+            var allocationSize = field.getAnnotation(SequenceGenerator.class).allocationSize();
+            return new SequenceConf(sequenceName, initialValue, allocationSize);
+        } else {
+            var columnName = columnName(field);
+            return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
+        }
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {
