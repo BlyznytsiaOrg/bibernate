@@ -1,7 +1,7 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
+package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.NONE;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.NONE;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
@@ -35,7 +35,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
     try (var connection = dataSource.getConnection();
         var statement = connection.prepareStatement(query)) {
       populatePreparedStatement(entity, statement);
-      showSql(() -> log.info(QUERY, query));
+      showSql(() -> log.debug(QUERY, query));
       statement.execute();
     } catch (Exception e) {
       throw new BibernateGeneralException(

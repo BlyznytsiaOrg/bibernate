@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
+package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;

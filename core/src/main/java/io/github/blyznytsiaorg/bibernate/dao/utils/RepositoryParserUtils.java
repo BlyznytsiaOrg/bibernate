@@ -18,6 +18,7 @@ import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 
 /**
+ * Utility class for parsing repository method names and building corresponding SQL WHERE queries.
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0
@@ -25,49 +26,84 @@ import static java.lang.Character.toLowerCase;
 @Slf4j
 @UtilityClass
 public class RepositoryParserUtils {
-
+    /**
+     * Paranamer instance for retrieving parameter names with consideration of annotations.
+     */
     private static final Paranamer info = new CachingParanamer(new ParamAnnotationParanamer(new BytecodeReadingParanamer()));
+    /**
+     * Set of supported operations for constructing SQL queries.
+     */
+    private static final Set<String> SUPPORTED_OPERATIONS = Set.of(
+            "And", "Or", "Equals", "Like", "Null", "NotNull", "LessThan",
+            "LessThanEqual", "GreaterThan", "GreaterThanEqual"
+    );
 
-    private static final Set<String> SUPPORTED_OPERATIONS = new HashSet<>(Set.of(
-            "And", "Or", "Equals", "Like",
-            "Null", "NotNull", "LessThan",
-            "LessThanEqual", "GreaterThan",  "GreaterThanEqual"
-    ));
+    /**
+     * Mapping of supported operations to their corresponding SQL conditions.
+     */
+    private static final Map<String, String> OPERATION_TO_SQL_CONDITIONS = Map.of(
+            "And", " = ? And ",
+            "Or", " = ? Or ",
+            "Equals", " = ?",
+            "LessThan", " < ?",
+            "LessThanEqual", " <= ?",
+            "GreaterThan", " > ?",
+            "GreaterThanEqual", " >= ?",
+            "Null", " is null",
+            "NotNull", " is not null",
+            "Like", " like ?"
+    );
 
-    private static final Map<String, String> OPERATION_TO_SQL_CONDITIONS = new HashMap<>();
-
-    private static final Set<String> PART_SQL_CONDITIONS = new HashSet<>();
-
-    public static final String EQ = " = ";
-    public static final String PARAMETER = "?";
-    public static final String UNDERSCORE = "_";
-    public static final String WILL_RESOLVE_AS_REGULAR_METHOD_PARAMETERS =
+    /**
+     * Set of partial SQL conditions used in method name parsing.
+     */
+    private static final Set<String> PART_SQL_CONDITIONS = Set.of("Less", "Than", "Equal", "Greater", "Not", "Null");
+    /**
+     * String representing the equality operation in SQL.
+     */
+    private static final String EQ = " = ";
+    /**
+     * Placeholder for parameter in SQL queries.
+     */
+    private static final String PARAMETER = "?";
+    /**
+     * Underscore character used for converting camel case to underscore format.
+     */
+    private static final String UNDERSCORE = "_";
+    /**
+     * Message indicating that a method doesn't have parameters annotated with @Param.
+     */
+    private static final String WILL_RESOLVE_AS_REGULAR_METHOD_PARAMETERS =
             "Method {} don't have parameters that annotation @Param. Will resolve as regular method parameters";
-
-    static {
-        OPERATION_TO_SQL_CONDITIONS.put("And", " = ? And ");
-        OPERATION_TO_SQL_CONDITIONS.put("Or", " = ? Or ");
-        OPERATION_TO_SQL_CONDITIONS.put("Equals", " = ?");
-        OPERATION_TO_SQL_CONDITIONS.put("LessThan", " < ?");
-        OPERATION_TO_SQL_CONDITIONS.put("LessThanEqual", " <= ?");
-        OPERATION_TO_SQL_CONDITIONS.put("GreaterThan", " > ?");
-        OPERATION_TO_SQL_CONDITIONS.put("GreaterThanEqual", " >= ?");
-        OPERATION_TO_SQL_CONDITIONS.put("Null", " is null");
-        OPERATION_TO_SQL_CONDITIONS.put("NotNull", " is not null");
-        OPERATION_TO_SQL_CONDITIONS.put("Like", " like ?");
-
-        PART_SQL_CONDITIONS.add("Less");
-        PART_SQL_CONDITIONS.add("Than");
-        PART_SQL_CONDITIONS.add("Equal");
-        PART_SQL_CONDITIONS.add("Greater");
-        PART_SQL_CONDITIONS.add("Not");
-        PART_SQL_CONDITIONS.add("Null");
-    }
-
+    /**
+     * Empty string constant.
+     */
     private static final String EMPTY = "";
+    /**
+     * Prefix indicating the start of a find-by method in the method name.
+     */
     private static final String FIND_BY = "findBy";
-    public static final String NAME_SPLITERATOR = "(?=\\p{Upper})";
+    /**
+     * Regular expression for splitting method names based on camel case.
+     */
+    private static final String NAME_SPLITERATOR = "(?=\\p{Upper})";
 
+    /**
+     * Prefix for log messages related to constructing WHERE queries.
+     */
+    private static final String WHERE = "Where query ";
+
+    /**
+     * Log message format for debug messages containing field and operation information.
+     */
+    private static final String FIELDS_OPERATIONS = "Fields {} operations {}";
+
+    /**
+     * Builds a WHERE query based on the provided repository method name.
+     *
+     * @param methodName The repository method name.
+     * @return The constructed WHERE query.
+     */
     public static String buildQueryByMethodName(String methodName) {
         methodName = methodName.replace(FIND_BY, EMPTY);
         String[] methodSplit = methodName.split(NAME_SPLITERATOR);
@@ -82,17 +118,51 @@ public class RepositoryParserUtils {
                 operation.append(partName);
             } else {
                 if (SUPPORTED_OPERATIONS.contains(partName)) {
-                    fields.add(field.toString());
-                    field.setLength(0);
-                    var currentOperation = operation.toString();
-                    operations.add(currentOperation.isBlank() ? partName : currentOperation);
-                    operation.setLength(0);
+                    addFieldAndOperation(fields, operations, field, operation, partName);
                 } else {
                     field.append(partName);
                 }
             }
         }
 
+        addRemainingFieldsAndOperations(fields, operations, field, operation);
+
+        log.debug(FIELDS_OPERATIONS, fields, operations);
+
+        return buildWhereQuery(fields, operations);
+    }
+
+    /**
+     * Adds the current field and operation to the corresponding queues and resets the StringBuilders.
+     * If the current operation is blank, uses the provided part name as the operation.
+     *
+     * @param fields      The queue of field names.
+     * @param operations  The queue of SQL operations.
+     * @param field       The StringBuilder representing the current field name.
+     * @param operation   The StringBuilder representing the current SQL operation.
+     * @param partName    The part name to be considered as a field or operation.
+     */
+    private static void addFieldAndOperation(Queue<String> fields, Queue<String> operations, StringBuilder field,
+                                             StringBuilder operation, String partName) {
+        fields.add(field.toString());
+        field.setLength(0);
+
+        var currentOperation = operation.toString();
+        operations.add(currentOperation.isBlank() ? partName : currentOperation);
+        operation.setLength(0);
+    }
+
+    /**
+     * Adds any remaining fields and operations to their respective queues.
+     * Checks if the field and operation StringBuilders are not empty before adding.
+     *
+     * @param fields      The queue of field names.
+     * @param operations  The queue of SQL operations.
+     * @param field       The StringBuilder representing the current field name.
+     * @param operation   The StringBuilder representing the current SQL operation.
+     */
+    private static void addRemainingFieldsAndOperations(Queue<String> fields, Queue<String> operations,
+                                                        StringBuilder field, StringBuilder operation) {
         if (!field.isEmpty()) {
             fields.add(field.toString());
         }
@@ -100,9 +170,18 @@ public class RepositoryParserUtils {
         if (!operation.isEmpty()) {
             operations.add(operation.toString());
         }
+    }
 
-        log.debug("fields {} operations {}", fields, operations);
-
+    /**
+     * Constructs a WHERE query based on the provided queues of fields and operations.
+     * Converts field names to underscore format and appends corresponding SQL operations.
+     * The constructed WHERE query is logged as debug information before being returned.
+     *
+     * @param fields     The queue of field names to be included in the WHERE query.
+     * @param operations The queue of SQL operations corresponding to the fields.
+     * @return The constructed WHERE query.
+     */
+    private static String buildWhereQuery(Queue<String> fields, Queue<String> operations) {
         var whereQuery = new StringBuilder();
         while (!fields.isEmpty()) {
             String currentField = fields.poll();
@@ -110,22 +189,40 @@ public class RepositoryParserUtils {
             whereQuery.append(convertToUnderscoreField);
 
             String currentOperation = operations.poll();
-            if (currentOperation != null) {
-                String sqlOperation = OPERATION_TO_SQL_CONDITIONS.get(currentOperation);
-                whereQuery.append(sqlOperation);
-            } else {
-                if (!whereQuery.isEmpty()) {
-                    whereQuery.append(EQ).append(PARAMETER);
-                }
-            }
+            appendSqlOperation(whereQuery, currentOperation);
         }
 
-        log.debug("where " + whereQuery);
+        log.debug(WHERE + whereQuery);
         return whereQuery.toString();
     }
 
-    public static String convertToUnderscore(String originalColumnName) {
+    /**
+     * Appends the SQL operation to the given WHERE query based on the provided operation name.
+     * If the operation name is null, appends a default equality operation with a placeholder parameter.
+     *
+     * @param whereQuery      The StringBuilder representing the WHERE query being constructed.
+     * @param currentOperation The operation name to be appended to the WHERE query.
+     */
+    private static void appendSqlOperation(StringBuilder whereQuery, String currentOperation) {
+        if (currentOperation != null) {
+            String sqlOperation = OPERATION_TO_SQL_CONDITIONS.get(currentOperation);
+            whereQuery.append(sqlOperation);
+        } else {
+            if (!whereQuery.isEmpty()) {
+                whereQuery.append(EQ).append(PARAMETER);
+            }
+        }
+    }
+
+    /**
+     * Converts a given column name to underscore format.
+     *
+     * @param originalColumnName The original column name.
+     * @return The column name in underscore format.
+     */
+    private static String convertToUnderscore(String originalColumnName) {
         var result = new StringBuilder();
+
         for (int i = 0; i < originalColumnName.length(); i++) {
             char currentChar = originalColumnName.charAt(i);
             if (isUpperCase(currentChar)) {
@@ -142,10 +239,10 @@ public class RepositoryParserUtils {
     }
 
     /**
-     * Retrieves parameter names of a method or constructor.
+     * Retrieves parameter names for a given method or constructor, considering the @Param annotation.
      *
-     * @param methodOrConstructor The method or constructor to retrieve parameter names from
-     * @return A list of parameter names
+     * @param methodOrConstructor The method or constructor for which to retrieve parameter names.
+     * @return A list of parameter names.
      */
     public static List<String> getParameterNames(AccessibleObject methodOrConstructor) {
         String[] parameterNames = info.lookupParameterNames(methodOrConstructor, false);
@@ -158,22 +255,37 @@ public class RepositoryParserUtils {
         return Arrays.stream(parameterNames).toList();
     }
 
+    /**
+     * Custom implementation of {@link AnnotationParanamer} to handle the @Param annotation.
+     */
     private static class ParamAnnotationParanamer extends AnnotationParanamer {
 
+        /**
+         * Constructs a new ParamAnnotationParanamer with the specified fallback paranamer.
+         *
+         * @param fallback The fallback paranamer.
+         */
         public ParamAnnotationParanamer(Paranamer fallback) {
             super(fallback);
         }
 
+        /**
+         * Retrieves the named value from the @Param annotation.
+         *
+         * @param ann The annotation.
+         * @return The named value if the annotation is of type @Param, otherwise null.
+         */
         @Override
         protected String getNamedValue(Annotation ann) {
-            if (Objects.equals(Param.class, ann.annotationType())) {
-                Param param = (Param) ann;
-                return param.value();
-            } else {
-                return null;
-            }
+            return (ann instanceof Param) ? ((Param) ann).value() : null;
         }
 
+        /**
+         * Checks if the given annotation is of type @Param.
+         *
+         * @param ann The annotation.
+         * @return True if the annotation is of type @Param, otherwise false.
+         */
         @Override
         protected boolean isNamed(Annotation ann) {
             return Objects.equals(Param.class, ann.annotationType());

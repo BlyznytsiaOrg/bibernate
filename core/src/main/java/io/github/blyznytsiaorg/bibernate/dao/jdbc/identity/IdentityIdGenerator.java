@@ -1,7 +1,7 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
+package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setIdField;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
@@ -38,7 +38,7 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
     try (var connection = dataSource.getConnection();
         var statement = connection.prepareStatement(query, RETURN_GENERATED_KEYS)) {
         populatePreparedStatement(entity, statement);
-      showSql(() -> log.info(QUERY, query));
+      showSql(() -> log.debug(QUERY, query));
       statement.execute();
       ResultSet generatedKeys = statement.getGeneratedKeys();
       if (generatedKeys.next()) {

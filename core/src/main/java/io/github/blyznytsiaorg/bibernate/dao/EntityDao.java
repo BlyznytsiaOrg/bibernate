@@ -2,9 +2,9 @@ package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import io.github.blyznytsiaorg.bibernate.dao.exception.EntityStateWasChangeException;
+import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.Identity;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
