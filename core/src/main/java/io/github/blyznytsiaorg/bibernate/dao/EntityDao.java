@@ -72,6 +72,7 @@ public class EntityDao implements Dao {
     @Override
     public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(field, FIELD_MUST_BE_NOT_NULL);
 
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);

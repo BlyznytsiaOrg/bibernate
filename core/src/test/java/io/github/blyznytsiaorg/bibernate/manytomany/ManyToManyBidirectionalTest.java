@@ -90,7 +90,6 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         }
     }
 
-
     @DisplayName("Should retrieve existing course and Lazy list of persons")
     @Test
     void shouldRetrieveCourseWithPersons() {
@@ -222,5 +221,4 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
             }
         }
     }
-    
 }

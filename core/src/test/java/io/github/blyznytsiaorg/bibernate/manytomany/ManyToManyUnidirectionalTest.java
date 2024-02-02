@@ -89,7 +89,6 @@ class ManyToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
             }
         }
     }
-    
 
     @DisplayName("Should retrieve existing course without persons")
     @Test

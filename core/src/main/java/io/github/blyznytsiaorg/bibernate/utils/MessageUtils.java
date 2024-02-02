@@ -22,6 +22,7 @@ public class MessageUtils {
                 "Cannot execute delete entityClass [%s] with primaryKey %s. Message: %s";
         public static final String CANNOT_EXECUTE_QUERY = "Cannot execute query %s. Message: %s";
         public static final String ENTITY_CLASS_MUST_BE_NOT_NULL = "EntityClass must be not null";
+        public static final String FIELD_MUST_BE_NOT_NULL = "Field must be not null";
         public static final String ENTITY_MUST_BE_NOT_NULL = "Entity must be not null";
         public static final String PRIMARY_KEY_MUST_BE_NOT_NULL = "PrimaryKey must be not null";
         public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
