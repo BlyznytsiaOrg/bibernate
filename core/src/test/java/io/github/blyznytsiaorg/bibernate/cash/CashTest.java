@@ -11,7 +11,7 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CashTest extends AbstractPostgresInfrastructurePrep {
+class CashTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should Update entity in DB, but return cashed entity")
     @Test

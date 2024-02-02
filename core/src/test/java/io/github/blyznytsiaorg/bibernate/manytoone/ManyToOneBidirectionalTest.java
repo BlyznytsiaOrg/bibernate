@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.manytoone.bidirectional.Note;
 
-public class ManyToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
+class ManyToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
 
   @DisplayName("Should retrieve note and person")
   @Test

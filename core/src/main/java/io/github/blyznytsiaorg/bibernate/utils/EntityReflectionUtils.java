@@ -1,5 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
+
+import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SequenceConf;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -40,8 +47,11 @@ import lombok.extern.slf4j.Slf4j;
 public class EntityReflectionUtils {
 
     public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
-
     public static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+    public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id field for entity [%s]";
+    public static final String UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY = "Unable to get generated value field for entity [%s]";
+
+
 
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
@@ -248,15 +258,75 @@ public class EntityReflectionUtils {
 
     public static List<Field> getInsertEntityFields(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
-                .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
-                .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
-                .toList();
+            .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
+            //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
+            //TODO: ADD utility jdbc class to insert all types or null
+            .toList();
     }
 
     public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .map(field -> new EntityColumn(field.getName(), columnName(field)))
                 .collect(Collectors.toList());
+    }
+
+    public static Field getIdField(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(Id.class))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static Object setIdField(Object entity, Object value) {
+        Field idField = getIdField(entity.getClass());
+        setField(idField, entity, value);
+        return entity;
+    }
+
+    public static Field getGeneratedValueField(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY.formatted(
+                    entity.getClass().getSimpleName())));
+
+    }
+
+    public static Field getGeneratedValueSequenceStrategyField(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    public static SequenceConf getGeneratedValueSequenceConfig(Object entity, String tableName) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .map(field -> getSequenceConfFromField(field, tableName))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    private static SequenceConf getSequenceConfFromField(Field field, String tableName) {
+        var generatorName = field.getAnnotation(GeneratedValue.class).generator();
+        if(!generatorName.isEmpty() && generatorName.equals(field.getAnnotation(SequenceGenerator.class).name())) {
+            var sequenceName = field.getAnnotation(SequenceGenerator.class).sequenceName();
+            var initialValue = field.getAnnotation(SequenceGenerator.class).initialValue();
+            var allocationSize = field.getAnnotation(SequenceGenerator.class).allocationSize();
+            return new SequenceConf(sequenceName, initialValue, allocationSize);
+        }
+
+        var columnName = columnName(field);
+        return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {

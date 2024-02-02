@@ -69,11 +69,10 @@ public class EntityRequirementProcessor extends AbstractProcessor {
 
     private boolean hasNoArgsConstructor(TypeElement typeElement) {
         for (Element enclosedElement : typeElement.getEnclosedElements()) {
-            if (enclosedElement.getKind() == ElementKind.CONSTRUCTOR) {
-                if (enclosedElement.getModifiers().contains(Modifier.PUBLIC) &&
-                    ((ExecutableElement) enclosedElement).getParameters().isEmpty()) {
+            if (enclosedElement.getKind() == ElementKind.CONSTRUCTOR &&
+                    (enclosedElement.getModifiers().contains(Modifier.PUBLIC) &&
+                    ((ExecutableElement) enclosedElement).getParameters().isEmpty())) {
                     return true;
-                }
             }
         }
 
