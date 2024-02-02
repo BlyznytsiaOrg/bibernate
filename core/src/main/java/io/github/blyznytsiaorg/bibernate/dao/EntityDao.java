@@ -220,7 +220,6 @@ public class EntityDao implements Dao {
 
         if (isVersionFound) {
             fieldVersionValue = (Number) columnVersionValue(entityClass, entity);
-
         } else {
             fieldVersionValue = null;
         }
@@ -269,13 +268,6 @@ public class EntityDao implements Dao {
     private void showSql(Runnable logSql) {
         if (bibernateDatabaseSettings.isShowSql()) {
             logSql.run();
-        }
-    }
-
-    private void populatePreparedStatement(Object entity, PreparedStatement statement) throws SQLException {
-        int index = 1;
-        for (Field field : getInsertEntityFields(entity)) {
-            statement.setObject(index++, getValueFromObject(entity, field));
         }
     }
 

@@ -1,11 +1,10 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
-import java.util.LinkedList;
-import java.util.Optional;
-import java.util.Queue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 @RequiredArgsConstructor
 public class SequenceConf {

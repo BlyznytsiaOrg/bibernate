@@ -60,7 +60,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Person> persons = personRepository.findByFirstNameEquals("John");
 
             //then
-            assertThat(persons).hasSize(0);
+            assertThat(persons).isEmpty();
 
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
         }

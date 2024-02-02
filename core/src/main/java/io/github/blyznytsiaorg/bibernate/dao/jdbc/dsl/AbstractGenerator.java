@@ -16,7 +16,7 @@ public abstract class AbstractGenerator {
   private final BibernateDatabaseSettings bibernateDatabaseSettings;
   private final List<String> executedQueries;
 
-  public AbstractGenerator(BibernateDatabaseSettings bibernateDatabaseSettings,
+  protected AbstractGenerator(BibernateDatabaseSettings bibernateDatabaseSettings,
       List<String> executedQueries) {
     this.bibernateDatabaseSettings = bibernateDatabaseSettings;
     this.executedQueries = executedQueries;

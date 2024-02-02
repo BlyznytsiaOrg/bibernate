@@ -10,11 +10,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.generatedvalue.none.Person;
 
-public class NoneTest extends AbstractPostgresInfrastructurePrep {
+class NoneTest extends AbstractPostgresInfrastructurePrep {
 
   @Test
   @DisplayName("Should get id from the entity")
-  public void shouldGenerateIdFromEntity() {
+  void shouldGenerateIdFromEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
     var persistent = createPersistent();

@@ -1,32 +1,24 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
+import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getGeneratedValueSequenceConfig;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getGeneratedValueSequenceStrategyField;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setIdField;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_GET_ID_FROM_SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 
-import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.sql.DataSource;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class SequenceIdGenerator extends AbstractGenerator implements Generator {
-
-  private final static String SEQ = "seq";
-  private final static String SEPARATOR = "_";
-
-  private final static String SELECT_NEXT_QUERY = "select nextval('%s');";
+  private static final String SELECT_NEXT_QUERY = "select nextval('%s');";
 
   private final Map<Class<?>, SequenceConf> sequences = new HashMap<>();
 
@@ -42,7 +34,7 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
   }
 
   @Override
-  public <T> Object handle(Object entity, DataSource dataSource) {
+  public Object handle(Object entity, DataSource dataSource) {
     var tableName = table(entity.getClass());
     Object generatedId = generateId(entity, tableName, dataSource);
     var query = insert(entity, tableName);
@@ -58,19 +50,6 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
           CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entity.getClass(), e.getMessage()), e);
     }
     return entity;
-  }
-
-  private String getQuery (Object entity, String tableName) {
-    Field field = getGeneratedValueSequenceStrategyField(entity);
-    return generateGetNextQuery(field, tableName);
-  }
-
-  private static String generateGetNextQuery(Field field, String tableName) {
-    return SELECT_NEXT_QUERY.formatted(getSequenceName(field, tableName));
-  }
-
-  public static String getSequenceName(Field field, String tableName) {
-    return tableName + SEPARATOR + columnName(field) + SEPARATOR + SEQ;
   }
 
   private Object generateId(Object entity, String tableName, DataSource dataSource) {

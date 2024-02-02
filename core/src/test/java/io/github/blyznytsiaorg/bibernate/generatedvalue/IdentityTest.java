@@ -10,11 +10,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.generatedvalue.identity.Person;
 
-public class IdentityTest extends AbstractPostgresInfrastructurePrep {
+class IdentityTest extends AbstractPostgresInfrastructurePrep {
 
   @Test
   @DisplayName("Should get id from the serial column of the persons table")
-  public void shouldGetIdFromSerialColumnAndSetItToEntity() {
+  void shouldGetIdFromSerialColumnAndSetItToEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
     var persistent = createPersistent();

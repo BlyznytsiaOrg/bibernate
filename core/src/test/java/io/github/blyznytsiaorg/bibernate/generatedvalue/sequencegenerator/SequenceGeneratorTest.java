@@ -10,11 +10,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.generatedvalue.sequencegenerator.Person;
 
-public class SequenceGeneratorTest extends AbstractPostgresInfrastructurePrep {
+class SequenceGeneratorTest extends AbstractPostgresInfrastructurePrep {
 
   @Test
   @DisplayName("Should generate id from proper sequence and set it to entity")
-  public void shouldGenerateIdFromSequenceAndSetItToEntity() {
+  void shouldGenerateIdFromSequenceAndSetItToEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
     QueryUtils.setupSequences(dataSource, CREATE_PERSON_ID_CUSTOM_SEQ);

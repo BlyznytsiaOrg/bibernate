@@ -9,18 +9,16 @@ import java.util.List;
 public class PostgresIdentity implements Identity {
   private final List<Generator> generators = new ArrayList<>();
   private final BibernateDatabaseSettings bibernateDatabaseSettings;
-  private final List<String> executedQueries;
 
   public PostgresIdentity(BibernateDatabaseSettings bibernateDatabaseSettings, List<String> executedQueries) {
     this.bibernateDatabaseSettings = bibernateDatabaseSettings;
-    this.executedQueries = executedQueries;
     generators.add(new NoneIdGenerator(bibernateDatabaseSettings, executedQueries));
     generators.add(new SequenceIdGenerator(bibernateDatabaseSettings, executedQueries));
     generators.add(new IdentityIdGenerator(bibernateDatabaseSettings, executedQueries));
   }
 
   @Override
-  public <T> Object saveWithIdentity(Object entity) {
+  public Object saveWithIdentity(Object entity) {
     GenerationType strategy = getStrategy(entity);
     for (Generator generator:generators) {
       if(strategy.equals(generator.type())){

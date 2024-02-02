@@ -30,7 +30,7 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
   }
 
   @Override
-  public <T> Object handle(Object entity, DataSource dataSource) {
+  public Object handle(Object entity, DataSource dataSource) {
     var tableName = table(entity.getClass());
     var query = insert(entity, tableName);
     addToExecutedQueries(query);
