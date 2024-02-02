@@ -26,7 +26,7 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
 
                 var person = new Person();
-                person.setId(1L);
+                person.setId(2L);
                 person.setFirstName("Rake");
                 person.setLastName("Tell");
 
@@ -42,7 +42,7 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "INSERT INTO persons ( first_name, last_name ) VALUES ( ?, ? );"));
+                    "INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
         }
     }
 }
