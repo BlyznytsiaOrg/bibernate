@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,10 +15,12 @@ public interface Dao {
 
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
-    <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
+    <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue);
 
     <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues);
 
+    <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues);
+    
     <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues);
 
     int find(String query, Object[] bindValues);

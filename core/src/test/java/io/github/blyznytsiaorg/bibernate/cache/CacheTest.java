@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.cash;
+package io.github.blyznytsiaorg.bibernate.cache;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
@@ -11,11 +11,11 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CashTest extends AbstractPostgresInfrastructurePrep {
+class CacheTest extends AbstractPostgresInfrastructurePrep {
 
-    @DisplayName("Should Update entity in DB, but return cashed entity")
+    @DisplayName("Should Update entity in DB, but return cached entity")
     @Test
-    void shouldUpdateEntityInDBButReturnCashedEntity() {
+    void shouldUpdateEntityInDBButReturnCachedEntity() {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         var persistent = createPersistent();
@@ -37,12 +37,12 @@ class CashTest extends AbstractPostgresInfrastructurePrep {
 
                 var resultOfUpdate = bibernateSession.getDao().update(Person.class, updetePerson, List.of());
 
-                var personFromCash = bibernateSession.findByQuery(
+                var personFromCache = bibernateSession.findByQuery(
                         Person.class, "SELECT * FROM persons WHERE id = ?;", new Object[]{personId});
 
                 //then
                 assertThat(resultOfUpdate).isNotZero();
-                assertThat(personFromCash).isNotEmpty().allSatisfy(person -> {
+                assertThat(personFromCache).isNotEmpty().allSatisfy(person -> {
                    assertThat(person.getId()).isEqualTo(updetePerson.getId());
                    assertThat(person.getFirstName()).isNotEqualTo(updetePerson.getFirstName());
                    assertThat(person.getLastName()).isNotEqualTo(updetePerson.getLastName());
@@ -81,12 +81,12 @@ class CashTest extends AbstractPostgresInfrastructurePrep {
 
                 bibernateSession.flush();
 
-                var personFromCash = bibernateSession.findByQuery(
+                var personFromCache = bibernateSession.findByQuery(
                         Person.class, "SELECT * FROM persons WHERE id = ?;", new Object[]{personId});
 
                 //then
                 assertThat(resultOfUpdate).isNotZero();
-                assertThat(personFromCash).isNotEmpty().allSatisfy(person -> {
+                assertThat(personFromCache).isNotEmpty().allSatisfy(person -> {
                     assertThat(person.getId()).isEqualTo(updetePerson.getId());
                     assertThat(person.getFirstName()).isEqualTo(updetePerson.getFirstName());
                     assertThat(person.getLastName()).isEqualTo(updetePerson.getLastName());

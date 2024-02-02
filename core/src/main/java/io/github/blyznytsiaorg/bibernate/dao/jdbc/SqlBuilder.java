@@ -3,15 +3,20 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.DeleteQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.isInverseSide;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.owningFieldByInverse;
 
 /**
  *
@@ -50,7 +55,7 @@ public class SqlBuilder {
                     .forEach(fieldName -> populateFieldOrIncVersion(fieldName, isVersionFound, finalFieldVersionName, update));
         }
 
-        var updateQueryBuilder = update.whereCondition(selectFieldNameWhereCondition(fieldIdName));
+        var updateQueryBuilder = update.whereCondition(fieldEqualsParameterCondition(fieldIdName));
         if (isVersionFound) {
             updateQueryBuilder.andCondition(fieldVersionName + EQ + PARAMETER);
         }
@@ -58,7 +63,7 @@ public class SqlBuilder {
         return updateQueryBuilder.buildUpdateStatement();
     }
 
-    public String selectFieldNameWhereCondition(String fieldName) {
+    public String fieldEqualsParameterCondition(String fieldName) {
         return fieldName + EQ + PARAMETER;
     }
     
@@ -72,15 +77,45 @@ public class SqlBuilder {
 
     public String delete(String tableName, String fieldIdName) {
         return DeleteQueryBuilder.from(tableName)
-                .whereCondition(selectFieldNameWhereCondition(fieldIdName))
+                .whereCondition(fieldEqualsParameterCondition(fieldIdName))
                 .buildDeleteStatement();
     }
 
     public String delete(String tableName, String fieldIdName, String version) {
         return DeleteQueryBuilder.from(tableName)
-                .whereCondition(selectFieldNameWhereCondition(fieldIdName))
-                .andCondition(selectFieldNameWhereCondition(version))
+                .whereCondition(fieldEqualsParameterCondition(fieldIdName))
+                .andCondition(fieldEqualsParameterCondition(version))
                 .buildDeleteStatement();
+    }
+    
+    public String selectWithJoin(String entityTableName, String entityTableIdFieldName,
+                                 Field joinTableField) {
+        var joinTableName = joinTableName(joinTableField);
+        var inverseJoinColumnName = inverseTableJoinColumnName(joinTableField);
+        var joinColumnName = tableJoinColumnName(joinTableField);
+        
+        if (isInverseSide(joinTableField)) {
+            Field owningField = owningFieldByInverse(joinTableField);
+            joinTableName = joinTableName(owningField);
+            inverseJoinColumnName = tableJoinColumnName(owningField);
+            joinColumnName = inverseTableJoinColumnName(owningField);
+        }
+
+        var onCondition = getOnCondition(entityTableName, entityTableIdFieldName, joinTableName, inverseJoinColumnName);
+        
+        return SelectQueryBuilder.from(joinTableName)
+                .selectFieldsFromTable(entityTableName)
+                .join(entityTableName, onCondition, JoinType.INNER)
+                .whereCondition(fieldEqualsParameterCondition(joinColumnName))
+                .buildSelectStatement();
+    }
+
+    private static String getOnCondition(String entityTableName, 
+                                         String entityTableIdFieldName, 
+                                         String joinTableName, 
+                                         String inverseJoinColumnName) {
+        return String.format("%s%s%s%s%s%s%s", 
+                entityTableName, DOT, entityTableIdFieldName, EQ, joinTableName, DOT, inverseJoinColumnName);
     }
 
     private void populateFieldOrIncVersion(String fieldName, boolean isVersionFound,

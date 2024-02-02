@@ -51,8 +51,8 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     @Override
-    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
-        var entities = bibernateSession.findAllById(entityClass, idColumnName, idColumnValue);
+    public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        var entities = bibernateSession.findAllByColumnValue(entityClass, columnName, columnValue);
         persistentContext(entityClass, entities);
 
         return entities;
@@ -64,6 +64,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         persistentContext(entityClass, entities);
 
         return entities;
+    }
+
+    @Override
+    public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
+        return bibernateSession.findByJoinTableField(entityClass, field, bindValues);
     }
 
     @Override
@@ -202,10 +207,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
             var fieldIdType = columnIdType(entityClass);
             var fieldIdValue = columnIdValue(entityClass, entityFromDb);
             var entityKey = new EntityKey<>(entityClass, fieldIdValue, fieldIdType);
-            var entityCashed = firstLevelCache.get(entityKey);
+            var entityCached = firstLevelCache.get(entityKey);
 
-            if (Objects.nonNull(entityCashed)) {
-                entities.set(i, entityClass.cast(entityCashed));
+            if (Objects.nonNull(entityCached)) {
+                entities.set(i, entityClass.cast(entityCached));
             } else {
                 persistentContext(entityClass, entityFromDb, entityKey, fieldIdValue);
             }

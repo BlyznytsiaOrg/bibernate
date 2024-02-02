@@ -1,20 +1,19 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
-
-import java.lang.reflect.Field;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
-
 import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
+
+import java.lang.reflect.Field;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Objects;
+
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
 
 public class CollectionFieldResolver implements TypeFieldResolver {
     
@@ -32,14 +31,19 @@ public class CollectionFieldResolver implements TypeFieldResolver {
                     .formatted(field.getName(), field.getDeclaringClass()));
         }
         
-        var collectionGenericType = getCollectionGenericType(field); 
-        var joinColumnName = mappedByJoinColumnName(field);
-
+        var collectionGenericType = getCollectionGenericType(field);
         var session = BibernateSessionContextHolder.getBibernateSession();
-        Supplier<List<?>> collectionSupplier = () -> 
-                session.findAllById(collectionGenericType, joinColumnName, entityId);
-        
-        return new PersistentList<>(collectionSupplier);
+
+        if (EntityRelationsUtils.isOneToMany(field)) {
+            return new PersistentList<>(() -> 
+                    session.findAllByColumnValue(collectionGenericType, mappedByJoinColumnName(field), entityId));
+        }
+
+        if (EntityRelationsUtils.isManyToMany(field)) {
+            return new PersistentList<>(() ->  session.findByJoinTableField(collectionGenericType, field, entityId));
+        }
+
+        return Collections.emptyList();
     }
     
     private Object getEntityId(Field field, ResultSet resultSet) {

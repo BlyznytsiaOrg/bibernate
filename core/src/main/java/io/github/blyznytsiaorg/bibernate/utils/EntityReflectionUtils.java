@@ -20,14 +20,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Column;
-import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
-import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
-import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
-import io.github.blyznytsiaorg.bibernate.annotation.Table;
-import io.github.blyznytsiaorg.bibernate.annotation.Version;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -46,17 +39,14 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class EntityReflectionUtils {
 
-    public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
-    public static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+    private static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
+    private static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
     public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id field for entity [%s]";
     public static final String UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY = "Unable to get generated value field for entity [%s]";
 
-
-
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
-    public static final String ID_POSTFIX = "_id";
-
+    private static final String ID_POSTFIX = "_id";
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -101,6 +91,27 @@ public class EntityReflectionUtils {
           .filter(f -> Objects.equals(f.getName(), mappedByName))
           .findFirst()
           .map(EntityReflectionUtils::joinColumnName);
+    }
+
+    public static String joinTableName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::name)
+                .filter(Predicate.not(String::isEmpty))
+                .orElse(null);
+    }
+    
+    public static String inverseTableJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::inverseJoinColumn)
+                .map(JoinColumn::name)
+                .orElse(null);
+    }
+
+    public static String tableJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::joinColumn)
+                .map(JoinColumn::name)
+                .orElse(null);
     }
 
     public static String joinColumnName(Field field) {

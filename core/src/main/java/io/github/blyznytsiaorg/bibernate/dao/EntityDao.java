@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
@@ -45,7 +46,7 @@ public class EntityDao implements Dao {
 
         var fieldIdName = columnIdName(entityClass);
 
-        List<T> resultList = findAllById(entityClass, fieldIdName, primaryKey);
+        List<T> resultList = findAllByColumnValue(entityClass, fieldIdName, primaryKey);
 
         if (resultList.size() > 1) {
             throw new NonUniqueResultException(NON_UNIQUE_RESULT_FOR_FIND_BY_ID.formatted(entityClass.getSimpleName()));
@@ -55,10 +56,10 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
-        var whereCondition = sqlBuilder.selectFieldNameWhereCondition(idColumnName);
+    public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        var whereCondition = sqlBuilder.fieldEqualsParameterCondition(columnName);
 
-        return this.findByWhere(entityClass, whereCondition, idColumnValue);
+        return findByWhere(entityClass, whereCondition, columnValue);
     }
 
     @Override
@@ -68,7 +69,25 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var query = sqlBuilder.selectBy(tableName, whereCondition);
 
-        return this.findByQuery(entityClass, query, bindValues);
+        return findByQuery(entityClass, query, bindValues);
+    }
+
+    @Override
+    public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(field, FIELD_MUST_BE_NOT_NULL);
+
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        var query = sqlBuilder.selectWithJoin(tableName, fieldIdName, field);
+
+        Optional.of(bidirectionalRelations(entityClass, field)).ifPresent(entityPersistent::addIgnoredRelationFields);
+        
+        var entities = findByQuery(entityClass, query, bindValues);
+        
+        entityPersistent.clearIgnoredRelationFields();
+        
+        return entities;
     }
 
     @Override

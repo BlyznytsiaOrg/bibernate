@@ -97,6 +97,39 @@ public interface AbstractPostgresTableCreationPrep {
             delete from notes where person_id = 1;
             """;
 
+    String CREATE_PERSONS_COURSES_TABLES = """
+            CREATE TABLE IF NOT EXISTS persons (
+                id bigserial primary key,
+                first_name varchar(255),
+                last_name varchar(255)
+            );
+            
+            CREATE TABLE IF NOT EXISTS courses (
+                id bigserial primary key,
+                name varchar(255)
+            );
+            
+            CREATE TABLE IF NOT EXISTS persons_courses (
+                id bigserial primary key,
+                person_id bigint,
+                course_id bigint,
+                CONSTRAINT persons_courses_persons_FK FOREIGN KEY (person_id) REFERENCES persons,
+                CONSTRAINT persons_courses_courses_FK FOREIGN KEY (course_id) REFERENCES courses
+            );
+            """;
+    
+    String CREATE_INSERT_PERSONS_COURSES_STATEMENTS = """
+            insert into persons(first_name, last_name) values ('John', 'Doe');
+            insert into persons(first_name, last_name) values ('Jordan', 'Rodriguez');
+            insert into persons(first_name, last_name) values ('Ava', 'Mitchell');
+            insert into courses(name) values ('Bobocode 2.0');
+            insert into courses(name) values ('Bobocode 3.0');
+            insert into persons_courses(person_id, course_id) values (1, 1);
+            insert into persons_courses(person_id, course_id) values (1, 2);
+            insert into persons_courses(person_id, course_id) values (2, 1);
+            insert into persons_courses(person_id, course_id) values (3, 2);
+            """;
+
     String CREATE_PERSON_ID_SEQUENCE = "create sequence if not exists persons_id_seq start with 1 increment by 1";
 
     String CREATE_PERSON_ID_CUSTOM_SEQ = "create sequence if not exists person_id_custom_seq minvalue 6 start 6 increment by 5";
