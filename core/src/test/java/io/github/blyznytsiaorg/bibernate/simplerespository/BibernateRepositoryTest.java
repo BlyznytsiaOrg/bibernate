@@ -254,7 +254,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             assertThat(savePerson.getLastName()).isEqualTo("NEW_LAST_NAME");
             assertThat(savePerson.getFirstName()).isEqualTo("NEW_FIRST_NAME");
 
-            assertQueries(bibernateSessionFactory, List.of("INSERT INTO persons ( first_name, last_name ) VALUES ( ?, ? );"));
+            assertQueries(bibernateSessionFactory, List.of("INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
         }
     }
 

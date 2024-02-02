@@ -39,7 +39,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 assertThat(saveEmployeeEntity.getLastName()).isEqualTo("LastName2");
                 assertThat(saveEmployeeEntity.getVersion()).isEqualTo(1);
 
-                assertQueries(bibernateSessionFactory, List.of("INSERT INTO employees ( first_name, last_name, version ) VALUES ( ?, ?, ? );"));
+                assertQueries(bibernateSessionFactory, List.of("INSERT INTO employees ( id, first_name, last_name, version ) VALUES ( ?, ?, ?, ? );"));
             }
         }
     }
