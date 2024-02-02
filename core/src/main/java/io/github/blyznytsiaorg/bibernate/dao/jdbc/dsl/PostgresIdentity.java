@@ -11,8 +11,7 @@ public class PostgresIdentity implements Identity {
   private final BibernateDatabaseSettings bibernateDatabaseSettings;
   private final List<String> executedQueries;
 
-  public PostgresIdentity(BibernateDatabaseSettings bibernateDatabaseSettings,
-      List<String> executedQueries) {
+  public PostgresIdentity(BibernateDatabaseSettings bibernateDatabaseSettings, List<String> executedQueries) {
     this.bibernateDatabaseSettings = bibernateDatabaseSettings;
     this.executedQueries = executedQueries;
     generators.add(new NoneIdGenerator(bibernateDatabaseSettings, executedQueries));

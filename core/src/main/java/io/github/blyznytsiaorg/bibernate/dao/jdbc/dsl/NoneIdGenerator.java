@@ -15,8 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NoneIdGenerator extends AbstractGenerator implements Generator {
 
-  private static final GenerationType TYPE = NONE;
-
   public NoneIdGenerator(
       BibernateDatabaseSettings bibernateDatabaseSettings,
       List<String> executedQueries) {
@@ -25,7 +23,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
 
   @Override
   public GenerationType type() {
-    return TYPE;
+    return NONE;
   }
 
   @Override
@@ -33,6 +31,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
     var tableName = table(entity.getClass());
     var query = insert(entity, tableName);
     addToExecutedQueries(query);
+
     try (var connection = dataSource.getConnection();
         var statement = connection.prepareStatement(query)) {
       populatePreparedStatement(entity, statement);
@@ -42,6 +41,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
       throw new BibernateGeneralException(
           CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entity.getClass(), e.getMessage()), e);
     }
+
     return entity;
   }
 }

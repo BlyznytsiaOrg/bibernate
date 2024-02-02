@@ -256,13 +256,6 @@ public class EntityReflectionUtils {
         return List.class.isAssignableFrom(field.getType());
     }
 
-//    public static List<Field> getInsertEntityFields(Object entity) {
-//        return Arrays.stream(entity.getClass().getDeclaredFields())
-//                .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
-//                .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
-//                .toList();
-//    }
-
     public static List<Field> getInsertEntityFields(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
             .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
@@ -330,10 +323,10 @@ public class EntityReflectionUtils {
             var initialValue = field.getAnnotation(SequenceGenerator.class).initialValue();
             var allocationSize = field.getAnnotation(SequenceGenerator.class).allocationSize();
             return new SequenceConf(sequenceName, initialValue, allocationSize);
-        } else {
-            var columnName = columnName(field);
-            return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
         }
+
+        var columnName = columnName(field);
+        return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {

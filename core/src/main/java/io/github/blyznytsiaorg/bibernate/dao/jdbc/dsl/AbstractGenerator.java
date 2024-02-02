@@ -50,5 +50,4 @@ public abstract class AbstractGenerator {
   protected static Optional<Object> getGeneratedValue (Field field, Field generatedValueField, Object generatedId) {
     return field.equals(generatedValueField) ? Optional.ofNullable(generatedId) : Optional.empty();
   }
-
 }

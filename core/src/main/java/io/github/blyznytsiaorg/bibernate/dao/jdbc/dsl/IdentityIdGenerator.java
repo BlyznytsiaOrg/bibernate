@@ -18,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class IdentityIdGenerator extends AbstractGenerator implements Generator {
 
-  private static final GenerationType TYPE = IDENTITY;
-
   public IdentityIdGenerator(
       BibernateDatabaseSettings bibernateDatabaseSettings,
       List<String> executedQueries) {
@@ -28,7 +26,7 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
 
   @Override
   public GenerationType type() {
-    return TYPE;
+    return IDENTITY;
   }
 
   @Override
@@ -50,7 +48,7 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
       throw new BibernateGeneralException(
           CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entity.getClass(), e.getMessage()), e);
     }
+
     return entity;
   }
-
 }

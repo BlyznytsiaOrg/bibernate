@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import testdata.generatedvalue.identity.Person;
 
 public class IdentityTest extends AbstractPostgresInfrastructurePrep {
+
   @Test
   @DisplayName("Should get id from the serial column of the persons table")
   public void shouldGetIdFromSerialColumnAndSetItToEntity() {

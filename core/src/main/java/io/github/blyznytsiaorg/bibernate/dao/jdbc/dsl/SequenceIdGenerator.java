@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SequenceIdGenerator extends AbstractGenerator implements Generator {
 
-  private static final GenerationType TYPE = SEQUENCE;
   private final static String SEQ = "seq";
   private final static String SEPARATOR = "_";
 
@@ -39,7 +38,7 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
 
   @Override
   public GenerationType type() {
-    return TYPE;
+    return SEQUENCE;
   }
 
   @Override
@@ -111,5 +110,4 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
     }
     return seqConf;
   }
-
 }

@@ -15,7 +15,5 @@ public @interface SequenceGenerator {
   String name();
   String sequenceName();
   int initialValue() default 1;
-  int allocationSize() default 1;
-
-
+  int allocationSize() default 50;
 }

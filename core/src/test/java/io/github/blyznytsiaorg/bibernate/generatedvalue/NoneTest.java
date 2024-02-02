@@ -42,5 +42,4 @@ public class NoneTest extends AbstractPostgresInfrastructurePrep {
           "INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
     }
   }
-
 }
