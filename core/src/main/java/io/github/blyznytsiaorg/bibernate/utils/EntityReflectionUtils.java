@@ -1,12 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.IDENTITY;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SequenceConf;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.SequenceConf;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;

@@ -1,6 +1,5 @@
-package io.github.blyznytsiaorg.bibernate.dao.exception;
+package io.github.blyznytsiaorg.bibernate.exception;
 
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 
 /**
  *

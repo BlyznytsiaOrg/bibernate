@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
+package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getGeneratedValueField;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getInsertEntityFields;

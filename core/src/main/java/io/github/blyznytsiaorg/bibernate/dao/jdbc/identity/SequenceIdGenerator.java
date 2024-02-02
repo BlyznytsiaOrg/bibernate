@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
+package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_GET_ID_FROM_SEQUENCE;
@@ -42,7 +42,7 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
     try (var connection = dataSource.getConnection();
         var statement = connection.prepareStatement(query)) {
       populatePreparedStatement(entity, statement, generatedId);
-      showSql(() -> log.info(QUERY, query));
+      showSql(() -> log.debug(QUERY, query));
       statement.execute();
       setIdField(entity, generatedId);
     } catch (Exception e) {
@@ -69,12 +69,12 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
       var query = SELECT_NEXT_QUERY.formatted(sequenceName);
       addToExecutedQueries(query);
       var statement = connection.prepareStatement(query);
-      showSql(() -> log.info(QUERY, query));
+      showSql(() -> log.debug(QUERY, query));
       var rs = statement.executeQuery();
       if (rs.next()) {
         result = rs.getLong(1);
       }
-      log.info("Next ID:[{}] was fetched from db for sequence:[{}]", result, sequenceName);
+      log.debug("Next ID:[{}] was fetched from db for sequence:[{}]", result, sequenceName);
     } catch(Exception e) {
       throw new BibernateGeneralException(CANNOT_GET_ID_FROM_SEQUENCE.formatted(sequenceName), e);
     }

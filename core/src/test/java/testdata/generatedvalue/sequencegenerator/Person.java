@@ -1,6 +1,6 @@
 package testdata.generatedvalue.sequencegenerator;
 
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.SEQUENCE;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
