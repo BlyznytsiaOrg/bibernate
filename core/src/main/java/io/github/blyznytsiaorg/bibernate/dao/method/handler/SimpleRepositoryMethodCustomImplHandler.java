@@ -3,6 +3,8 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.NotFoundImplementationForCustomRepository;
+import io.github.blyznytsiaorg.bibernate.exception.RepositoryInvocationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -85,7 +87,7 @@ public class SimpleRepositoryMethodCustomImplHandler implements SimpleRepository
             }
         }
         log.trace(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
-        throw new IllegalArgumentException(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
+        throw new NotFoundImplementationForCustomRepository(IMPLEMENTATION_FOR_METHOD_S_NOT_RESOLVED.formatted(methodName));
     }
 
     /**
@@ -106,7 +108,7 @@ public class SimpleRepositoryMethodCustomImplHandler implements SimpleRepository
                     customRepositoryMethod.getName(),
                     Arrays.toString(parameters), exe.getMessage());
             log.error(errorMessage, exe);
-            throw new BibernateGeneralException(errorMessage, exe);
+            throw new RepositoryInvocationException(errorMessage, exe);
         }
     }
 }

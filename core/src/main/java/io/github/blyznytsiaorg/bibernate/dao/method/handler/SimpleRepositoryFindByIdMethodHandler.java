@@ -2,8 +2,9 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
+import io.github.blyznytsiaorg.bibernate.exception.UnsupportedReturnTypeException;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -64,7 +65,7 @@ public class SimpleRepositoryFindByIdMethodHandler implements SimpleRepositoryMe
                 } else if (Optional.class.isAssignableFrom((Class<?>)returnType.getGenericEntityClass().getRawType())) {
                     return bringSession.findById(entityClass, primaryKey);
                 } else {
-                    throw new IllegalArgumentException(CANNOT_RETURN_S_SHOULD_BE_OPTIONAL_S_OR_S.formatted(
+                    throw new UnsupportedReturnTypeException(CANNOT_RETURN_S_SHOULD_BE_OPTIONAL_S_OR_S.formatted(
                             returnType.getGenericEntityClass(),
                             repositoryDetails.entityType(),
                             repositoryDetails.entityType()));
@@ -72,6 +73,6 @@ public class SimpleRepositoryFindByIdMethodHandler implements SimpleRepositoryMe
             }
         }
 
-        throw new IllegalArgumentException(LOOKS_LIKE_METHOD_WITHOUT_REQUIRED_PARAMETER_ID.formatted(methodName));
+        throw new MissingRequiredParametersInMethod(LOOKS_LIKE_METHOD_WITHOUT_REQUIRED_PARAMETER_ID.formatted(methodName));
     }
 }

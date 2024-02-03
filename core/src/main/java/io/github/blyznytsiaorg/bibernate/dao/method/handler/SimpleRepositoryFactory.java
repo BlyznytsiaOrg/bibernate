@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.github.blyznytsiaorg.bibernate.dao.utils.RepositoryParserUtils.getParameterNames;
@@ -77,10 +78,9 @@ public class SimpleRepositoryFactory {
 
         simpleRepositoryMethodHandlers = reflections.getSubTypesOf(SimpleRepositoryMethodHandler.class)
                 .stream()
-                .filter(aClass -> !aClass.isAssignableFrom(SimpleRepositoryMethodCustomImplHandler.class))
+                .filter(Predicate.not(aClass -> aClass.isAssignableFrom(SimpleRepositoryMethodCustomImplHandler.class)))
                 .map(aClass -> aClass.cast(createNewInstance(aClass, METHOD_HANDLER_CREATION)))
                 .collect(Collectors.toList());
-
 
         simpleRepositoryMethodHandlers.add(new SimpleRepositoryMethodCustomImplHandler(CUSTOM_REPOSITORY_IMPLEMENTATIONS));
     }

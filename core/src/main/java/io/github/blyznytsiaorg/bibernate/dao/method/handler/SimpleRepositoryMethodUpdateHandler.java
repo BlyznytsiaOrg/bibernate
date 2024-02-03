@@ -2,7 +2,7 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +50,6 @@ public class SimpleRepositoryMethodUpdateHandler implements SimpleRepositoryMeth
         }
 
         log.warn(UPDATE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
-        throw new BibernateGeneralException(UPDATE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
+        throw new MissingRequiredParametersInMethod(UPDATE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
     }
 }

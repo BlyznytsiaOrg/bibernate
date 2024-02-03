@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.EntityNotFoundException;
+import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,6 +71,6 @@ public class SimpleRepositoryFindOneMethodHandler implements SimpleRepositoryMet
             }
         }
 
-        throw new IllegalArgumentException(LOOKS_LIKE_S_WITHOUT_REQUIRED_PARAMETER_ID.formatted(methodName));
+        throw new MissingRequiredParametersInMethod(LOOKS_LIKE_S_WITHOUT_REQUIRED_PARAMETER_ID.formatted(methodName));
     }
 }
