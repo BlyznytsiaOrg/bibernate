@@ -104,9 +104,16 @@ public interface AbstractPostgresTableCreationPrep {
                 last_name varchar(255)
             );
             
-            CREATE TABLE IF NOT EXISTS courses (
+            CREATE TABLE IF NOT EXISTS authors (
                 id bigserial primary key,
                 name varchar(255)
+            );
+            
+            CREATE TABLE IF NOT EXISTS courses (
+                id bigserial primary key,
+                author_id bigint,
+                name varchar(255),
+                CONSTRAINT courses_author_FK FOREIGN KEY (author_id) REFERENCES authors
             );
             
             CREATE TABLE IF NOT EXISTS persons_courses (
@@ -122,8 +129,9 @@ public interface AbstractPostgresTableCreationPrep {
             insert into persons(first_name, last_name) values ('John', 'Doe');
             insert into persons(first_name, last_name) values ('Jordan', 'Rodriguez');
             insert into persons(first_name, last_name) values ('Ava', 'Mitchell');
-            insert into courses(name) values ('Bobocode 2.0');
-            insert into courses(name) values ('Bobocode 3.0');
+            insert into authors(name) values ('Bobocode');
+            insert into courses(author_id, name) values (1, 'Bobocode 2.0');
+            insert into courses(author_id, name) values (1, 'Bobocode 3.0');
             insert into persons_courses(person_id, course_id) values (1, 1);
             insert into persons_courses(person_id, course_id) values (1, 2);
             insert into persons_courses(person_id, course_id) values (2, 1);
