@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
+import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public Persistent(String configFileName) {
@@ -32,6 +34,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public Persistent(HikariDataSource dataSource) {
@@ -41,6 +44,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public Persistent(String configFileName, HikariDataSource dataSource) {
@@ -48,18 +52,21 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public Persistent(Map<String, String> externalBibernateSettings) {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource) {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null, dataSource);
         enableFlyway();
+        BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
     }
 
     public BibernateEntityManagerFactory createBibernateEntityManager() {

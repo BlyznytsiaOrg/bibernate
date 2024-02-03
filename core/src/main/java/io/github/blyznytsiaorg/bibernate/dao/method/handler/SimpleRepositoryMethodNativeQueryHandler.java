@@ -4,10 +4,23 @@ import io.github.blyznytsiaorg.bibernate.annotation.Query;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 
+/**
+ * Implementation of {@link SimpleRepositoryMethodHandler} for handling methods annotated with {@link Query}.
+ * This handler executes native SQL queries.
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
+ */
+@Slf4j
 public class SimpleRepositoryMethodNativeQueryHandler implements SimpleRepositoryMethodHandler {
+    /**
+     * {@inheritDoc}
+     * Checks if the method is annotated with {@link Query}, specifies a native query, and is not an HQL query.
+     */
     @Override
     public boolean isMethodHandle(Method method) {
         return method.isAnnotationPresent(Query.class) &&
@@ -15,11 +28,16 @@ public class SimpleRepositoryMethodNativeQueryHandler implements SimpleRepositor
                 method.getAnnotation(Query.class).hql();
     }
 
+    /**
+     * {@inheritDoc}
+     * Executes the native SQL query specified in the {@link Query} annotation.
+     */
     @Override
     public Object execute(Method method, Object[] parameters, RepositoryDetails repositoryDetails, MethodMetadata methodMetadata) {
-        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
+        log.trace(HANDLE_METHOD, method.getName());
         String query = method.getAnnotation(Query.class).value();
 
+        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
         try (var session = sessionFactory.openSession()){
             return session.find(query, parameters);
         }

@@ -277,7 +277,7 @@ public class RepositoryParserUtils {
          */
         @Override
         protected String getNamedValue(Annotation ann) {
-            return (ann instanceof Param) ? ((Param) ann).value() : null;
+            return ann instanceof Param param ? param.value() : null;
         }
 
         /**
