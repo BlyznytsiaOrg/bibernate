@@ -39,7 +39,7 @@ public interface SimpleRepositoryMethodHandler {
     /**
      * Error message template for being unable to find a result for entityClass in method with parameters.
      */
-    String CANNOT_FIND_RESULT_FOR_S_IN_METHOD_S = "Cannot find result for entityClass in method parameters";
+    String CANNOT_FIND_RESULT_FOR_S_IN_METHOD_S = "Cannot find result for %s in method %s parameters %s";
 
     /**
      * Checks if the given method can be handled by this handler.
