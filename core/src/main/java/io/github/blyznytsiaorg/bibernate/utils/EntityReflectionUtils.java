@@ -279,7 +279,7 @@ public class EntityReflectionUtils {
     public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .map(field -> new EntityColumn(field.getName(), columnName(field)))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static Field getIdField(Class<?> entityClass) {
