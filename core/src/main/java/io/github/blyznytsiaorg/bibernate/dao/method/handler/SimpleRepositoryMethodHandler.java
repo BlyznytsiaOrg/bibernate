@@ -24,7 +24,7 @@ public interface SimpleRepositoryMethodHandler {
     String LOOKS_LIKE_METHOD_WITHOUT_REQUIRED_PARAMETER_ID =
             "Looks like method %s  without required parameter ID";
     /**
-     * Error message template for an invalid return type. It should be Optional<%s> or %s.
+     * Error message template for an invalid return type. It should be Optional or Type.
      */
     String CANNOT_RETURN_S_SHOULD_BE_OPTIONAL_S_OR_S = "Cannot return %s should be Optional<%s> or %s";
     /**
@@ -33,13 +33,13 @@ public interface SimpleRepositoryMethodHandler {
      String NOT_SUPPORTED_RETURN_TYPE_FOR_METHOD_NAME = "Not supported returnType {} for methodName {}";
 
     /**
-     * Error message template for an expected single result but found %s in method %s.
+     * Error message template for an expected single result but found multiple in method.
      */
     String EXPECTED_SINGLE_RESULT = "Expected single result but we have %s method %s";
     /**
-     * Error message template for being unable to find a result for %s in method %s with parameters %s.
+     * Error message template for being unable to find a result for entityClass in method with parameters.
      */
-    String CANNOT_FIND_RESULT_FOR_S_IN_METHOD_S = "Cannot find result for %s in method %s parameters %s";
+    String CANNOT_FIND_RESULT_FOR_S_IN_METHOD_S = "Cannot find result for entityClass in method parameters";
 
     /**
      * Checks if the given method can be handled by this handler.

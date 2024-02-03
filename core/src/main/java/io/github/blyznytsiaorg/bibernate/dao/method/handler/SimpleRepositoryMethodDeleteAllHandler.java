@@ -23,7 +23,7 @@ public class SimpleRepositoryMethodDeleteAllHandler implements SimpleRepositoryM
      */
     private static final String METHOD_NAME = "deleteAll";
     /**
-     * Message indicating that the deleteAll method should have one parameter List<Id>.
+     * Message indicating that the deleteAll method should have one parameter List.
      */
     private static final String DELETE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID =
             "DeleteAll method should have one parameter List<Id>";
