@@ -43,9 +43,8 @@ public interface BibernateRepository<T, ID> {
      * Updates the given entity in the repository.
      *
      * @param entity The entity to be updated.
-     * @return The number of entities updated (usually 1 if the update is successful).
      */
-    int update(T entity);
+    void update(T entity);
 
     /**
      * Saves the given entity in the repository.

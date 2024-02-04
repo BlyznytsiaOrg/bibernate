@@ -1,14 +1,15 @@
 package io.github.blyznytsiaorg.bibernate.generatedvalue;
 
-import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.generatedvalue.sequence.Person;
+
+import java.util.List;
+
+import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SequenceTest extends AbstractPostgresInfrastructurePrep {
 
@@ -30,18 +31,17 @@ class SequenceTest extends AbstractPostgresInfrastructurePrep {
 
         //when
         var savedPerson = bibernateSession.save(Person.class, person);
+        bibernateSession.flush();
 
         //then
         assertThat(savedPerson).isNotNull();
         assertThat(savedPerson.getId()).isNotNull();
         assertThat(savedPerson.getId()).isEqualTo(2L);
+        assertQueries(bibernateSessionFactory, List.of(
+                //"select next value for persons_id_seq;",
+                "select nextval('persons_id_seq');",
+                "INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
       }
-
-      //then
-      assertQueries(bibernateSessionFactory, List.of(
-          //"select next value for persons_id_seq;",
-          "select nextval('persons_id_seq');",
-          "INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
     }
   }
 }

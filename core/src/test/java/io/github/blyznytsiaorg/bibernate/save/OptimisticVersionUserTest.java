@@ -31,6 +31,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 employeeEntity.setLastName("LastName2");
 
                 var saveEmployeeEntity = bibernateSession.save(EmployeeEntity.class, employeeEntity);
+                bibernateSession.flush();
 
                 //then
                 assertThat(saveEmployeeEntity).isNotNull();
