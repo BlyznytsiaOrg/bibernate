@@ -4,6 +4,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
+import io.github.blyznytsiaorg.bibernate.entity.BibernateEntityMetadataHolder;
+import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.EntityMetadataCollector;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
@@ -18,16 +21,21 @@ import java.util.Map;
 public class Persistent {
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
 
-    public Persistent() {
+    public Persistent(String entityPackage) {
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
         var configFileName = bibernateConfiguration.getConfigFileName();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
+        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(entityPackage);
+        entityMetadataCollector.startCollectMetadata();
+
+        Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
+        BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
     }
 
-    public Persistent(String configFileName) {
+    public Persistent(String configFileName, String entityPackage) {
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
@@ -50,10 +58,12 @@ public class Persistent {
         enableFlyway();
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings) {
+    public Persistent(Map<String, String> externalBibernateSettings, String entityPackage) {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
+        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(entityPackage);
+        entityMetadataCollector.startCollectMetadata();
     }
 
     public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource) {

@@ -1,6 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
+import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
 import io.github.blyznytsiaorg.bibernate.exception.ImmutableEntityException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,13 @@ public class DefaultBibernateSession implements BibernateSession {
     public <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues) {
         verifySessionNotClosed();
         return dao.findByWhere(entityClass, whereQuery, bindValues);
+    }
+
+    @Override
+    public List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata,
+                                        Object[] bindValues) {
+        verifySessionNotClosed();
+        return dao.findByWhereJoin(searchedEntityMetadata, bindValues);
     }
 
     @Override

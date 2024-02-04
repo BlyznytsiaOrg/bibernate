@@ -21,7 +21,7 @@ class FlywayConfigurationTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Flyway should create table 'persons'")
     @SneakyThrows
     void shouldCreateTables() {
-        createPersistentWithFlayWayEnabled();
+        createPersistentWithFlayWayEnabled("");
 
         //when
         List<String> tableNames = new ArrayList<>();

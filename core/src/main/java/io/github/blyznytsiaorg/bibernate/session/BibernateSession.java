@@ -1,6 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
+import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
 
 import java.io.Closeable;
 import java.util.List;
@@ -18,6 +20,8 @@ public interface BibernateSession extends Closeable {
     <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue);
 
     <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues);
+
+    List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata, Object[] bindValues);
 
     <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues);
 

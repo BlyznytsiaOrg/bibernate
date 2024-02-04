@@ -4,6 +4,7 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.DeleteQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 
@@ -22,6 +23,13 @@ public class SqlBuilder {
 
     public String selectBy(String tableName, String whereCondition) {
         return from(tableName)
+                .whereCondition(whereCondition)
+                .buildSelectStatement();
+    }
+
+    public String selectByWithJoin(String tableName, String whereCondition, String joinedTable, String onCondition, JoinType joinType) {
+        return from(tableName)
+                .join(joinedTable, onCondition, joinType)
                 .whereCondition(whereCondition)
                 .buildSelectStatement();
     }

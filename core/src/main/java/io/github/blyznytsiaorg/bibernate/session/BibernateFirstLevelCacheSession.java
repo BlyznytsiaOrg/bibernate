@@ -1,8 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
-import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.EntityKey;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
+import io.github.blyznytsiaorg.bibernate.entity.*;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +15,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -26,12 +25,19 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private final BibernateSession bibernateSession;
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
+    private final Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
+        EntityMetadata entityMetadata = bibernateEntityMetadata.get(entityClass);
+        if (entityMetadata.getEntityColumns().stream()
+                .anyMatch(EntityColumnDetails::isOneToOne)) {
+//            tableName, whereCondition, joinedTable, onCondition(mainId, joinColumnNameId),
+            getDao().findByWhereJoin(entityMetadata,   primaryKey);
+        }
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
@@ -64,6 +70,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         persistentContext(entityClass, entities);
 
         return entities;
+    }
+
+    @Override
+    public List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata, Object[] bindValues) {
+        return null;
     }
 
     @Override

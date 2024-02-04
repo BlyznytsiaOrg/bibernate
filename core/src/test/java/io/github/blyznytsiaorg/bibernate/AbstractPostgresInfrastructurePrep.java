@@ -58,13 +58,13 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         dataSource = createDataSource(jdbcUrl, databaseName, username, password);
     }
 
-    public Persistent createPersistent() {
-        return new Persistent(bibernateSettings);
+    public Persistent createPersistent(String entityPackage) {
+        return new Persistent(bibernateSettings, entityPackage);
     }
 
-    public Persistent createPersistentWithFlayWayEnabled() {
+    public Persistent createPersistentWithFlayWayEnabled(String entityPackage) {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings);
+        return new Persistent(bibernateSettings, entityPackage);
     }
 
     @AfterEach

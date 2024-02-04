@@ -32,8 +32,9 @@ public class EntityMetadataCollector {
                 var tableName = table(entityClass);
                 boolean immutable = isImmutable(entityClass);
                 boolean dynamicUpdate = isDynamicUpdate(entityClass);
+                var idColumnName = columnIdName(entityClass);
 
-                var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate);
+                var entityMetadata = new EntityMetadata(tableName, idColumnName, immutable, dynamicUpdate);
 
                 for (Field field : entityClass.getDeclaredFields()) {
                     entityMetadata.addEntityColumn(createEntityColumnDetails(field));

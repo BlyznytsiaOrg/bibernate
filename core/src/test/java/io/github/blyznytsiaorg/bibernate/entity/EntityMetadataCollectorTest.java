@@ -2,7 +2,7 @@ package io.github.blyznytsiaorg.bibernate.entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.findbyid.Address;
+import testdata.onetoone.unidirectional.Address;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

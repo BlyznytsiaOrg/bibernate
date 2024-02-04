@@ -7,6 +7,7 @@ import testdata.manytoone.unidirectional.Person;
 @Getter
 @Entity
 @Table(name = "notes")
+@IgnoreEntity
 public class Note {
     
     @Id
@@ -16,5 +17,4 @@ public class Note {
     
     @JoinColumn(name = "person_id")
     private Person person;
-    
 }
