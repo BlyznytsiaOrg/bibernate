@@ -64,6 +64,8 @@ public class Persistent {
         enableFlyway();
         EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(entityPackage);
         entityMetadataCollector.startCollectMetadata();
+        Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
+        BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
     }
 
     public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource) {

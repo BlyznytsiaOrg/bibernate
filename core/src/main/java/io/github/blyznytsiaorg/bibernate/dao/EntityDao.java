@@ -16,6 +16,8 @@ import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
@@ -68,37 +70,40 @@ public class EntityDao implements Dao {
         return this.findByQuery(entityClass, query, bindValues);
     }
 
-    public List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata,
-                                       Object... bindValues) {
-//        Objects.requireNonNull(searchedEntityMetadata, ENTITY_CLASS_MUST_BE_NOT_NULL);
+    public <T> Optional<T> findOneByWhereJoin(Class<T> entityClass,
+                                              Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
+        EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
         String tableName = searchedEntityMetadata.getTableName();
-        String whereConditionId = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(EntityColumnDetails::isColumnId)
-                .findAny()
-                .map(EntityColumnDetails::getFieldColumnName)
-                .orElseThrow();
+        String whereConditionId = tableName.concat(".").concat(searchedEntityMetadata.getEntityIdColumnName());
         String joinedTable = searchedEntityMetadata.getEntityColumns().stream()
                 .filter(EntityColumnDetails::isOneToOne)
-                .map(EntityColumnDetails::getOneToOneInfo)
-                .map(OneToOneInfo::getGetJoinedTableName)
+                .map(EntityColumnDetails::getJoinColumnTableName)
                 .findAny()
                 .orElseThrow();
-        OneToOneInfo oneToOneInfo = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(EntityColumnDetails::isOneToOne)
-                .map(EntityColumnDetails::getOneToOneInfo)
-                .findAny()
-                .orElseThrow();
+        OneToOneInfo oneToOneInfo = searchedEntityMetadata.getOneToOneInfo();
 
         //prepare ON condition
         EntityMetadata childEntityMetadata = oneToOneInfo.getChildEntityMetadata();
         EntityMetadata parentEntityMetadata = oneToOneInfo.getParentEntityMetadata();
-        String onCondition = childEntityMetadata.getTableName() + childEntityMetadata.getEntityIdColumnName()
-                             + "=" + parentEntityMetadata.getTableName() + parentEntityMetadata.getEntityIdColumnName();
+        List<String> selectList = new ArrayList<>();
+        selectList.add(tableName.concat(".*"));
 
-        var query = sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinedTable, onCondition, JoinType.LEFT);
+        if (searchedEntityMetadata.equals(childEntityMetadata)) {
+            selectList.add(parentEntityMetadata.getTableName().concat(".*"));
+        } else {
+            selectList.add(childEntityMetadata.getTableName().concat(".*"));
+        }
+
+        String onCondition = childEntityMetadata.getTableName() + "." + childEntityMetadata.getEntityIdColumnName()
+                             + "=" + parentEntityMetadata.getTableName()+ "." + parentEntityMetadata.getEntityIdColumnName();
+
+        var query = sqlBuilder.selectByWithJoin(tableName, selectList, whereConditionId, joinedTable, onCondition, JoinType.LEFT);
         addToExecutedQueries(query);
         List<Object> items = new ArrayList<>();
         try (var connection = dataSource.getConnection();
@@ -113,11 +118,11 @@ public class EntityDao implements Dao {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
+//            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+//            throwErrorMessage(errorMessage, exe);
         }
 
-        return items;
+        return Optional.empty();
     }
 
     @Override

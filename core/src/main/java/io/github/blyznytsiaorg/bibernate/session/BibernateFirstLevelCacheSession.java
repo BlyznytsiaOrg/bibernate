@@ -1,7 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.*;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +35,9 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         if (entityMetadata.getEntityColumns().stream()
                 .anyMatch(EntityColumnDetails::isOneToOne)) {
 //            tableName, whereCondition, joinedTable, onCondition(mainId, joinColumnNameId),
-            getDao().findByWhereJoin(entityMetadata,   primaryKey);
+            getDao().findOneByWhereJoin(entityClass, primaryKey);
+//                    .map();
+
         }
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
@@ -73,8 +74,8 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     @Override
-    public List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata, Object[] bindValues) {
-        return null;
+    public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
+        return Optional.empty();
     }
 
     @Override
@@ -227,7 +228,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
             firstLevelCache.put(entityKey, entityFromDb);
-
+        //TODO: add entire oneToOne entity to cache
             List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
             snapshots.put(entityKey, entityCurrentSnapshot);
 

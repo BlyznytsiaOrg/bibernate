@@ -27,10 +27,16 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
-    public String selectByWithJoin(String tableName, String whereCondition, String joinedTable, String onCondition, JoinType joinType) {
+    public String selectByWithJoin(String tableName,
+                                   List<String> fieldNames,
+                                   String whereCondition,
+                                   String joinedTable,
+                                   String onCondition,
+                                   JoinType joinType) {
         return from(tableName)
+                .selectFields(fieldNames)
                 .join(joinedTable, onCondition, joinType)
-                .whereCondition(whereCondition)
+                .whereCondition(selectFieldNameWhereCondition(whereCondition))
                 .buildSelectStatement();
     }
 

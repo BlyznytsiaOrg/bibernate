@@ -18,7 +18,7 @@ public class CashTest extends AbstractPostgresInfrastructurePrep {
     void shouldUpdateEntityInDBButReturnCashedEntity() {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -60,7 +60,7 @@ public class CashTest extends AbstractPostgresInfrastructurePrep {
     void shouldUpdateEntityInDBAndExecuteFlush() {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

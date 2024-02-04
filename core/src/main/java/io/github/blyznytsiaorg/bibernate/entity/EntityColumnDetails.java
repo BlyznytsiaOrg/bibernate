@@ -11,8 +11,8 @@ public class EntityColumnDetails {
     private boolean columnId;
     private Class<?> fieldType;
     private boolean oneToOne;
-    private OneToOneInfo oneToOneInfo;
     private boolean joinColumn;
     private String joinColumnName;
+    private String joinColumnTableName;
     private boolean manyToOne;
 }

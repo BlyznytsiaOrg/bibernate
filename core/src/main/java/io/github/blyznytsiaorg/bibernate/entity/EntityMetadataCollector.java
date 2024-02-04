@@ -43,6 +43,31 @@ public class EntityMetadataCollector {
                 inMemoryEntityMetadata.put(entityClass, entityMetadata);
             }
         }
+        resolveRelations(entities);
+    }
+
+    private void resolveRelations(Set<Class<?>> entities) {
+        for (Class<?> entityClass : entities) {
+            if (inMemoryEntityMetadata.containsKey(entityClass)) {
+                EntityMetadata entityMetadata = inMemoryEntityMetadata.get(entityClass);
+                for (EntityColumnDetails entityColumn : entityMetadata.getEntityColumns()) {
+                    resolveOneToOne(entityColumn, entityMetadata);
+                }
+            }
+        }
+    }
+
+    private void resolveOneToOne(EntityColumnDetails entityColumn, EntityMetadata entityMetadata) {
+        if (entityColumn.isOneToOne()) {
+            entityMetadata.setHasOneToOne(true);
+            if (entityColumn.isJoinColumn()) {
+                var parentEntity = inMemoryEntityMetadata.get(entityColumn.getFieldType());
+                entityMetadata.setOneToOneInfo(new OneToOneInfo(entityMetadata, parentEntity));
+            } else {
+                var childEntity = inMemoryEntityMetadata.get(entityColumn.getFieldType());
+                entityMetadata.setOneToOneInfo(new OneToOneInfo(childEntity, entityMetadata));
+            }
+        }
     }
 
     private EntityColumnDetails createEntityColumnDetails(Field field) {
@@ -62,6 +87,7 @@ public class EntityMetadataCollector {
             boolean isFieldHasAnnotationJoinColumn = isColumnHasAnnotation(field, JoinColumn.class);
 
             if (isFieldHasAnnotationJoinColumn) {
+                entityColumnDetails.joinColumnTableName(table(field.getType()));
                 entityColumnDetails.joinColumn(true)
                         .joinColumnName(field.getAnnotation(JoinColumn.class).name());
             }

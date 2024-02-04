@@ -1,6 +1,5 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
 
@@ -20,7 +19,7 @@ public interface Dao {
 
     <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues);
 
-    List<Object> findByWhereJoin(EntityMetadata searchedEntityMetadata, Object... bindValues);
+    <T> Optional<T> findOneByWhereJoin(Class<T> entityClass, Object... bindValues);
 
     <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues);
 
