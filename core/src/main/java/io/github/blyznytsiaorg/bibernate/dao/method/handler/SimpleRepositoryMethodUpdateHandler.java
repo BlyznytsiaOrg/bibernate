@@ -45,7 +45,8 @@ public class SimpleRepositoryMethodUpdateHandler implements SimpleRepositoryMeth
             var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
             try (var bringSession = sessionFactory.openSession()) {
                 var entityClass = (Class<?>) repositoryDetails.entityType();
-                return bringSession.update(entityClass, parameters[0]);
+                bringSession.update(entityClass, parameters[0]);
+                return Void.TYPE;
             }
         }
 

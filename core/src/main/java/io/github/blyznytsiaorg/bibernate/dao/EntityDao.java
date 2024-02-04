@@ -142,7 +142,7 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> int update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
+    public <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
@@ -176,15 +176,11 @@ public class EntityDao implements Dao {
                                 .formatted(entity.getClass(), fieldIdName, fieldIdValue)
                 );
             }
-
-            return resultSet;
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
                     .formatted(entityClass, fieldIdValue, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
-
-        return 0;
     }
 
     @Override

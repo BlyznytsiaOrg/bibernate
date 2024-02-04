@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
+import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
@@ -26,7 +27,9 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     public BibernateSession openSession() {
         this.entityDao = entityDao();
-        var session = new BibernateFirstLevelCacheSession(new DefaultBibernateSession(entityDao));
+        var session = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+                new DefaultBibernateSession(entityDao), new DefaultActionQueue())
+        );
         BibernateSessionContextHolder.setBibernateSession(session);
         return session;
     }

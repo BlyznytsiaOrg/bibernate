@@ -38,14 +38,13 @@ class BibernateRepositoryUpdateTest extends AbstractPostgresInfrastructurePrep {
             var oldPerson = personRepository.findById(personId).orElseThrow();
             assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
 
-            var resultOfUpdate = personRepository.update(updetePerson);
+            personRepository.update(updetePerson);
             assertQueries(bibernateSessionFactory, List.of(
                     "UPDATE persons SET first_name = ?, last_name = ? WHERE id = ?;"));
 
             var updatedPerson = personRepository.findById(personId).orElseThrow();
 
             //then
-            assertThat(resultOfUpdate).isNotZero();
             assertThat(oldPerson.getId()).isEqualTo(updatedPerson.getId());
             assertThat(oldPerson.getFirstName()).isNotEqualTo(updatedPerson.getFirstName());
             assertThat(oldPerson.getLastName()).isNotEqualTo(updatedPerson.getLastName());
