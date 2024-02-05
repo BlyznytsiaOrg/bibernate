@@ -27,11 +27,27 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     public BibernateSession openSession() {
         this.entityDao = entityDao();
-        var session = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
-                new DefaultBibernateSession(entityDao), new DefaultActionQueue())
-        );
-        BibernateSessionContextHolder.setBibernateSession(session);
-        return session;
+        var jdbcBibernateSession = new DefaultBibernateSession(entityDao);
+
+        BibernateSession bibernateSession;
+
+        if (getBibernateSettings().isSecondLevelCacheEnabled()) {
+            var redisConfiguration = getBibernateSettings().getRedisConfiguration();
+            var bibernateSecondLevelCacheSession = new BibernateSecondLevelCacheSession(
+                    jdbcBibernateSession, redisConfiguration.getDistributedMap()
+            );
+
+            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+                    bibernateSecondLevelCacheSession, new DefaultActionQueue())
+            );
+        } else {
+            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+                    jdbcBibernateSession, new DefaultActionQueue())
+            );
+        }
+
+        BibernateSessionContextHolder.setBibernateSession(bibernateSession);
+        return bibernateSession;
     }
 
     private EntityDao entityDao() {
