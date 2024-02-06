@@ -108,101 +108,92 @@ public class EntityMetadataCollector {
     }
 
     private SequenceGeneratorMetadata getSequenceGenerator(Field field) {
-        SequenceGeneratorMetadata sequenceGenerator = null;
         if (isAnnotationPresent(field, SequenceGenerator.class)) {
             SequenceGenerator annotation = field.getAnnotation(SequenceGenerator.class);
             String generatorName = annotation.name();
             String sequenceName = annotation.sequenceName();
             int initialValue = annotation.initialValue();
             int allocationSize = annotation.allocationSize();
-            sequenceGenerator = new SequenceGeneratorMetadata
+            return new SequenceGeneratorMetadata
                     (generatorName, sequenceName, initialValue, allocationSize);
         }
-        return sequenceGenerator;
+        return null;
     }
 
     private GeneratedValueMetadata getGeneratedValue(Field field) {
-        GeneratedValueMetadata generatedValue = null;
         if (isAnnotationPresent(field, GeneratedValue.class)) {
             GeneratedValue annotation = field.getAnnotation(GeneratedValue.class);
             String generatedStrategyName = annotation.strategy().name();
             String generatorName = annotation.generator();
-            generatedValue = new GeneratedValueMetadata(generatedStrategyName, generatorName);
+            return new GeneratedValueMetadata(generatedStrategyName, generatorName);
         }
-        return generatedValue;
+        return null;
     }
 
     private JoinTableMetadata getJoinTable(Field field) {
-        JoinTableMetadata joinTable = null;
         if (isAnnotationPresent(field, JoinTable.class)) {
-            joinTable = JoinTableMetadata
+            return JoinTableMetadata
                     .builder()
                     .name(joinTableName(field))
                     .joinColumn(tableJoinColumnName(field))
                     .inverseJoinColumn(inverseTableJoinColumnName(field))
                     .build();
         }
-        return joinTable;
+        return null;
     }
 
     private JoinColumnMetadata getJoinColumn(Field field) {
-        JoinColumnMetadata joinColumn = null;
         if (isAnnotationPresent(field, JoinColumn.class)) {
             String joinColumnName = joinColumnName(field);
-            joinColumn = JoinColumnMetadata
+            return JoinColumnMetadata
                     .builder()
                     .name(joinColumnName)
                     .build();
         }
-        return joinColumn;
+        return null;
     }
 
     private ManyToManyMetadata getManyToMany(Field field) {
-        ManyToManyMetadata manyToMany = null;
         if (isAnnotationPresent(field, ManyToMany.class)) {
             ManyToMany annotation = field.getAnnotation(ManyToMany.class);
             String mappedBy = annotation.mappedBy();
-            manyToMany = ManyToManyMetadata
+            return ManyToManyMetadata
                     .builder()
                     .mappedBy(mappedBy)
                     .build();
         }
-        return manyToMany;
+        return null;
     }
 
     private ManyToOneMetadata getManyToOne(Field field) {
-        ManyToOneMetadata manyToOne = null;
         if (isAnnotationPresent(field, ManyToOne.class)) {
-            manyToOne = new ManyToOneMetadata();
+            return new ManyToOneMetadata();
         }
-        return manyToOne;
+        return null;
     }
 
     private OneToManyMetadata getOneToMany(Field field) {
-        OneToManyMetadata oneToMany = null;
         if (isAnnotationPresent(field, OneToMany.class)) {
             String mappedByJoinColumnName = mappedByJoinColumnName(field);
-            oneToMany = OneToManyMetadata.builder()
+            return OneToManyMetadata.builder()
                     .mappedByJoinColumnName(mappedByJoinColumnName)
                     .build();
         }
-        return oneToMany;
+        return null;
     }
 
     private OneToOneMetadata getOneToOne(Field field) {
-        OneToOneMetadata oneToOne = null;
         if (isAnnotationPresent(field, OneToOne.class)) {
-            oneToOne = new OneToOneMetadata();
+            return new OneToOneMetadata();
         }
-        return oneToOne;
+        return null;
     }
 
     private IdMetadata getId(Field field) {
-        IdMetadata id = null;
         if (isAnnotationPresent(field, Id.class)) {
-            id = new IdMetadata();
+            return new IdMetadata();
         }
-        return id;
+        return null;
     }
 
     private ColumnMetadata getColumn(Field field) {
