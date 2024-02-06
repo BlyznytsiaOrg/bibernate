@@ -1,8 +1,10 @@
 package io.github.blyznytsiaorg.bibernate;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.IgnoreEntity;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -51,6 +53,10 @@ public class EntityRequirementProcessor extends AbstractProcessor {
                 .stream()
                 .anyMatch(this::isIdAnnotatedField);
 
+        boolean hasMismatchInGeneratorName = element.getEnclosedElements()
+                .stream()
+                .anyMatch(this::isMismatchInGeneratorName);
+
         if (!hasRequiredField) {
             messager.printMessage(Diagnostic.Kind.ERROR,
                     "Class annotated with @Entity must have at least one field annotated with @Id",
@@ -61,8 +67,30 @@ public class EntityRequirementProcessor extends AbstractProcessor {
             messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
                     "Class annotated with @Entity must have constructor without params", typeElement);
         }
+
+        if (hasMismatchInGeneratorName) {
+            messager.printMessage(Diagnostic.Kind.ERROR,
+                    ("In class `%s` in @GeneratedValue annotation generator name do not match name "
+                            + "in @SequenceGenerator annotation").formatted(typeElement));
+        }
     }
-    
+
+    private boolean isMismatchInGeneratorName(Element field) {
+        GeneratedValue generatedValueAnnotation = field.getAnnotation(GeneratedValue.class);
+        if (generatedValueAnnotation != null) {
+            String generatorName = generatedValueAnnotation.generator();
+            if (generatorName != null && !generatorName.isEmpty()) {
+                SequenceGenerator sequenceGeneratorAnnotation = field.getAnnotation(SequenceGenerator.class);
+                if (sequenceGeneratorAnnotation != null) {
+                    String generNameInSequenceGeneratorAnnotation = sequenceGeneratorAnnotation.name();
+                    return field.getKind() == ElementKind.FIELD
+                            && !generatorName.equals(generNameInSequenceGeneratorAnnotation);
+                }
+            }
+        }
+        return false;
+    }
+
     private boolean isIdAnnotatedField(Element field) {
         return field.getKind() == ElementKind.FIELD && Objects.nonNull(field.getAnnotation(Id.class));
     }

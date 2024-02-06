@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
+package io.github.blyznytsiaorg.bibernate.annotation;
 
 public enum GenerationType {
   NONE,
