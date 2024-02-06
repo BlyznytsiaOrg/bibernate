@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import java.util.ArrayList;
 import java.util.Arrays;
