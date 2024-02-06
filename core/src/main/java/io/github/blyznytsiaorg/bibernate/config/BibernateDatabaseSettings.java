@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,13 +26,19 @@ public class BibernateDatabaseSettings {
     private static final String DEFAULT_MAXIMUM_POOL_SIZE = "20";
     private static final String SHOW_SQL = "bibernate.show_sql";
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
+    private static final String DEFAULT_REDIS_HOST = "localhost";
+    private static final String DEFAULT_REDIS_PORT = "6379";
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
     private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
+    private static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
+    private static final String SECOND_LEVEL_CACHE_HOST = "bibernate.secondLevelCache.host";
+    private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
     private final Map<String, String> bibernateSettingsProperties;
     private final String configurationErrorMessage;
     private final String bibernateFileName;
     private final HikariDataSource dataSource;
+    private RedisConfiguration redisConfiguration;
 
     public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, 
                                      String bibernateFileName) {
@@ -48,6 +55,10 @@ public class BibernateDatabaseSettings {
         this.bibernateFileName = bibernateFileName;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettings, bibernateFileName);
         this.dataSource = dataSource;
+    }
+
+    public void setRedisConfiguration(RedisConfiguration redisConfiguration) {
+        this.redisConfiguration = redisConfiguration;
     }
 
     private HikariDataSource createDataSource() {
@@ -91,6 +102,19 @@ public class BibernateDatabaseSettings {
     public boolean isFlywayEnabled() {
         return getProperty(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
+
+    public boolean isSecondLevelCacheEnabled() {
+        return getProperty(SECOND_LEVEL_CACHE, DEFAULT_BOOLEAN_FALSE_VALUE);
+    }
+
+    public String getSecondLevelCacheHost() {
+        return bibernateSettingsProperties.getOrDefault(SECOND_LEVEL_CACHE_HOST, DEFAULT_REDIS_HOST);
+    }
+
+    public int getSecondLevelCachePost() {
+        return Integer.parseInt(bibernateSettingsProperties.getOrDefault(SECOND_LEVEL_CACHE_POST, DEFAULT_REDIS_PORT));
+    }
+
 
     private boolean getProperty(String key, String defaultValue) {
         return Boolean.parseBoolean(bibernateSettingsProperties.getOrDefault(key, defaultValue));

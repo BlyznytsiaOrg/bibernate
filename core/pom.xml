@@ -27,6 +27,8 @@
         <testcontainers.version>1.19.3</testcontainers.version>
         <system-stubs-jupiter.version>2.1.6</system-stubs-jupiter.version>
         <jetbrains.version>24.1.0</jetbrains.version>
+        <jedis.version>5.1.0</jedis.version>
+        <kryo.version>5.5.0</kryo.version>
     </properties>
 
     <dependencies>
@@ -76,6 +78,18 @@
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.esotericsoftware.kryo</groupId>
+            <artifactId>kryo5</artifactId>
+            <version>${kryo.version}</version>
         </dependency>
 
         <dependency>

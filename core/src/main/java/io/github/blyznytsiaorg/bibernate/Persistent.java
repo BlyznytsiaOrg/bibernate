@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
@@ -27,6 +28,7 @@ public class Persistent {
                 configFileName);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public Persistent(String configFileName) {
@@ -35,6 +37,7 @@ public class Persistent {
                 configFileName);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public Persistent(HikariDataSource dataSource) {
@@ -45,6 +48,7 @@ public class Persistent {
                 configFileName, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public Persistent(String configFileName, HikariDataSource dataSource) {
@@ -53,6 +57,7 @@ public class Persistent {
                 configFileName, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public Persistent(Map<String, String> externalBibernateSettings) {
@@ -60,6 +65,7 @@ public class Persistent {
                 null);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource) {
@@ -67,6 +73,7 @@ public class Persistent {
                 null, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
+        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
     public BibernateEntityManagerFactory createBibernateEntityManager() {
@@ -75,5 +82,9 @@ public class Persistent {
 
     private FlywayConfiguration enableFlyway() {
         return new FlywayConfiguration(bibernateDatabaseSettings);
+    }
+
+    private RedisConfiguration redisConfiguration() {
+        return new RedisConfiguration(bibernateDatabaseSettings);
     }
 }
