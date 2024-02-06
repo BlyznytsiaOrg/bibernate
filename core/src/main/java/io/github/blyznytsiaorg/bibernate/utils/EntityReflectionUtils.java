@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -288,6 +290,21 @@ public class EntityReflectionUtils {
         }
         // Add more conditions for other types if needed
         return value;
+    }
+
+    public static Supplier<Object> createNewInstance(Constructor<?> constructor, Object[] args, Class<?> clazz,
+                                                     boolean lazy) {
+        return () -> {
+            try {
+                if (lazy) {
+                    return ProxyUtils.createProxy(clazz, constructor, args);
+                } else {
+                    return constructor.newInstance(args);
+                }
+            } catch (Exception e) {
+                throw new BibernateGeneralException("Cannot create proxy instance ", e);
+            }
+        };
     }
 
     private String getSnakeString(String str) {

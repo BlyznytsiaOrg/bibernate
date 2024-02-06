@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
+import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.*;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
@@ -32,16 +33,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
         EntityMetadata entityMetadata = bibernateEntityMetadata.get(entityClass);
-        if (entityMetadata.getEntityColumns().stream()
-                .anyMatch(EntityColumnDetails::isOneToOne)) {
-//            tableName, whereCondition, joinedTable, onCondition(mainId, joinColumnNameId),
-            getDao().findOneByWhereJoin(entityClass, primaryKey);
-//                    .map();
-
-        }
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
+
+        if (entityMetadata.isHasOneToOne() && entityMetadata.getEntityColumns().stream()
+                .anyMatch(entityColumnDetails -> entityColumnDetails.getFetchType() == FetchType.EAGER)) {
+            return getDao().findOneByWhereJoin(entityClass, primaryKey);
+//                    .map(entityFromDb -> persistentContext(entityClass, entityFromDb, entityKey, finalPrimaryKey));
+
+        }
         var cachedEntity = firstLevelCache.get(entityKey);
 
         if (Objects.isNull(cachedEntity)) {

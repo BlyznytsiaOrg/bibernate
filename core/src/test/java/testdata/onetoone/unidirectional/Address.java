@@ -18,7 +18,7 @@ public class Address {
     @Column(name = "name")
     private String name;
 
-    @OneToOne
-    @JoinColumn(name = "house_id")
-    private House house;
+//    @OneToOne
+//    @JoinColumn(name = "house_id")
+//    private House house;
 }

@@ -84,6 +84,7 @@ public class EntityMetadataCollector {
                 .manyToOne(isFieldHasAnnotationManyToMany);
 
         if (isFieldHasAnnotationOneToOne || isFieldHasAnnotationManyToMany) {
+            entityColumnDetails.fetchType(field.getAnnotation(OneToOne.class).fetch());
             boolean isFieldHasAnnotationJoinColumn = isColumnHasAnnotation(field, JoinColumn.class);
 
             if (isFieldHasAnnotationJoinColumn) {

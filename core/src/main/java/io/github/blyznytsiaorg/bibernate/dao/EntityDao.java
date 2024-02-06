@@ -24,9 +24,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -91,21 +90,29 @@ public class EntityDao implements Dao {
         //prepare ON condition
         EntityMetadata childEntityMetadata = oneToOneInfo.getChildEntityMetadata();
         EntityMetadata parentEntityMetadata = oneToOneInfo.getParentEntityMetadata();
-        List<String> selectList = new ArrayList<>();
-        selectList.add(tableName.concat(".*"));
+
+        List<String> selectList = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(Predicate.not(EntityColumnDetails::isOneToOne))
+                .map(entityColumnDetails -> tableName.concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(tableName.concat("_")).concat(entityColumnDetails.getFieldColumnName()))
+                .collect(Collectors.toList());
 
         if (searchedEntityMetadata.equals(childEntityMetadata)) {
-            selectList.add(parentEntityMetadata.getTableName().concat(".*"));
+            parentEntityMetadata.getEntityColumns().stream()
+                    .filter(Predicate.not(EntityColumnDetails::isOneToOne))
+                    .map(entityColumnDetails -> parentEntityMetadata.getTableName().concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(parentEntityMetadata.getTableName()).concat("_").concat(entityColumnDetails.getFieldColumnName()))
+                    .forEach(selectList::add);
         } else {
-            selectList.add(childEntityMetadata.getTableName().concat(".*"));
+            childEntityMetadata.getEntityColumns().stream()
+                    .filter(Predicate.not(EntityColumnDetails::isOneToOne))
+                    .map(entityColumnDetails -> childEntityMetadata.getTableName().concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(childEntityMetadata.getTableName()).concat("_").concat(entityColumnDetails.getFieldColumnName()))
+                    .forEach(selectList::add);
         }
 
         String onCondition = childEntityMetadata.getTableName() + "." + childEntityMetadata.getEntityIdColumnName()
-                             + "=" + parentEntityMetadata.getTableName()+ "." + parentEntityMetadata.getEntityIdColumnName();
+                             + "=" + parentEntityMetadata.getTableName() + "." + parentEntityMetadata.getEntityIdColumnName();
 
         var query = sqlBuilder.selectByWithJoin(tableName, selectList, whereConditionId, joinedTable, onCondition, JoinType.LEFT);
         addToExecutedQueries(query);
-        List<Object> items = new ArrayList<>();
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
@@ -115,13 +122,12 @@ public class EntityDao implements Dao {
 
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+                return Optional.of(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-//            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
-//            throwErrorMessage(errorMessage, exe);
+            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
         }
-
         return Optional.empty();
     }
 
@@ -306,7 +312,7 @@ public class EntityDao implements Dao {
         String query;
 
         if (isVersionFound) {
-            String columnVersionName =  columnVersionName(entityClass);
+            String columnVersionName = columnVersionName(entityClass);
             query = sqlBuilder.delete(tableName, fieldIdName, columnVersionName);
             showSql(() -> log.debug(QUERY_BIND_TWO_VALUES, query, fieldIdName, primaryKey, columnVersionName, fieldVersionValue));
         } else {

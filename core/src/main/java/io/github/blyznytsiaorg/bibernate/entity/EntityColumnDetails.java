@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity;
 
+import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,6 +12,7 @@ public class EntityColumnDetails {
     private boolean columnId;
     private Class<?> fieldType;
     private boolean oneToOne;
+    private FetchType fetchType;
     private boolean joinColumn;
     private String joinColumnName;
     private String joinColumnTableName;
