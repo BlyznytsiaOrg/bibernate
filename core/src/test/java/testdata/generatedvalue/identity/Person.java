@@ -1,6 +1,6 @@
 package testdata.generatedvalue.identity;
 
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;

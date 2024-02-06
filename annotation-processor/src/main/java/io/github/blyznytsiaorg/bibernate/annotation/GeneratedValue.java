@@ -1,8 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.annotation;
 
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.*;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.*;
 
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

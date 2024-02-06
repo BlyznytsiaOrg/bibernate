@@ -20,7 +20,7 @@ import java.util.Map;
 public class Persistent {
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
 
-    public Persistent() {
+    public Persistent(String packageName) {
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
         var configFileName = bibernateConfiguration.getConfigFileName();
@@ -31,7 +31,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
-    public Persistent(String configFileName) {
+    public Persistent(String configFileName, String packageName) {
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
@@ -40,7 +40,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
-    public Persistent(HikariDataSource dataSource) {
+    public Persistent(HikariDataSource dataSource, String packageName) {
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
         var configFileName = bibernateConfiguration.getConfigFileName();
@@ -51,7 +51,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
-    public Persistent(String configFileName, HikariDataSource dataSource) {
+    public Persistent(String configFileName, HikariDataSource dataSource, String packageName) {
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
@@ -60,7 +60,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings) {
+    public Persistent(Map<String, String> externalBibernateSettings, String packageName) {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
@@ -68,7 +68,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource) {
+    public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource, String packageName) {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null, dataSource);
         enableFlyway();

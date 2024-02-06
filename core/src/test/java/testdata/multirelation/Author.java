@@ -1,7 +1,7 @@
 package testdata.multirelation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType;
+import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import lombok.Data;
 import lombok.ToString;
 

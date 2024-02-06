@@ -1,7 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.IDENTITY;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
@@ -325,6 +324,10 @@ public class EntityReflectionUtils {
             .orElseThrow(() -> new MissingAnnotationException(
                 CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
 
+    }
+
+    public static boolean isAnnotationPresent(Field field, Class<? extends Annotation> annotationClass) {
+        return field.isAnnotationPresent(annotationClass);
     }
 
     private static SequenceConf getSequenceConfFromField(Field field, String tableName) {

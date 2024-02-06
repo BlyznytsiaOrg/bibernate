@@ -1,11 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
-import static io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.GenerationType.NONE;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.NONE;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 
+import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import java.util.List;
