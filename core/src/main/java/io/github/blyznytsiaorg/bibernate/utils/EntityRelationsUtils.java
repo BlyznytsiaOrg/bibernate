@@ -21,7 +21,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isSu
 @UtilityClass
 public class EntityRelationsUtils {
 
-    private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class);
+    private final List<Class<? extends Annotation>> entityAnnotations = List.of(ManyToOne.class);
     
     private final List<Class<? extends Annotation>> collectionAnnotations = List.of(OneToMany.class);
     

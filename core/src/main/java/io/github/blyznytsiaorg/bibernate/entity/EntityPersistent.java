@@ -36,10 +36,6 @@ public class EntityPersistent {
                                         T entity,
                                         ResultSet resultSet) {
         Object value = valueType.prepareValueForFieldInjection(field, resultSet);
-
-        if (value instanceof Supplier) {
-            value = ((Supplier<?>) value).get();
-        }
         Optional.ofNullable(value)
                 .ifPresent(v -> setField(field, entity, v));
     }

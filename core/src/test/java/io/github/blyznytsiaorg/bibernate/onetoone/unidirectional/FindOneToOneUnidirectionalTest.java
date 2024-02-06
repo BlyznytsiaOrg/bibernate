@@ -44,7 +44,8 @@ class FindOneToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep 
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name, addresses.id AS addresses_id, addresses.name AS addresses_name FROM users LEFT JOIN addresses ON users.id=addresses.id WHERE users.id = ?;"));
+                    "SELECT * FROM users WHERE id = ?;",
+                    "SELECT * FROM addresses WHERE id = ?;"));
         }
     }
 }

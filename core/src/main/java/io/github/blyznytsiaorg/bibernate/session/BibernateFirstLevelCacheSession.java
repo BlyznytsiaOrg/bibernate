@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.*;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
@@ -228,12 +229,17 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
-            firstLevelCache.put(entityKey, entityFromDb);
         //TODO: add entire oneToOne entity to cache
-            List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
-            snapshots.put(entityKey, entityCurrentSnapshot);
+            boolean isEntityHasLazyField = Arrays.stream(entityFromDb.getClass().getDeclaredFields())
+                    .anyMatch(field -> field.isAnnotationPresent(OneToOne.class) &&
+                            field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY);
 
-            log.trace(CREATED_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), finalPrimaryKey);
+            if (!isEntityHasLazyField) {
+                firstLevelCache.put(entityKey, entityFromDb);
+                List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
+                snapshots.put(entityKey, entityCurrentSnapshot);
+                log.trace(CREATED_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), finalPrimaryKey);
+            }
         }
 
         return entityFromDb;
