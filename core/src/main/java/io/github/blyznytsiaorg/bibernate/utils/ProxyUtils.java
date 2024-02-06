@@ -42,11 +42,6 @@ public class ProxyUtils {
      */
     @RequiredArgsConstructor
     public class Handler implements MethodHandler {
-        
-//        private final Constructor<?> constructor;
-//
-//        private final Object[] constructorArgs;
-
         private final Supplier<?> supplier;
         private Object internalObject;
 
@@ -58,16 +53,14 @@ public class ProxyUtils {
          * @param proceed  The proceed method
          * @param args     The arguments for the method invocation
          * @return The result of the method invocation on the actual object
-         * @throws Throwable If an error occurs during method invocation
          */
         @Override
         public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-
             if (internalObject == null) {
                 internalObject = supplier.get();
             }
 
-            return internalObject;
+            return thisMethod.invoke(internalObject, args);
         }
     }
     
