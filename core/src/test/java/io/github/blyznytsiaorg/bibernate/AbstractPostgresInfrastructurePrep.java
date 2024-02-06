@@ -25,6 +25,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String PASSWORD = "password";
     private static final String REDIS_LATEST = "redis:latest";
     private static final int REDIS_DEFAULT_PORT = 6379;
+    public static final String PACKAGE_NAME = "testdata";
 
     @Container
     private final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(POSTGRES_LATEST)
@@ -83,17 +84,17 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     }
 
     public Persistent createPersistent() {
-        return new Persistent(bibernateSettings);
+        return new Persistent(bibernateSettings, PACKAGE_NAME);
     }
 
     public Persistent createPersistentWithFlayWayEnabled() {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings);
+        return new Persistent(bibernateSettings, PACKAGE_NAME);
     }
 
     public Persistent createPersistentWithSecondLevelCache() {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings);
+        return new Persistent(bibernateSettings, PACKAGE_NAME);
     }
 
     @AfterEach
