@@ -22,7 +22,7 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id")
     private Address address;
 }

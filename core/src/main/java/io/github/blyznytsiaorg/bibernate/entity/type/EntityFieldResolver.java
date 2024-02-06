@@ -5,6 +5,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.collection.PersistentEntityHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
+import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
@@ -53,18 +54,15 @@ public class EntityFieldResolver implements TypeFieldResolver {
             return supplier;
         }
 
-//        if (field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY) {
-//            var joinColumnName = joinColumnName(field);
-//            var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
-//            Class<?> type = field.getType();
-//            Supplier<?> entitySupplier = () -> session.findById(type, joinColumnValue);
-//
-////            return  Proxy.newProxyInstance(
-////                    this.getClass().getClassLoader(),
-////                    new Class<?>[]{entitySupplier},
-////                    new PersistentEntityHandler<>(entitySupplier)
-//            );
-//        }
+        if (field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY) {
+            var joinColumnName = joinColumnName(field);
+            var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
+            Class<?> type = field.getType();
+            Supplier<?> entitySupplier = () -> session.findById(type, joinColumnValue)
+                    .orElseThrow();
+
+            return ProxyUtils.createProxy(type, entitySupplier);
+        }
 
         return null;
     }

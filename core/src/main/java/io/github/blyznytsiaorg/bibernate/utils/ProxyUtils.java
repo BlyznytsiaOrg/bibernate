@@ -8,6 +8,7 @@ import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.function.Supplier;
 
 /**
  * Utility class providing methods to create proxies.
@@ -27,11 +28,11 @@ public class ProxyUtils {
      * @return The proxy object for the specified class
      */
     @SneakyThrows
-    public Object createProxy(Class<?> clazz, Constructor<?> constructor, Object[] args) {
+    public Object createProxy(Class<?> clazz, Supplier<?> supplier) {
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(clazz);
         
-        MethodHandler methodHandler = new Handler(constructor, args);
+        MethodHandler methodHandler = new Handler(supplier);
         
         return proxyFactory.create(new Class<?>[0], new Object[0], methodHandler);
     }
@@ -42,9 +43,12 @@ public class ProxyUtils {
     @RequiredArgsConstructor
     public class Handler implements MethodHandler {
         
-        private final Constructor<?> constructor;
-        
-        private final Object[] constructorArgs;
+//        private final Constructor<?> constructor;
+//
+//        private final Object[] constructorArgs;
+
+        private final Supplier<?> supplier;
+        private Object internalObject;
 
         /**
          * Invokes the method on the proxy object and delegates to the actual object.
@@ -58,9 +62,12 @@ public class ProxyUtils {
          */
         @Override
         public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-            Object obj = constructor.newInstance(constructorArgs);
 
-            return thisMethod.invoke(obj, args);
+            if (internalObject == null) {
+                internalObject = supplier.get();
+            }
+
+            return internalObject;
         }
     }
     

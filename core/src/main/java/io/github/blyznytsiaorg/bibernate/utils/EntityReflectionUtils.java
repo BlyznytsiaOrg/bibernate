@@ -292,20 +292,20 @@ public class EntityReflectionUtils {
         return value;
     }
 
-    public static Supplier<Object> createNewInstance(Constructor<?> constructor, Object[] args, Class<?> clazz,
-                                                     boolean lazy) {
-        return () -> {
-            try {
-                if (lazy) {
-                    return ProxyUtils.createProxy(clazz, constructor, args);
-                } else {
-                    return constructor.newInstance(args);
-                }
-            } catch (Exception e) {
-                throw new BibernateGeneralException("Cannot create proxy instance ", e);
-            }
-        };
-    }
+//    public static Supplier<Object> createNewInstance(Constructor<?> constructor, Object[] args, Class<?> clazz,
+//                                                     boolean lazy) {
+//        return () -> {
+//            try {
+//                if (lazy) {
+//                    return ProxyUtils.createProxy(clazz, constructor, args);
+//                } else {
+//                    return constructor.newInstance(args);
+//                }
+//            } catch (Exception e) {
+//                throw new BibernateGeneralException("Cannot create proxy instance ", e);
+//            }
+//        };
+//    }
 
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();
