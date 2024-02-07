@@ -6,7 +6,6 @@ import io.github.blyznytsiaorg.bibernate.entity.type.TypeResolverFactory;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setField;
 
@@ -37,9 +36,6 @@ public class EntityPersistent {
                                         ResultSet resultSet) {
         Object value = valueType.prepareValueForFieldInjection(field, resultSet);
 
-//        if (value instanceof Supplier) {
-//            value = ((Supplier<?>) value).get();
-//        }
         Optional.ofNullable(value)
                 .ifPresent(v -> setField(field, entity, v));
     }

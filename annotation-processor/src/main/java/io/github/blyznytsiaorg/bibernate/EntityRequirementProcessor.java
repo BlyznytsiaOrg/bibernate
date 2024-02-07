@@ -72,7 +72,7 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         }
 
         if (!hasRelationAnnotationOnEntityField(typeElement)) {
-            messager.printMessage(Diagnostic.Kind.ERROR, entities.toString() + " Entity  field should have relation annotation", typeElement);
+            messager.printMessage(Diagnostic.Kind.ERROR, "Entity field should have relation annotation @OneToOne or @ManyToOne", typeElement);
         }
     }
 
