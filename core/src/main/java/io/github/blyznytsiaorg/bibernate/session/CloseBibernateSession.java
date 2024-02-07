@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +90,16 @@ public class CloseBibernateSession implements BibernateSession {
             return;
         }
         bibernateSession.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return Collections.emptyList();
+        }
+        return bibernateSession.deleteByColumnValue(entityClass, columnName, columnValue);
     }
 
     @Override
