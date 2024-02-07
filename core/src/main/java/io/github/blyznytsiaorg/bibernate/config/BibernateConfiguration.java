@@ -11,6 +11,8 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.toMap;
 
 /**
+ * Configuration class for loading properties from a configuration file.
+ * It provides methods to load properties from a specified file or from the default configuration file.
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0
@@ -21,11 +23,19 @@ public class BibernateConfiguration {
     
     private static final String DEFAULT_CONFIGURATION = "bibernate.properties";
     private final String configFileName;
-    
+    /**
+     * Constructs a new BibernateConfiguration instance with the specified configuration file name.
+     *
+     * @param configFileName the name of the configuration file to load properties from
+     */
     public BibernateConfiguration(String configFileName) {
         this.configFileName = configFileName;
     }
 
+    /**
+     * Constructs a new BibernateConfiguration instance with the default configuration file name.
+     * The default configuration file is "bibernate.properties".
+     */
     public BibernateConfiguration() {
         this.configFileName = DEFAULT_CONFIGURATION;
     }
@@ -60,6 +70,12 @@ public class BibernateConfiguration {
         return propertiesMap;
     }
 
+    /**
+     * Returns a function to process properties and return their values.
+     *
+     * @param properties the properties object to process
+     * @return a function to process properties and return their values
+     */
     private Function<String, String> getValue(Properties properties) {
         return key -> PropertyParser.processProperty(properties.getProperty(key));
     }
