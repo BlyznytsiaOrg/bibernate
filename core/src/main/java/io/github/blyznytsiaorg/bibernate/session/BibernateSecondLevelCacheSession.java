@@ -161,6 +161,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        return bibernateSession.deleteByColumnValue(entityClass, columnName, columnValue);
+    }
+
+    @Override
     public <T> void delete(Class<T> entityClass, Object entity) {
         bibernateSession.delete(entityClass, entity);
     }

@@ -116,6 +116,8 @@ public interface BibernateSession extends Closeable {
      */
     <T> void deleteById(Class<T> entityClass, Object primaryKey);
 
+    <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue);
+
     /**
      * Deletes an entity from the data store.
      *

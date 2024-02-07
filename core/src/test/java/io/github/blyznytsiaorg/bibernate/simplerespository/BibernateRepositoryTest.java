@@ -19,7 +19,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.setupTables;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
+class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should findById")
     @Test
@@ -273,7 +273,9 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
 
             //when
             personRepository.delete(1L);
-            assertQueries(bibernateSessionFactory, List.of("DELETE FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of(
+                    "SELECT * FROM persons WHERE id = ?;", 
+                    "DELETE FROM persons WHERE id = ?;"));
 
             //then
             assertThat(personRepository.findAll()).hasSize(3);
@@ -298,7 +300,9 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep  {
             List<Long> ids = Arrays.asList(1L, 2L);
             personRepository.deleteAll(ids);
             assertQueries(bibernateSessionFactory, List.of(
+                    "SELECT * FROM persons WHERE id = ?;",
                     "DELETE FROM persons WHERE id = ?;",
+                    "SELECT * FROM persons WHERE id = ?;",
                     "DELETE FROM persons WHERE id = ?;"
             ));
 
