@@ -1,10 +1,10 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class BibernateSessionContextHolder {
     private static final ThreadLocal<BibernateSession> sessionContextHolder = new ThreadLocal<>();
-
-    private BibernateSessionContextHolder() {
-    }
 
     public static BibernateSession getBibernateSession() {
         return sessionContextHolder.get();

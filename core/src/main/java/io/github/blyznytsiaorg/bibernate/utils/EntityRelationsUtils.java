@@ -1,16 +1,21 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.experimental.UtilityClass;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
@@ -83,6 +88,25 @@ public class EntityRelationsUtils {
         }
     }
 
+    public static String mappedByJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+          .map(OneToMany::mappedBy)
+          .filter(Predicate.not(String::isEmpty))
+          .flatMap(mappedByName -> {
+              Class<?> collectionGenericType = getCollectionGenericType(field);
+
+              return getMappedByColumnName(mappedByName, collectionGenericType);
+          })
+          .orElse(joinColumnName(field));
+    }
+    
+    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
+        return Arrays.stream(collectionGenericType.getDeclaredFields())
+          .filter(f -> Objects.equals(f.getName(), mappedByName))
+          .findFirst()
+          .map(EntityReflectionUtils::joinColumnName);
+    }
+
     public static List<String> bidirectionalRelations(Class<?> entityClass, Field field) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(EntityRelationsUtils::isManyToMany)
@@ -90,6 +114,16 @@ public class EntityRelationsUtils {
                         || f.getName().equals(field.getAnnotation(ManyToMany.class).mappedBy()))
                 .map(Field::getName)
                 .toList();
+    }
+
+    public static List<CascadeType> getCascadeTypesFromAnnotation(Annotation annotation) {
+        try {
+            Method cascadeMethod = annotation.annotationType().getDeclaredMethod("cascade");
+            CascadeType[] cascadeTypes = (CascadeType[]) cascadeMethod.invoke(annotation);
+            return Arrays.asList(cascadeTypes);
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
     }
     
     public boolean isOneToMany(Field field) {
