@@ -10,6 +10,7 @@ import testdata.simplerespository.Person;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
 
@@ -28,7 +29,12 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
                 bibernateSession.deleteById(Person.class, 1L);
 
                 //then
-                assertQueries(bibernateSessionFactory, List.of("DELETE FROM persons WHERE id = ?;"));
+                var person = bibernateSession.findById(Person.class, 1L);
+
+                assertThat(person.isEmpty()).isTrue();
+                assertQueries(bibernateSessionFactory, List.of(
+                        "DELETE FROM persons WHERE id = ?;",
+                        "SELECT * FROM persons WHERE id = ?;"));
             }
         }
     }
@@ -50,9 +56,13 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
                 bibernateSession.delete(Person.class, person);
 
                 //then
+                var deletedPerson = bibernateSession.findById(Person.class, 1L);
+
+                assertThat(deletedPerson.isEmpty()).isTrue();
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM persons WHERE id = ?;",
-                        "DELETE FROM persons WHERE id = ?;"));
+                        "DELETE FROM persons WHERE id = ?;",
+                        "SELECT * FROM persons WHERE id = ?;"));
             }
         }
     }

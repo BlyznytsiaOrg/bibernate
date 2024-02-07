@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.entity;
+package io.github.blyznytsiaorg.bibernate.entity.metadata;
 
 import lombok.Getter;
 

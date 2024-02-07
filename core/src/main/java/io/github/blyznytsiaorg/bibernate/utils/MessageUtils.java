@@ -22,11 +22,15 @@ public class MessageUtils {
                 "Cannot execute delete entityClass [%s] with primaryKey %s. Message: %s";
         public static final String CANNOT_EXECUTE_QUERY = "Cannot execute query %s. Message: %s";
         public static final String ENTITY_CLASS_MUST_BE_NOT_NULL = "EntityClass must be not null";
+        public static final String FIELD_MUST_BE_NOT_NULL = "Field must be not null";
         public static final String ENTITY_MUST_BE_NOT_NULL = "Entity must be not null";
         public static final String PRIMARY_KEY_MUST_BE_NOT_NULL = "PrimaryKey must be not null";
         public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
-        public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA
-                = "Entity %s was change need to get new data findBy%s[%s]";
+        public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA = "Entity %s was change need to get new data findBy%s[%s]";
+        public static final String CANNOT_FIND_SEQUENCE_STRATEGY =
+            "Cannot find SEQUENCE strategy for entity entityClass [%s]";
+        public static final String CANNOT_GET_ID_FROM_SEQUENCE =
+            "Cannot get Id for sequence: [%s]";
     }
 
     @UtilityClass
@@ -58,6 +62,7 @@ public class MessageUtils {
         public static final String DIRTY_ENTITY_NOT_FOUND_FOR_ENTITY_KEY_NO_CHANGES =
                 "Dirty entity not found for entityKey {} no changes";
         public static final String CREATED_SNAPSHOT_FOR_ENTITY_ID = "Created snapshot for entity {} id {}";
+        public static final String CLOSE_SESSION = "Close session...";
     }
 
 }

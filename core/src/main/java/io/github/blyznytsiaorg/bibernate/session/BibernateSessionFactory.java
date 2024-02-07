@@ -1,9 +1,13 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
+import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.PostgresIdentity;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -23,13 +27,33 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     public BibernateSession openSession() {
         this.entityDao = entityDao();
-        var session = new BibernateFirstLevelCacheSession(new DefaultBibernateSession(entityDao));
-        BibernateSessionContextHolder.setBibernateSession(session);
-        return session;
+        var jdbcBibernateSession = new DefaultBibernateSession(entityDao);
+
+        BibernateSession bibernateSession;
+
+        if (getBibernateSettings().isSecondLevelCacheEnabled()) {
+            var redisConfiguration = getBibernateSettings().getRedisConfiguration();
+            var bibernateSecondLevelCacheSession = new BibernateSecondLevelCacheSession(
+                    jdbcBibernateSession, redisConfiguration.getDistributedMap()
+            );
+
+            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+                    bibernateSecondLevelCacheSession, new DefaultActionQueue())
+            );
+        } else {
+            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+                    jdbcBibernateSession, new DefaultActionQueue())
+            );
+        }
+
+        BibernateSessionContextHolder.setBibernateSession(bibernateSession);
+        return bibernateSession;
     }
 
     private EntityDao entityDao() {
-        return new EntityDao(new SqlBuilder(), getBibernateSettings());
+        List<String> executedQueries = new ArrayList<>();
+        Identity identity = new PostgresIdentity(getBibernateSettings(), executedQueries);
+        return new EntityDao(new SqlBuilder(), getBibernateSettings(), identity, executedQueries);
     }
 
     public List<String> getExecutedQueries() {

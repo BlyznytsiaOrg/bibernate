@@ -38,6 +38,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 //when
                 employeeEntity.setVersion(2);
                 bibernateSession.delete(EmployeeEntity.class, employeeEntity);
+                bibernateSession.flush();
 
                 //then
                 assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE id = ? AND version = ?;"));
@@ -77,6 +78,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
                 bibernateSession.delete(EmployeeEntity.class, employeeEntity);
+                bibernateSession.flush();
 
                 //then
                 assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE id = ? AND version = ?;"));

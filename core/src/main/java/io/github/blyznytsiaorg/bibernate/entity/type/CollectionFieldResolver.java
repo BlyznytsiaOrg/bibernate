@@ -9,15 +9,14 @@ import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByCollectionJoinColumnName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
 
 public class CollectionFieldResolver implements TypeFieldResolver {
-
+    
     @Override
     public boolean isAppropriate(Field field) {
         return EntityRelationsUtils.isCollectionField(field);
@@ -31,17 +30,22 @@ public class CollectionFieldResolver implements TypeFieldResolver {
             throw new BibernateGeneralException("Unable to get [%s] from entity [%s] without having the entity id."
                     .formatted(field.getName(), field.getDeclaringClass()));
         }
-
+        
         var collectionGenericType = getCollectionGenericType(field);
-        var joinColumnName = mappedByCollectionJoinColumnName(field);
-
         var session = BibernateSessionContextHolder.getBibernateSession();
-        Supplier<List<?>> collectionSupplier = () ->
-                session.findAllById(collectionGenericType, joinColumnName, entityId);
 
-        return new PersistentList<>(collectionSupplier);
+        if (EntityRelationsUtils.isOneToMany(field)) {
+            return new PersistentList<>(() ->
+                    session.findAllByColumnValue(collectionGenericType, mappedByJoinColumnName(field), entityId));
+        }
+
+        if (EntityRelationsUtils.isManyToMany(field)) {
+            return new PersistentList<>(() ->  session.findByJoinTableField(collectionGenericType, field, entityId));
+        }
+
+        return Collections.emptyList();
     }
-
+    
     private Object getEntityId(Field field, ResultSet resultSet) {
         try {
             var idFieldName = EntityReflectionUtils.columnIdName(field.getDeclaringClass());

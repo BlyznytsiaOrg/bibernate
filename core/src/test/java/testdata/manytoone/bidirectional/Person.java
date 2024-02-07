@@ -6,6 +6,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -21,6 +22,6 @@ public class Person {
     private String lastName;
     
     @OneToMany(mappedBy = "person")
-    private List<Note> notes;
+    private List<Note> notes = new ArrayList<>();
 
 }

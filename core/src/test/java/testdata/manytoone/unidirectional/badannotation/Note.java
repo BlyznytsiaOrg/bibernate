@@ -4,6 +4,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
 import testdata.manytoone.unidirectional.Person;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -18,6 +19,6 @@ public class Note {
 
     @ManyToOne
     @JoinColumn(name = "person_id")
-    private List<Person> persons;
+    private List<Person> persons = new ArrayList<>();
     
 }

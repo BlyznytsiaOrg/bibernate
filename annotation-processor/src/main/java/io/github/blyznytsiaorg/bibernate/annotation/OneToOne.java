@@ -8,6 +8,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OneToOne {
+
+    /**
+     * The field that owns the relationship. Required unless the relationship is unidirectional.
+     */
     String mappedBy() default "";
 
     FetchType fetch() default FetchType.EAGER;

@@ -2,8 +2,11 @@ package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import io.github.blyznytsiaorg.bibernate.dao.exception.EntityStateWasChangeException;
+import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
+import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.*;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
@@ -20,12 +23,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
- * @author Blyzhnytsia Team
- * @since 1.0
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -34,8 +39,10 @@ public class EntityDao implements Dao {
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
     private final EntityPersistent entityPersistent = new EntityPersistent();
+    private final Identity identity;
+
     @Getter
-    private final List<String> executedQueries = new ArrayList<>();
+    private final List<String> executedQueries;
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
@@ -43,7 +50,7 @@ public class EntityDao implements Dao {
 
         var fieldIdName = columnIdName(entityClass);
 
-        List<T> resultList = findAllById(entityClass, fieldIdName, primaryKey);
+        List<T> resultList = findAllByColumnValue(entityClass, fieldIdName, primaryKey);
 
         if (resultList.size() > 1) {
             throw new NonUniqueResultException(NON_UNIQUE_RESULT_FOR_FIND_BY_ID.formatted(entityClass.getSimpleName()));
@@ -53,10 +60,10 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
-        var whereCondition = sqlBuilder.selectFieldNameWhereCondition(idColumnName);
+    public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        var whereCondition = sqlBuilder.fieldEqualsParameterCondition(columnName);
 
-        return this.findByWhere(entityClass, whereCondition, idColumnValue);
+        return findByWhere(entityClass, whereCondition, columnValue);
     }
 
     @Override
@@ -66,7 +73,25 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var query = sqlBuilder.selectBy(tableName, whereCondition);
 
-        return this.findByQuery(entityClass, query, bindValues);
+        return findByQuery(entityClass, query, bindValues);
+    }
+
+    @Override
+    public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(field, FIELD_MUST_BE_NOT_NULL);
+
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        var query = sqlBuilder.selectWithJoin(tableName, fieldIdName, field);
+
+        Optional.of(bidirectionalRelations(entityClass, field)).ifPresent(entityPersistent::addIgnoredRelationFields);
+
+        var entities = findByQuery(entityClass, query, bindValues);
+
+        entityPersistent.clearIgnoredRelationFields();
+
+        return entities;
     }
 
     public <T> Optional<T> findOneByWhereJoin(Class<T> entityClass,
@@ -183,7 +208,7 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> int update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
+    public <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
@@ -217,15 +242,11 @@ public class EntityDao implements Dao {
                                 .formatted(entity.getClass(), fieldIdName, fieldIdValue)
                 );
             }
-
-            return resultSet;
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
                     .formatted(entityClass, fieldIdValue, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
-
-        return 0;
     }
 
     @Override
@@ -236,28 +257,8 @@ public class EntityDao implements Dao {
         if (isColumnVersionFound(entityClass)) {
             setVersionValueIfNull(entityClass, entity);
         }
-
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
-        var tableName = table(entityClass);
-        var query = sqlBuilder.insert(entity, tableName);
-        addToExecutedQueries(query);
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
-            showSql(() -> log.debug(QUERY, query));
-
-            populatePreparedStatement(entity, statement);
-
-            // TODO set id to Entity
-            // TODO set to cash
-            statement.execute();
-            log.trace(SAVE, entityClass.getSimpleName());
-        } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
-        }
+        identity.saveWithIdentity(entity);
+        log.trace(SAVE, entityClass.getSimpleName());
         return entityClass.cast(entity);
     }
 
@@ -300,7 +301,6 @@ public class EntityDao implements Dao {
 
         if (isVersionFound) {
             fieldVersionValue = (Number) columnVersionValue(entityClass, entity);
-
         } else {
             fieldVersionValue = null;
         }
@@ -349,13 +349,6 @@ public class EntityDao implements Dao {
     private void showSql(Runnable logSql) {
         if (bibernateDatabaseSettings.isShowSql()) {
             logSql.run();
-        }
-    }
-
-    private void populatePreparedStatement(Object entity, PreparedStatement statement) throws SQLException {
-        int index = 1;
-        for (Field field : getInsertEntityFields(entity)) {
-            statement.setObject(index++, getValueFromObject(entity, field));
         }
     }
 

@@ -1,5 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
+
+import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.SequenceConf;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -26,21 +33,22 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * @author Blyzhnytsia Team
- * @since 1.0
+ *
+ *  @author Blyzhnytsia Team
+ *  @since 1.0
  */
 @Slf4j
 @UtilityClass
 public class EntityReflectionUtils {
 
-    public static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
-
-    public static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+    private static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
+    private static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
+    public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id field for entity [%s]";
+    public static final String UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY = "Unable to get generated value field for entity [%s]";
 
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
-    public static final String ID_POSTFIX = "_id";
-
+    private static final String ID_POSTFIX = "_id";
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -70,30 +78,70 @@ public class EntityReflectionUtils {
 
     public static String mappedByCollectionJoinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-                .map(OneToMany::mappedBy)
-                .filter(Predicate.not(String::isEmpty))
-                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
-                .orElse(joinColumnName(field));
+          .map(OneToMany::mappedBy)
+          .filter(Predicate.not(String::isEmpty))
+          .flatMap(mappedByName -> {
+              Class<?> collectionGenericType = getCollectionGenericType(field);
+
+              return getMappedByColumnName(mappedByName, collectionGenericType);
+          })
+          .orElse(joinColumnName(field));
+    }
+    
+    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
+        return Arrays.stream(collectionGenericType.getDeclaredFields())
+          .filter(f -> Objects.equals(f.getName(), mappedByName))
+          .findFirst()
+          .map(EntityReflectionUtils::joinColumnName);
     }
 
-    public static String mappedByEntityJoinColumnName(Field field) {
-        return Optional.ofNullable(field.getAnnotation(OneToOne.class))
-                .map(OneToOne::mappedBy)
+//    public static String mappedByCollectionJoinColumnName(Field field) {
+//        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+//                .map(OneToMany::mappedBy)
+//                .filter(Predicate.not(String::isEmpty))
+//                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
+//                .orElse(joinColumnName(field));
+//    }
+//
+//    public static String mappedByEntityJoinColumnName(Field field) {
+//        return Optional.ofNullable(field.getAnnotation(OneToOne.class))
+//                .map(OneToOne::mappedBy)
+//                .filter(Predicate.not(String::isEmpty))
+//                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
+//                .orElse(joinColumnName(field));
+//    }
+//
+//    private static Optional<String> getMappedByColumnName(String mappedByName, Field field) {
+//        var mappedByType = field.getType();
+//        if (EntityRelationsUtils.isCollectionField(field)) {
+//            mappedByType = getCollectionGenericType(field);
+//        }
+//
+//        return Arrays.stream(mappedByType.getDeclaredFields())
+//                .filter(f -> Objects.equals(f.getName(), mappedByName))
+//                .findFirst()
+//                .map(EntityReflectionUtils::joinColumnName);
+//    }
+
+    public static String joinTableName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::name)
                 .filter(Predicate.not(String::isEmpty))
-                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
-                .orElse(joinColumnName(field));
+                .orElse(null);
     }
 
-    private static Optional<String> getMappedByColumnName(String mappedByName, Field field) {
-        var mappedByType = field.getType();
-        if (EntityRelationsUtils.isCollectionField(field)) {
-            mappedByType = getCollectionGenericType(field);
-        }
+    public static String inverseTableJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::inverseJoinColumn)
+                .map(JoinColumn::name)
+                .orElse(null);
+    }
 
-        return Arrays.stream(mappedByType.getDeclaredFields())
-                .filter(f -> Objects.equals(f.getName(), mappedByName))
-                .findFirst()
-                .map(EntityReflectionUtils::joinColumnName);
+    public static String tableJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                .map(JoinTable::joinColumn)
+                .map(JoinColumn::name)
+                .orElse(null);
     }
 
     public static String joinColumnName(Field field) {
@@ -200,7 +248,7 @@ public class EntityReflectionUtils {
         } catch (SQLException e) {
             log.warn("Cannot set [{}]", field.getName(), e);
         }
-
+        
         return null;
     }
 
@@ -233,33 +281,97 @@ public class EntityReflectionUtils {
 
         return (T) primaryKey;
     }
-
+    
     public static Class<?> getCollectionGenericType(Field field) {
         if (isSupportedCollection(field)) {
             var parametrizedType = (ParameterizedType) field.getGenericType();
             return (Class<?>) parametrizedType.getActualTypeArguments()[0];
         }
-
+        
         throw new BibernateGeneralException(
                 "Unable to get Collection generic type for a field that is not a supported Collection. Field type: [%s]"
                         .formatted(field.getType()));
     }
-
+    
     public static boolean isSupportedCollection(Field field) {
         return List.class.isAssignableFrom(field.getType());
     }
 
     public static List<Field> getInsertEntityFields(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
-                .filter(Predicate.not(field -> field.isAnnotationPresent(Id.class)))
-                .filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
-                .toList();
+            .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
+            //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
+            //TODO: ADD utility jdbc class to insert all types or null
+            .toList();
     }
 
     public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .map(field -> new EntityColumn(field.getName(), columnName(field)))
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    public static Field getIdField(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(Id.class))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static Object setIdField(Object entity, Object value) {
+        Field idField = getIdField(entity.getClass());
+        setField(idField, entity, value);
+        return entity;
+    }
+
+    public static Field getGeneratedValueField(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY.formatted(
+                    entity.getClass().getSimpleName())));
+
+    }
+
+    public static Field getGeneratedValueSequenceStrategyField(Object entity) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    public static SequenceConf getGeneratedValueSequenceConfig(Object entity, String tableName) {
+        return Arrays.stream(entity.getClass().getDeclaredFields())
+            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+            .map(field -> getSequenceConfFromField(field, tableName))
+            .findFirst()
+            .orElseThrow(() -> new MissingAnnotationException(
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+
+    }
+
+    public static boolean isAnnotationPresent(Field field, Class<? extends Annotation> annotationClass) {
+        return field.isAnnotationPresent(annotationClass);
+    }
+
+    private static SequenceConf getSequenceConfFromField(Field field, String tableName) {
+        var generatorName = field.getAnnotation(GeneratedValue.class).generator();
+        if(!generatorName.isEmpty() && generatorName.equals(field.getAnnotation(SequenceGenerator.class).name())) {
+            var sequenceName = field.getAnnotation(SequenceGenerator.class).sequenceName();
+            var initialValue = field.getAnnotation(SequenceGenerator.class).initialValue();
+            var allocationSize = field.getAnnotation(SequenceGenerator.class).allocationSize();
+            return new SequenceConf(sequenceName, initialValue, allocationSize);
+        }
+
+        var columnName = columnName(field);
+        return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
     }
 
     public static boolean isBidirectionalOwnerSide(Field field) {
@@ -285,30 +397,14 @@ public class EntityReflectionUtils {
             return value;
         } else if (value instanceof Character && targetType.equals(Character.class)) {
             return value;
-        } else if (value instanceof String valueString && targetType.equals(Long.class)) {
+        } else  if (value instanceof String valueString && targetType.equals(Long.class)) {
             return Long.valueOf(valueString);
         }
         // Add more conditions for other types if needed
         return value;
     }
 
-//    public static Supplier<Object> createNewInstance(Constructor<?> constructor, Object[] args, Class<?> clazz,
-//                                                     boolean lazy) {
-//        return () -> {
-//            try {
-//                if (lazy) {
-//                    return ProxyUtils.createProxy(clazz, constructor, args);
-//                } else {
-//                    return constructor.newInstance(args);
-//                }
-//            } catch (Exception e) {
-//                throw new BibernateGeneralException("Cannot create proxy instance ", e);
-//            }
-//        };
-//    }
-
     private String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();
     }
-
 }
