@@ -38,7 +38,7 @@ public class EntityColumnDetails {
         return cascadeTypes;
     }
 
-    private static <T> void addCascadeTypes(List<CascadeType> types, Function<T, List<CascadeType>> function, T obj) {
+    private <T> void addCascadeTypes(List<CascadeType> types, Function<T, List<CascadeType>> function, T obj) {
         Optional.ofNullable(obj).ifPresent(o -> types.addAll(function.apply(obj)));
     }
 }

@@ -192,7 +192,8 @@ public class EntityReflectionUtils {
     
     public static Field getEntityIdField(Object entity) {
         try {
-            return entity.getClass().getDeclaredField(columnIdName(entity.getClass()));
+            var columnIdName = columnIdName(entity.getClass());
+            return entity.getClass().getDeclaredField(columnIdName);
         } catch (NoSuchFieldException exe) {
             throw new BibernateGeneralException("Unable to get id field for entity [%s], message [%s]"
               .formatted(entity.getClass(), exe.getMessage()));
