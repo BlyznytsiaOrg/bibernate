@@ -1,4 +1,4 @@
-package testdata.onetoone.bidirectional;
+package testdata.onetoone.bidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;

@@ -1,4 +1,4 @@
-package testdata.onetoone.unidirectional;
+package testdata.onetoone.unidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
@@ -21,4 +21,10 @@ public class Address {
 //    @OneToOne
 //    @JoinColumn(name = "house_id")
 //    private House house;
+
+//    @Override
+//    public String toString() {
+//        return "LOL";
+//    }
 }
+

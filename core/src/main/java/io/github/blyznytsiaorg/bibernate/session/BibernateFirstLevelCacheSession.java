@@ -37,12 +37,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
 
-        if (entityMetadata.isHasOneToOne() && entityMetadata.getEntityColumns().stream()
-                .anyMatch(entityColumnDetails -> entityColumnDetails.getFetchType() == FetchType.EAGER)) {
+        if (entityMetadata.isHasOneToOne() && hasAnyEagerFetchType(entityMetadata)) {
             return getDao().findOneByWhereJoin(entityClass, primaryKey);
-//                    .map(entityFromDb -> persistentContext(entityClass, entityFromDb, entityKey, finalPrimaryKey));
-
+            //TODO: add to persistentContext
         }
+
         var cachedEntity = firstLevelCache.get(entityKey);
 
         if (Objects.isNull(cachedEntity)) {
@@ -57,6 +56,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         return Optional.of(entityClass.cast(cachedEntity));
     }
+
 
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, String idColumnName, Object idColumnValue) {
@@ -237,5 +237,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         }
 
         return entityFromDb;
+    }
+
+    private boolean hasAnyEagerFetchType(EntityMetadata entityMetadata) {
+        return entityMetadata.getEntityColumns().stream()
+                .anyMatch(entityColumnDetails -> entityColumnDetails.getFetchType() == FetchType.EAGER);
     }
 }

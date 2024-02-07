@@ -2,20 +2,19 @@ package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
-import io.github.blyznytsiaorg.bibernate.collection.PersistentEntityHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
 import java.util.function.Supplier;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
+@Slf4j
 public class EntityFieldResolver implements TypeFieldResolver {
 
     @Override
@@ -37,29 +36,23 @@ public class EntityFieldResolver implements TypeFieldResolver {
 
         if (field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.EAGER) {
             Class<?> type = field.getType();
-            Supplier<Object> supplier = () -> {
-                try {
-                    Object o = field.getType().getDeclaredConstructor().newInstance();
-                    for (Field declaredField : field.getType().getDeclaredFields()) {
-                        Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
-                        setField(declaredField, o, object);
-                    }
+            Object o = field.getType().getDeclaredConstructor().newInstance();
+            for (Field declaredField : field.getType().getDeclaredFields()) {
+                Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
+                setField(declaredField, o, object);
+            }
 
-                    return o;
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-
-            return supplier;
+            return o;
         }
 
         if (field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY) {
             var joinColumnName = joinColumnName(field);
             var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
             Class<?> type = field.getType();
-            Supplier<?> entitySupplier = () -> session.findById(type, joinColumnValue)
-                    .orElseThrow();
+            Supplier<Object> entitySupplier = () -> {
+                log.info("Processing LAZY loading of Entity {}", type);
+                return session.findById(type, joinColumnValue).get();
+            };
 
             return ProxyUtils.createProxy(type, entitySupplier);
         }

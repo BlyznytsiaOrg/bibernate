@@ -1,8 +1,7 @@
-package testdata.onetoone.unidirectional;
+package testdata.onetoone.unidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
-import testdata.onetoone.unidirectional.Address;
 
 @Entity
 @Table(name = "users")
@@ -22,7 +21,7 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "address_id")
     private Address address;
 }

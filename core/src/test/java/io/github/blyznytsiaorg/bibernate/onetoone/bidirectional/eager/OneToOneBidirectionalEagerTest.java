@@ -1,10 +1,10 @@
-package io.github.blyznytsiaorg.bibernate.onetoone.bidirectional;
+package io.github.blyznytsiaorg.bibernate.onetoone.bidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.onetoone.bidirectional.Address;
+import testdata.onetoone.bidirectional.eager.Address;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,17 +13,17 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class OneToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
+public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should retrieve person and address")
     @Test
     public void testOneToOneBidirectional() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent("testdata.onetoone.bidirectional.eager");
         try (var entityManager = persistent.createBibernateEntityManager()) {
-            var sessionFactory = entityManager.getBibernateSessionFactory();
-            try (var session = sessionFactory.openSession()) {
+            var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
+            try (var session = bibernateSessionFactory.openSession()) {
 
                 Optional<Address> address = session.findById(Address.class, 1L);
 
@@ -37,12 +37,14 @@ public class OneToOneBidirectionalTest extends AbstractPostgresInfrastructurePre
                         .hasFieldOrPropertyWithValue("firstName", "FirstName")
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
-                assertQueries(sessionFactory, List.of(
-                        "SELECT * FROM addresses WHERE id = ?;",
-                        "SELECT * FROM users WHERE address_id = ?;",
-                        "SELECT * FROM houses WHERE house_id = ?;"));
-
-
+                assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT addresses.id AS addresses_id, " +
+                        "addresses.name AS addresses_name, " +
+                        "users.id AS users_id, " +
+                        "users.first_name AS users_first_name, " +
+                        "users.last_name AS users_last_name, " +
+                        "FROM addresses LEFT JOIN users ON users.id=addresses.id " +
+                        "WHERE addresses.id = ?;"));
             }
         }
     }

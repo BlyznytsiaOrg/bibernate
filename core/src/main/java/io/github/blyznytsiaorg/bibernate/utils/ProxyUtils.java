@@ -8,6 +8,7 @@ import lombok.experimental.UtilityClass;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -28,12 +29,12 @@ public class ProxyUtils {
      * @return The proxy object for the specified class
      */
     @SneakyThrows
-    public Object createProxy(Class<?> clazz, Supplier<?> supplier) {
+    public Object createProxy(Class<?> clazz, Supplier<Object> supplier) {
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(clazz);
-        
+
         MethodHandler methodHandler = new Handler(supplier);
-        
+
         return proxyFactory.create(new Class<?>[0], new Object[0], methodHandler);
     }
 
@@ -42,26 +43,48 @@ public class ProxyUtils {
      */
     @RequiredArgsConstructor
     public class Handler implements MethodHandler {
-        private final Supplier<?> supplier;
+        private final Supplier<Object> supplier;
         private Object internalObject;
+//        private int counter = 0;
+
+//        private synchronized Object getInstance() {
+//            if (instance == null) {
+//                instance = supplier.get();
+//            }
+//            return instance;
+//        }
 
         /**
          * Invokes the method on the proxy object and delegates to the actual object.
          *
-         * @param self     The proxy object
+         * @param self       The proxy object
          * @param thisMethod The method being invoked on the proxy
-         * @param proceed  The proceed method
-         * @param args     The arguments for the method invocation
+         * @param proceed    The proceed method
+         * @param args       The arguments for the method invocation
          * @return The result of the method invocation on the actual object
          */
         @Override
         public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+
+//            if (internalObject == null && counter > 0) {
+//                internalObject = supplier.get();
+//            }
+//            if (thisMethod.getName().equals("toString") && counter < 1) {
+//
+//            }
+//            return instance.getClass().invoke(getInstance(), args);
+            System.out.println(thisMethod.getName());
+            System.out.println(proceed.getName());
+//            if (!thisMethod.getName().equals("_d11toString")) {
+//                return thisMethod.invoke(internalObject, args);
+//            }
+//            System.out.println("HELLO");
+//            counter += 1;
             if (internalObject == null) {
                 internalObject = supplier.get();
             }
-
             return thisMethod.invoke(internalObject, args);
         }
     }
-    
+
 }
