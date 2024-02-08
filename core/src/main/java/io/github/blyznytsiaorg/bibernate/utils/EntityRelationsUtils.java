@@ -24,13 +24,13 @@ public class EntityRelationsUtils {
 
     private static final String FIELD_WITH_ANNOTATION_NOT_APPLICABLE_FOR_COLLECTIONS =
             "Field [%s] from [%s] is annotated with annotation %s that is not applicable for Collections.";
-    private static final String FIELD_WITH_ANNOTATION_APPLICABLE_ONLY_FOR_COLLECTIONS = 
+    private static final String FIELD_WITH_ANNOTATION_APPLICABLE_ONLY_FOR_COLLECTIONS =
             "Field [%s] from [%s] is annotated with a collection annotation %s but is not a supported Collection.";
     private static final String UNABLE_TO_GET_OWNING_FIELD_FROM_INVERSE_FIELD =
             "Unable to get owning field from inverse field [%s] without @ManyToMany(mappedBy)";
-    public static final String UNABLE_TO_GET_MAPPED_BY_FIELD_IN_OWNING_ENTITY = 
+    public static final String UNABLE_TO_GET_MAPPED_BY_FIELD_IN_OWNING_ENTITY =
             "Unable to get mappedBy field in owning Entity";
-    
+
     private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class);
     private final List<Class<? extends Annotation>> collectionAnnotations = List.of(OneToMany.class, ManyToMany.class);
 
@@ -91,7 +91,7 @@ public class EntityRelationsUtils {
                 .map(Field::getName)
                 .toList();
     }
-    
+
     public boolean isOneToMany(Field field) {
         return field.isAnnotationPresent(OneToMany.class);
     }
@@ -104,5 +104,5 @@ public class EntityRelationsUtils {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .anyMatch(field -> field.isAnnotationPresent(OneToOne.class));
     }
-    
+
 }
