@@ -76,61 +76,13 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(field.getName()));
     }
 
-    public static String mappedByJoinColumnName(Field field) {
-        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-                .map(OneToMany::mappedBy)
-                .filter(Predicate.not(String::isEmpty))
-                .flatMap(mappedByName -> {
-                    Class<?> collectionGenericType = getCollectionGenericType(field);
-
-                    return getMappedByColumnName(mappedByName, collectionGenericType);
-                })
-                .orElse(joinColumnName(field));
-    }
-    
-    private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
-        return Arrays.stream(collectionGenericType.getDeclaredFields())
-          .filter(f -> Objects.equals(f.getName(), mappedByName))
-          .findFirst()
-          .map(EntityReflectionUtils::joinColumnName);
-    }
-//TODO: delete after refactoring
-
-//    public static String mappedByCollectionJoinColumnName(Field field) {
-//        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-//                .map(OneToMany::mappedBy)
-//                .filter(Predicate.not(String::isEmpty))
-//                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
-//                .orElse(joinColumnName(field));
-//    }
-//
-//    public static String mappedByEntityJoinColumnName(Field field) {
-//        return Optional.ofNullable(field.getAnnotation(OneToOne.class))
-//                .map(OneToOne::mappedBy)
-//                .filter(Predicate.not(String::isEmpty))
-//                .flatMap(mappedByName -> getMappedByColumnName(mappedByName, field))
-//                .orElse(joinColumnName(field));
-//    }
-//
-//    private static Optional<String> getMappedByColumnName(String mappedByName, Field field) {
-//        var mappedByType = field.getType();
-//        if (EntityRelationsUtils.isCollectionField(field)) {
-//            mappedByType = getCollectionGenericType(field);
-//        }
-//
-//        return Arrays.stream(mappedByType.getDeclaredFields())
-//                .filter(f -> Objects.equals(f.getName(), mappedByName))
-//                .findFirst()
-//                .map(EntityReflectionUtils::joinColumnName);
-//    }
-
     public static String joinTableName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                 .map(JoinTable::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(null);
     }
-
+    
     public static String inverseTableJoinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                 .map(JoinTable::inverseJoinColumn)
@@ -143,6 +95,15 @@ public class EntityReflectionUtils {
                 .map(JoinTable::joinColumn)
                 .map(JoinColumn::name)
                 .orElse(null);
+    }
+
+    public static String joinColumnName(Class<?> sourceType, Class<?> fieldType) {
+        return Arrays.stream(sourceType.getDeclaredFields())
+          .filter(field -> fieldType.isAssignableFrom(field.getType())
+            || (isSupportedCollection(field) && fieldType.isAssignableFrom(getCollectionGenericType(field))))
+          .map(EntityReflectionUtils::joinColumnName)
+          .findFirst()
+          .orElse(null);
     }
 
     public static String joinColumnName(Field field) {
@@ -220,6 +181,26 @@ public class EntityReflectionUtils {
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
                         UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static Object getFieldValue(Field field, Object obj) {
+        try {
+            field.setAccessible(true);
+            return field.get(obj);
+        } catch (IllegalAccessException exe) {
+            throw new BibernateGeneralException("Unable to get [%s] field value for entity [%s], message [%s]"
+              .formatted(field.getName(), obj.getClass(), exe.getMessage()));
+        }
+    }
+
+    public static Field getEntityIdField(Object entity) {
+        try {
+            var columnIdName = columnIdName(entity.getClass());
+            return entity.getClass().getDeclaredField(columnIdName);
+        } catch (NoSuchFieldException exe) {
+            throw new BibernateGeneralException("Unable to get id field for entity [%s], message [%s]"
+              .formatted(entity.getClass(), exe.getMessage()));
+        }
     }
 
     @SneakyThrows

@@ -33,5 +33,7 @@ public interface Dao {
 
     <T> void deleteById(Class<T> entityClass, Object primaryKey);
 
+    <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value);
+
     <T> void delete(Class<T> entityClass, Object entity);
 }

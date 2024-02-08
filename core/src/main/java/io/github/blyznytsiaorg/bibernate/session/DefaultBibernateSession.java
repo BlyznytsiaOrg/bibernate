@@ -72,6 +72,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        return dao.deleteByColumnValue(entityClass, columnName, columnValue);
+    }
+
+    @Override
     public <T> void delete(Class<T> entityClass, Object entity) {
         dao.delete(entityClass, entity);
     }

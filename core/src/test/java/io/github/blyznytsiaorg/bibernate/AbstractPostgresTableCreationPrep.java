@@ -25,7 +25,7 @@ public interface AbstractPostgresTableCreationPrep {
                 id      BIGINT primary key,
                 name    VARCHAR(255)
             );
-            
+                        
             CREATE TABLE IF NOT EXISTS addresses
             (
                 id      BIGINT primary key,
@@ -33,7 +33,7 @@ public interface AbstractPostgresTableCreationPrep {
                 house_id BIGINT NOT NULL,
                 CONSTRAINT addresses_houses_FK FOREIGN KEY (house_id) REFERENCES houses
             );
-            
+                        
             CREATE TABLE IF NOT EXISTS users (
                 id bigserial primary key,
                 first_name varchar(255),
@@ -78,7 +78,7 @@ public interface AbstractPostgresTableCreationPrep {
             insert into addresses(id, name, house_id) values (1, 'street', 1);
             insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1)
             """;
-            
+
     String CREATE_NOTES_TABLE = """
             CREATE TABLE IF NOT EXISTS notes (
                 id bigserial primary key,
@@ -93,6 +93,10 @@ public interface AbstractPostgresTableCreationPrep {
             insert into notes(person_id, text) values (1, 'My Second Note');
             """;
 
+    String CREATE_INSERT_NOTE_STATEMENT = """
+            insert into notes(person_id, text) values (1, 'My First Note');
+            """;
+
     String CREATE_DELETE_NOTES_STATEMENT = """
             delete from notes where person_id = 1;
             """;
@@ -103,19 +107,19 @@ public interface AbstractPostgresTableCreationPrep {
                 first_name varchar(255),
                 last_name varchar(255)
             );
-            
+                        
             CREATE TABLE IF NOT EXISTS authors (
                 id bigserial primary key,
                 name varchar(255)
             );
-            
+                        
             CREATE TABLE IF NOT EXISTS courses (
                 id bigserial primary key,
                 author_id bigint,
                 name varchar(255),
                 CONSTRAINT courses_author_FK FOREIGN KEY (author_id) REFERENCES authors
             );
-            
+                        
             CREATE TABLE IF NOT EXISTS persons_courses (
                 id bigserial primary key,
                 person_id bigint,
@@ -124,7 +128,7 @@ public interface AbstractPostgresTableCreationPrep {
                 CONSTRAINT persons_courses_courses_FK FOREIGN KEY (course_id) REFERENCES courses
             );
             """;
-    
+
     String CREATE_INSERT_PERSONS_COURSES_STATEMENTS = """
             insert into persons(first_name, last_name) values ('John', 'Doe');
             insert into persons(first_name, last_name) values ('Jordan', 'Rodriguez');

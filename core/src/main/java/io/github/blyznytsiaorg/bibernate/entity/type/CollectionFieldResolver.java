@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.Objects;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mappedByJoinColumnName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.mappedByJoinColumnName;
 
 public class CollectionFieldResolver implements TypeFieldResolver {
     

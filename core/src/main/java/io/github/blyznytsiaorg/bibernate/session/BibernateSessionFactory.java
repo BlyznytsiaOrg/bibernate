@@ -1,5 +1,10 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
 import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
@@ -7,10 +12,6 @@ import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.PostgresIdentity;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 
 /**
  *

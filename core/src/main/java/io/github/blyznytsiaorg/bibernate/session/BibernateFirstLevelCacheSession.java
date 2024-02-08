@@ -140,6 +140,24 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(columnName, FIELD_MUST_BE_NOT_NULL);
+
+        List<T> deletedEntities = bibernateSession.deleteByColumnValue(entityClass, columnName, columnValue);
+        
+        for (T deletedEntity : deletedEntities) {
+            var idField = getEntityIdField(deletedEntity);
+            var fieldValue = getFieldValue(idField, deletedEntity);
+            var entityKey = new EntityKey<>(entityClass, fieldValue, idField.getType());
+
+            removeCacheAndSnapshotBy(entityClass, fieldValue, entityKey);
+        }
+
+        return deletedEntities;
+    }
+
+    @Override
     public <T> void delete(Class<T> entityClass, Object entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
