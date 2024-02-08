@@ -14,4 +14,6 @@ public @interface JoinTable {
     JoinColumn joinColumn();
 
     JoinColumn inverseJoinColumn();
+    ForeignKey foreignKey() default @ForeignKey(name = "");
+    ForeignKey inverseForeignKey() default @ForeignKey(name = "");
 }

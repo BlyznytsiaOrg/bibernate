@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.config.DDLConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
 import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -36,6 +38,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -47,6 +50,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -56,6 +60,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -64,6 +69,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -72,6 +78,7 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null, dataSource);
         enableFlyway();
+        processDDLConfiguration(packageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
     }
@@ -86,5 +93,13 @@ public class Persistent {
 
     private RedisConfiguration redisConfiguration() {
         return new RedisConfiguration(bibernateDatabaseSettings);
+    }
+
+    private DDLConfiguration processDDLConfiguration(String packageName) {
+        return new DDLConfiguration(bibernateDatabaseSettings, packageName);
+    }
+
+    public StatelessSession createStatelessSession() {
+        return new StatelessSession(bibernateDatabaseSettings);
     }
 }

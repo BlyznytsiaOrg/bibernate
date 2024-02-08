@@ -4,6 +4,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Getter
+@Setter
 @Builder
 public class EntityColumnDetails {
     private Field field;

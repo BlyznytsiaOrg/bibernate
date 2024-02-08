@@ -33,7 +33,10 @@ public class BibernateDatabaseSettings {
     private static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
     private static final String SECOND_LEVEL_CACHE_HOST = "bibernate.secondLevelCache.host";
     private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
+    private static final String BB2DDL_AUTO = "bibernate.2ddl.auto";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
+    public static final String NONE = "none";
+    public static final String CREATE = "create";
     private final Map<String, String> bibernateSettingsProperties;
     private final String configurationErrorMessage;
     private final String bibernateFileName;
@@ -81,7 +84,8 @@ public class BibernateDatabaseSettings {
         return new HikariDataSource(config);
     }
 
-    private String configureErrorMessage(Map<String, String> bibernateSettings, String bibernateFileName) {
+    private String configureErrorMessage(Map<String, String> bibernateSettings,
+                                         String bibernateFileName) {
         String errorMessage;
         if (Objects.nonNull(bibernateSettings)) {
             errorMessage = SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY.formatted(bibernateFileName);
@@ -92,19 +96,24 @@ public class BibernateDatabaseSettings {
     }
 
     public boolean isShowSql() {
-        return getProperty(SHOW_SQL, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(SHOW_SQL, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     public boolean isCollectQueries() {
-        return getProperty(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     public boolean isFlywayEnabled() {
-        return getProperty(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
+    }
+
+    public boolean isDDLCreate() {
+        String ddlProperty = getPropertyString(BB2DDL_AUTO, NONE);
+        return ddlProperty.equals(CREATE);
     }
 
     public boolean isSecondLevelCacheEnabled() {
-        return getProperty(SECOND_LEVEL_CACHE, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(SECOND_LEVEL_CACHE, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     public String getSecondLevelCacheHost() {
@@ -116,7 +125,11 @@ public class BibernateDatabaseSettings {
     }
 
 
-    private boolean getProperty(String key, String defaultValue) {
+    private boolean getPropertyBoolean(String key, String defaultValue) {
         return Boolean.parseBoolean(bibernateSettingsProperties.getOrDefault(key, defaultValue));
+    }
+
+    private String getPropertyString(String key, String defaultValue) {
+        return bibernateSettingsProperties.getOrDefault(key, defaultValue);
     }
 }

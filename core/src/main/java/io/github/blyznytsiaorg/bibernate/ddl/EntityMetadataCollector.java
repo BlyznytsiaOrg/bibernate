@@ -1,4 +1,4 @@
-package io.github.blyznytsiaorg.bibernate.entity.metadata;
+package io.github.blyznytsiaorg.bibernate.ddl;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.databaseTypeForInternalJavaType;
@@ -22,6 +22,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.getCa
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.ForeignKey;
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
@@ -31,6 +32,8 @@ import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.GeneratedValueMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IdMetadata;
@@ -42,12 +45,14 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToManyMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToOneMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
+import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Getter
@@ -58,11 +63,11 @@ public class EntityMetadataCollector {
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
 
-    @Deprecated(forRemoval = true)
-    public EntityMetadataCollector(Class<?> clazz) {
-        this.reflections = new Reflections(clazz);
+    public EntityMetadataCollector(String baseEntityPackage) {
+        this.reflections = new Reflections(baseEntityPackage);
         this.inMemoryEntityMetadata = new HashMap<>();
         this.tableNames = new HashMap<>();
+        collectMetadata();
     }
 
     public Map<Class<?>, EntityMetadata> collectMetadata() {
@@ -178,13 +183,11 @@ public class EntityMetadataCollector {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-            String foreignKeyName = null;
+            String foreignKeyName = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                    .map(JoinColumn::foreignKey)
+                    .map(ForeignKey::name)
+                    .orElseGet(DDLUtils::getForeignKeyConstraintName);
 
-            if (joinColumn != null && (joinColumn.foreignKey() != null)) {
-                foreignKeyName = joinColumn.foreignKey().name();
-
-            }
             return JoinColumnMetadata.builder()
                     .name(joinColumnName)
                     .databaseType(databaseTypeForJoinColumn)

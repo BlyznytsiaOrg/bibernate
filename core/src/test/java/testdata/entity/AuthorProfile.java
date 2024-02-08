@@ -5,30 +5,26 @@ import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Index;
-import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
-import lombok.Getter;
-import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
 @Entity
-@Table(name = "authors", indexes = {@Index(columnList = "name")})
-public class Author {
+@Table(name = "author_profiles")
+public class AuthorProfile {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
+    private Long id;
 
-    private String name;
+    @Column(columnDefinition = "text")
+    private String aboutMe;
 
-    @OneToOne(mappedBy = "author")
-    AuthorProfile authorProfile;
+    @OneToOne
+    private Author author;
 
-    @ManyToMany(mappedBy = "authors")
-    List<Book> books = new ArrayList<>();
+    @OneToMany(mappedBy = "author")
+    private List<Phone> phones = new ArrayList<>();
 }
