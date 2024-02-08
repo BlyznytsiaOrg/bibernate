@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,6 +66,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * @param columnValue The value of the column
      * @return A list of entities matching the criteria
      */
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return bibernateSession.findAll(entityClass);
+    }
+
     @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         return bibernateSession.findAllByColumnValue(entityClass, columnName, columnValue);
@@ -161,6 +167,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     }
 
     @Override
+    public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        bibernateSession.deleteAllById(entityClass, primaryKeys);
+    }
+
+    @Override
     public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         return bibernateSession.deleteByColumnValue(entityClass, columnName, columnValue);
     }
@@ -173,6 +184,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     /**
      * Closes the session and releases any resources associated with it.
      */
+    @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        bibernateSession.deleteAll(entityClass, entities);
+    }
+
     @Override
     public void close() {
         bibernateSession.close();

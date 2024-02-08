@@ -38,6 +38,11 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
+    public String selectAll(String tableName) {
+        return from(tableName)
+                .buildSelectStatement();
+    }
+
     /**
      * Generates an UPDATE SQL statement for updating records in a specified table based on the provided entity,
      * fieldIdName, and list of ColumnSnapshots representing the differences.
@@ -89,7 +94,6 @@ public class SqlBuilder {
     public String fieldEqualsParameterCondition(String fieldName) {
         return fieldName + EQ + PARAMETER;
     }
-
 
     /**
      * Generates an INSERT SQL statement for inserting a new record into a specified table based on the provided entity.
