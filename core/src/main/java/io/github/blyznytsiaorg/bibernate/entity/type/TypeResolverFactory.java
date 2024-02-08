@@ -11,8 +11,8 @@ public class TypeResolverFactory {
 
     public TypeResolverFactory() {
         this.typeFieldResolvers.add(new EntityFieldResolver());
-        this.typeFieldResolvers.add(new OneOnOneEagerFieldResolver());
-        this.typeFieldResolvers.add(new OneOnOneLazyFieldResolver());
+        this.typeFieldResolvers.add(new OneToOneEagerFieldResolver());
+        this.typeFieldResolvers.add(new OneToOneLazyFieldResolver());
         this.typeFieldResolvers.add(new RegularFieldFieldResolver());
         this.typeFieldResolvers.add(new CollectionFieldResolver());
     }

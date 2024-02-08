@@ -9,14 +9,14 @@ import java.sql.ResultSet;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
-public class OneOnOneEagerFieldResolver implements TypeFieldResolver {
+public class OneToOneEagerFieldResolver implements TypeFieldResolver {
     @Override
     public boolean isAppropriate(Field field) {
         return field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.EAGER;
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
         Class<?> type = field.getType();
         try {
             Object obj = field.getType().getDeclaredConstructor().newInstance();

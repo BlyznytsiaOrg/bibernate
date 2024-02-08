@@ -11,14 +11,14 @@ import java.util.function.Supplier;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
-public class OneOnOneLazyFieldResolver implements TypeFieldResolver {
+public class OneToOneLazyFieldResolver implements TypeFieldResolver {
     @Override
     public boolean isAppropriate(Field field) {
         return field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY;
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
         var session = BibernateSessionContextHolder.getBibernateSession();
 
         var joinColumnName = joinColumnName(field);

@@ -29,7 +29,7 @@ public class ProxyUtils {
      * @return The proxy object for the specified class
      */
     @SneakyThrows
-    public Object createProxy(Class<?> clazz, Supplier<Object> supplier) {
+    public Object createProxy(Class<?> clazz, Supplier<?> supplier) {
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(clazz);
 
@@ -43,16 +43,9 @@ public class ProxyUtils {
      */
     @RequiredArgsConstructor
     public class Handler implements MethodHandler {
-        private final Supplier<Object> supplier;
+        private final Supplier<?> supplier;
         private Object internalObject;
-//        private int counter = 0;
 
-//        private synchronized Object getInstance() {
-//            if (instance == null) {
-//                instance = supplier.get();
-//            }
-//            return instance;
-//        }
 
         /**
          * Invokes the method on the proxy object and delegates to the actual object.
@@ -65,21 +58,6 @@ public class ProxyUtils {
          */
         @Override
         public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-
-//            if (internalObject == null && counter > 0) {
-//                internalObject = supplier.get();
-//            }
-//            if (thisMethod.getName().equals("toString") && counter < 1) {
-//
-//            }
-//            return instance.getClass().invoke(getInstance(), args);
-            System.out.println(thisMethod.getName());
-            System.out.println(proceed.getName());
-//            if (!thisMethod.getName().equals("_d11toString")) {
-//                return thisMethod.invoke(internalObject, args);
-//            }
-//            System.out.println("HELLO");
-//            counter += 1;
             if (internalObject == null) {
                 internalObject = supplier.get();
             }
