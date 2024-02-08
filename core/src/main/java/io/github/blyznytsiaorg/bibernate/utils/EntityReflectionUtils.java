@@ -76,16 +76,16 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(field.getName()));
     }
 
-    public static String mappedByCollectionJoinColumnName(Field field) {
+    public static String mappedByJoinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-          .map(OneToMany::mappedBy)
-          .filter(Predicate.not(String::isEmpty))
-          .flatMap(mappedByName -> {
-              Class<?> collectionGenericType = getCollectionGenericType(field);
+                .map(OneToMany::mappedBy)
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(mappedByName -> {
+                    Class<?> collectionGenericType = getCollectionGenericType(field);
 
-              return getMappedByColumnName(mappedByName, collectionGenericType);
-          })
-          .orElse(joinColumnName(field));
+                    return getMappedByColumnName(mappedByName, collectionGenericType);
+                })
+                .orElse(joinColumnName(field));
     }
     
     private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
@@ -94,6 +94,7 @@ public class EntityReflectionUtils {
           .findFirst()
           .map(EntityReflectionUtils::joinColumnName);
     }
+//TODO: delete after refactoring
 
 //    public static String mappedByCollectionJoinColumnName(Field field) {
 //        return Optional.ofNullable(field.getAnnotation(OneToMany.class))

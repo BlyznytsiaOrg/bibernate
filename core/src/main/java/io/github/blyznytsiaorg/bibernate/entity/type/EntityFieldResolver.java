@@ -24,15 +24,15 @@ public class EntityFieldResolver implements TypeFieldResolver {
 
     @SneakyThrows
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
         var session = BibernateSessionContextHolder.getBibernateSession();
 
-        if (isBidirectionalOwnerSide(field)) {
-            var columnIdName = columnIdName(field.getDeclaringClass());
-            var idValue = getValueFromResultSetByColumn(resultSet, columnIdName);
-            return session.findAllById(field.getType(), mappedByEntityJoinColumnName(field), idValue)
-                    .get(0);
-        }
+//        if (isBidirectionalOwnerSide(field)) {
+//            var columnIdName = columnIdName(field.getDeclaringClass());
+//            var idValue = getValueFromResultSetByColumn(resultSet, columnIdName);
+//            return session.findAllById(field.getType(), mappedByEntityJoinColumnName(field), idValue)
+//                    .get(0);
+//        }
 
         if (field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.EAGER) {
             Class<?> type = field.getType();

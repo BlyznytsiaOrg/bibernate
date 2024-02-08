@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 public class EntityColumnDetails {
     private Field field;
     private String fieldName;
+    private String table;
     private Class<?> fieldType;
     private ColumnMetadata column;
     private IdMetadata id;

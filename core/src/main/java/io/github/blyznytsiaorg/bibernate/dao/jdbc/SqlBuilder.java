@@ -1,16 +1,24 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc;
 
+import io.github.blyznytsiaorg.bibernate.dao.JoinInfo;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.DeleteQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.InsertQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.UpdateQueryBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinClause;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.JoinColumnMetadata;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
@@ -20,8 +28,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.ownin
 /**
  * Utility class for building SQL statements (SELECT, UPDATE, INSERT, DELETE) based on different scenarios.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 public class SqlBuilder {
 
@@ -37,17 +45,51 @@ public class SqlBuilder {
                 .whereCondition(whereCondition)
                 .buildSelectStatement();
     }
-//TODO: change to selectWithJoin
+
     public String selectByWithJoin(String tableName,
-                                   List<String> fieldNames,
+                                   Set<EntityMetadata> oneToOneEntities,
                                    String whereCondition,
-                                   String joinedTable,
-                                   String onCondition,
+                                   List<JoinInfo> joinInfos,
                                    JoinType joinType) {
+
+        Map<String, List<EntityColumnDetails>> tableNameColumnsDetails = oneToOneEntities.stream()
+                .collect(Collectors.toMap(EntityMetadata::getTableName,
+                        entityMetadata -> entityMetadata.getEntityColumns().stream()
+                                .filter(entityColumnDetails -> Objects.isNull(entityColumnDetails.getOneToOne()))
+                                .toList()));
+
+        List<JoinClause> joinClauses = joinInfos.stream()
+                .map(joinInfo -> {
+
+                    EntityMetadata parentEntityMetadata = joinInfo.getParentEntityMetadata();
+                    EntityMetadata childEntityMetadata = joinInfo.getChildEntityMetadata();
+
+                    String parentIdColumnName = parentEntityMetadata.getEntityColumns().stream()
+                            .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                            .map(EntityColumnDetails::getColumn)
+                            .map(ColumnMetadata::getName)
+                            .findFirst()
+                            .orElseThrow(() -> new BibernateGeneralException("Cannot retrieve id column name from parent class"));
+                    String childJoinColumnName = childEntityMetadata.getEntityColumns().stream()
+                            .filter(entityColumnDetails -> entityColumnDetails.getFieldType().equals(parentEntityMetadata.getType()))
+                            .map(EntityColumnDetails::getJoinColumn)
+                            .filter(Objects::nonNull)
+                            .map(JoinColumnMetadata::getName)
+                            .findFirst()
+                            .orElseThrow(() -> new BibernateGeneralException("Cannot retrieve join column name from child class"));
+                    String onCondition = getOnCondition(parentEntityMetadata.getTableName(),
+                            parentIdColumnName,
+                            childEntityMetadata.getTableName(),
+                            childJoinColumnName);
+
+                    return new JoinClause(joinInfo.getJoinedTable(), onCondition, joinType);
+                })
+                .toList();
+
         return from(tableName)
-                .selectFields(fieldNames)
-                .join(joinedTable, onCondition, joinType)
-                .whereCondition(selectFieldNameWhereCondition(whereCondition))
+                .selectFieldsFromTables(tableNameColumnsDetails)
+                .join(joinClauses)
+                .whereCondition(fieldEqualsParameterCondition(whereCondition))
                 .buildSelectStatement();
     }
 
@@ -55,10 +97,10 @@ public class SqlBuilder {
      * Generates an UPDATE SQL statement for updating records in a specified table based on the provided entity,
      * fieldIdName, and list of ColumnSnapshots representing the differences.
      *
-     * @param entity       The entity representing the data to be updated.
-     * @param tableName    The name of the table to be updated.
-     * @param fieldIdName  The name of the ID field used in the WHERE condition.
-     * @param diff         The list of ColumnSnapshots representing differences.
+     * @param entity      The entity representing the data to be updated.
+     * @param tableName   The name of the table to be updated.
+     * @param fieldIdName The name of the ID field used in the WHERE condition.
+     * @param diff        The list of ColumnSnapshots representing differences.
      * @return The generated UPDATE SQL statement as a string.
      */
     public String update(Object entity, String tableName, String fieldIdName, List<ColumnSnapshot> diff) {
@@ -149,7 +191,7 @@ public class SqlBuilder {
     /**
      * Generates a SELECT SQL statement with a JOIN operation between two tables.
      *
-     * @param entityTableName       The name of the entity table to be selected.
+     * @param entityTableName        The name of the entity table to be selected.
      * @param entityTableIdFieldName The name of the ID field in the entity table.
      * @param joinTableField         The field representing the join relationship.
      * @return The generated SELECT SQL statement with JOIN as a string.
@@ -179,7 +221,7 @@ public class SqlBuilder {
     /**
      * Constructs the ON condition for a JOIN operation between two tables.
      *
-     * @param entityTableName       The name of the entity table participating in the JOIN.
+     * @param entityTableName        The name of the entity table participating in the JOIN.
      * @param entityTableIdFieldName The name of the ID field in the entity table.
      * @param joinTableName          The name of the table being joined with the entity table.
      * @param inverseJoinColumnName  The name of the column in the join table that corresponds to the entity table's ID.

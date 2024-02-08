@@ -2,20 +2,19 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl;
 
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinClause;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Represents a SQL SELECT query builder for constructing SELECT statements with optional clauses
  * such as JOIN, WHERE, GROUP BY, HAVING, and UNION.
  * Extends the base class QueryBuilder.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 public class SelectQueryBuilder extends QueryBuilder {
     /**
@@ -88,6 +87,7 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
+
     /**
      * Adds a specific field from a specified table to the list of fields to be selected.
      *
@@ -99,10 +99,23 @@ public class SelectQueryBuilder extends QueryBuilder {
         Objects.requireNonNull(tableName);
 
         var notNullFieldName = Optional.ofNullable(fieldName).orElse(ALL_FIELDS);
+
         var tableFieldName = tableName.concat(DOT).concat(notNullFieldName);
         selectedFields.add(tableFieldName);
 
         return this;
+    }
+
+    public SelectQueryBuilder selectFieldsFromTables(Map<String, List<EntityColumnDetails>> tableNameColumnsDetails) {
+        Objects.requireNonNull(tableNameColumnsDetails);
+        tableNameColumnsDetails.forEach((table, columns) ->
+                columns.forEach(entityColumn -> selectedFields.add(getAliasField(table, entityColumn))));
+        return this;
+    }
+
+    @NotNull
+    private String getAliasField(String table, EntityColumnDetails entityColumn) {
+        return table.concat(DOT).concat(entityColumn.getColumn().getName()).concat(SPACE).concat(AS).concat(SPACE).concat(tableName).concat(UNDERSCORE).concat(entityColumn.getColumn().getName());
     }
 
     /**
@@ -110,12 +123,17 @@ public class SelectQueryBuilder extends QueryBuilder {
      *
      * @param joinedTable The name of the table to be joined.
      * @param onCondition The ON condition specifying how the tables should be joined.
-     * @param joinType     The type of JOIN (INNER, LEFT, RIGHT, FULL).
+     * @param joinType    The type of JOIN (INNER, LEFT, RIGHT, FULL).
      * @return The current SelectQueryBuilder instance for method chaining.
      */
     public SelectQueryBuilder join(String joinedTable, String onCondition, JoinType joinType) {
         var joinClause = new JoinClause(joinedTable, onCondition, joinType);
         joinClauses.add(joinClause);
+        return this;
+    }
+
+    public SelectQueryBuilder join(List<JoinClause> joinClausesList) {
+        joinClauses.addAll(joinClausesList);
         return this;
     }
 
@@ -226,7 +244,7 @@ public class SelectQueryBuilder extends QueryBuilder {
 
         if (CollectionUtils.isNotEmpty(unionQueries)) {
             queryBuilder.append(UNION);
-            unionQueries.forEach(unionQuery -> 
+            unionQueries.forEach(unionQuery ->
                     queryBuilder.append(unionQuery.buildSelectStatement()).append(SPACE));
         }
 

@@ -2,6 +2,9 @@ package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
@@ -28,9 +31,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -104,39 +106,33 @@ public class EntityDao implements Dao {
         EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
 
         String tableName = searchedEntityMetadata.getTableName();
-        String whereConditionId = tableName.concat(".").concat(searchedEntityMetadata.getEntityIdColumnName());
-        String joinedTable = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(EntityColumnDetails::isOneToOne)
-                .map(EntityColumnDetails::getJoinColumnTableName)
-                .findAny()
-                .orElseThrow();
-        OneToOneInfo oneToOneInfo = searchedEntityMetadata.getOneToOneInfo();
+        String columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                .map(EntityColumnDetails::getColumn)
+                .map(ColumnMetadata::getName)
+                .findFirst()
+                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
 
-        //prepare ON condition
-        EntityMetadata childEntityMetadata = oneToOneInfo.getChildEntityMetadata();
-        EntityMetadata parentEntityMetadata = oneToOneInfo.getParentEntityMetadata();
+        String whereConditionId = tableName.concat(".").concat(columnIdName);
+        List<JoinInfo> joinInfos = searchedEntityMetadata.getEntityColumns().stream()
+                .map(EntityColumnDetails::getOneToOne)
+                .filter(Objects::nonNull)
+                .map(oneToOneMetadata -> JoinInfo.builder()
+                        .joinedTable(oneToOneMetadata.getJoinedTable())
+                        .childEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getChildClass()))
+                        .parentEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getParentClass()))
+                        .build())
+                .toList();
 
-        List<String> selectList = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(Predicate.not(EntityColumnDetails::isOneToOne))
-                .map(entityColumnDetails -> tableName.concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(tableName.concat("_")).concat(entityColumnDetails.getFieldColumnName()))
-                .collect(Collectors.toList());
+        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
+        oneToOneEntities.add(searchedEntityMetadata);
+        searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getOneToOne()))
+                .map(entityColumnDetails -> bibernateEntityMetadata.get(entityColumnDetails.getFieldType()))
+                .forEach(oneToOneEntities::add);
 
-        if (searchedEntityMetadata.equals(childEntityMetadata)) {
-            parentEntityMetadata.getEntityColumns().stream()
-                    .filter(Predicate.not(EntityColumnDetails::isOneToOne))
-                    .map(entityColumnDetails -> parentEntityMetadata.getTableName().concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(parentEntityMetadata.getTableName()).concat("_").concat(entityColumnDetails.getFieldColumnName()))
-                    .forEach(selectList::add);
-        } else {
-            childEntityMetadata.getEntityColumns().stream()
-                    .filter(Predicate.not(EntityColumnDetails::isOneToOne))
-                    .map(entityColumnDetails -> childEntityMetadata.getTableName().concat(".").concat(entityColumnDetails.getFieldColumnName()).concat(" AS ").concat(childEntityMetadata.getTableName()).concat("_").concat(entityColumnDetails.getFieldColumnName()))
-                    .forEach(selectList::add);
-        }
+        var query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
 
-        String onCondition = childEntityMetadata.getTableName() + "." + childEntityMetadata.getEntityIdColumnName()
-                             + "=" + parentEntityMetadata.getTableName() + "." + parentEntityMetadata.getEntityIdColumnName();
-
-        var query = sqlBuilder.selectByWithJoin(tableName, selectList, whereConditionId, joinedTable, onCondition, JoinType.LEFT);
         addToExecutedQueries(query);
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
@@ -153,6 +149,7 @@ public class EntityDao implements Dao {
             String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
+
         return Optional.empty();
     }
 

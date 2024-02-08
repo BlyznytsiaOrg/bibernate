@@ -1,5 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.entity;
 
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
+
 import java.util.Map;
 
 public class BibernateEntityMetadataHolder {

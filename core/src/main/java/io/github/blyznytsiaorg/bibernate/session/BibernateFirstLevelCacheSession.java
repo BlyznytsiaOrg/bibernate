@@ -5,10 +5,10 @@ import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DeleteEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.InsertEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.UpdateEntityAction;
 import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
-import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.*;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
 
-        if (entityMetadata.isHasOneToOne() && hasAnyEagerFetchType(entityMetadata)) {
+        if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
             return getDao().findOneByWhereJoin(entityClass, primaryKey);
             //TODO: add to persistentContext
         }
@@ -261,8 +261,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         }
     }
 
-    private boolean hasAnyEagerFetchType(EntityMetadata entityMetadata) {
+    private boolean hasAnyOneToOneEagerFetchType(EntityMetadata entityMetadata) {
         return entityMetadata.getEntityColumns().stream()
-                .anyMatch(entityColumnDetails -> entityColumnDetails.getFetchType() == FetchType.EAGER);
+                .map(EntityColumnDetails::getOneToOne)
+                .filter(Objects::nonNull)
+                .anyMatch(oneToOneMetadata -> oneToOneMetadata.getFetchType() == FetchType.EAGER);
     }
 }

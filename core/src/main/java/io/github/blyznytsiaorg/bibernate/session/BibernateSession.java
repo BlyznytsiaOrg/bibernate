@@ -1,8 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
-import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
 
 import java.io.Closeable;
 import java.lang.reflect.Field;

@@ -23,7 +23,7 @@ public class CollectionFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
         Object entityId = getEntityId(field, resultSet);
 
         if (Objects.isNull(entityId)) {

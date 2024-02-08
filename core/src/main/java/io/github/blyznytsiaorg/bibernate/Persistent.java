@@ -5,10 +5,10 @@ import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector;
 import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
 import io.github.blyznytsiaorg.bibernate.entity.BibernateEntityMetadataHolder;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMetadata;
-import io.github.blyznytsiaorg.bibernate.entity.EntityMetadataCollector;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
@@ -34,7 +34,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
 
         EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
-        entityMetadataCollector.startCollectMetadata();
+        entityMetadataCollector.collectMetadata();
 
         Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
         BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
@@ -76,7 +76,8 @@ public class Persistent {
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
         EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
-        entityMetadataCollector.startCollectMetadata();
+        entityMetadataCollector.collectMetadata();
+
         Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
         BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
     }

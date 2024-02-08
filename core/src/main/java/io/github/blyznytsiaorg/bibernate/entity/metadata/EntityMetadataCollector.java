@@ -11,16 +11,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.mapp
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.tableJoinColumnName;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Entity;
-import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
-import io.github.blyznytsiaorg.bibernate.annotation.JoinTable;
-import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
-import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
-import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
-import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
-import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.GeneratedValueMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IdMetadata;
@@ -66,7 +57,7 @@ public class EntityMetadataCollector {
                 boolean immutable = isImmutable(entityClass);
                 boolean dynamicUpdate = isDynamicUpdate(entityClass);
 
-                var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate);
+                var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate, entityClass);
 
                 for (Field field : entityClass.getDeclaredFields()) {
                     entityMetadata.addEntityColumn(createEntityColumnDetails(field));
@@ -184,8 +175,25 @@ public class EntityMetadataCollector {
 
     private OneToOneMetadata getOneToOne(Field field) {
         if (isAnnotationPresent(field, OneToOne.class)) {
-            return new OneToOneMetadata();
+            FetchType fetchType = field.getAnnotation(OneToOne.class).fetch();
+            Class<?> parentClass;
+            Class<?> childClass;
+
+            if (field.isAnnotationPresent(JoinColumn.class)) {
+                parentClass = field.getType();
+                childClass = field.getDeclaringClass();
+            } else {
+                parentClass = field.getDeclaringClass();
+                childClass = field.getType();
+            }
+            return OneToOneMetadata.builder()
+                    .joinedTable(table(field.getType()))
+                    .fetchType(fetchType)
+                    .parentClass(parentClass)
+                    .childClass(childClass)
+                    .build();
         }
+
         return null;
     }
 
