@@ -31,7 +31,7 @@ class BibernateRepositoryByGreaterThenFieldTest extends AbstractPostgresInfrastr
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var simpleRepositoryProxy = bibernateSessionFactory.getSimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByAgeGreaterThan(16);
