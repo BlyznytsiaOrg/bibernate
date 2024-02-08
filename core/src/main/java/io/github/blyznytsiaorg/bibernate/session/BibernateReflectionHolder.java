@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
+import lombok.experimental.UtilityClass;
 import org.reflections.Reflections;
 
 
@@ -10,13 +11,8 @@ import org.reflections.Reflections;
  *  @author Blyzhnytsia Team
  *  @since 1.0
  */
+@UtilityClass
 public class BibernateReflectionHolder {
-
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     */
-    private BibernateReflectionHolder() {
-    }
 
     /**
      * Thread-local instance of Reflections for classpath scanning and metadata retrieval.
