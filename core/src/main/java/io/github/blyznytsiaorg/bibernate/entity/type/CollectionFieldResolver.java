@@ -45,7 +45,12 @@ public class CollectionFieldResolver implements TypeFieldResolver {
 
         return Collections.emptyList();
     }
-    
+
+    @Override
+    public int priority() {
+        return 0;
+    }
+
     private Object getEntityId(Field field, ResultSet resultSet) {
         try {
             var idFieldName = EntityReflectionUtils.columnIdName(field.getDeclaringClass());

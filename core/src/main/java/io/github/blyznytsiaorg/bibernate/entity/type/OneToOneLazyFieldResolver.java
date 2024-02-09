@@ -28,4 +28,9 @@ public class OneToOneLazyFieldResolver implements TypeFieldResolver {
 
         return ProxyUtils.createProxy(type, entitySupplier);
     }
+
+    @Override
+    public int priority() {
+        return 0;
+    }
 }

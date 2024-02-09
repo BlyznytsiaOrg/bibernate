@@ -6,6 +6,7 @@ import io.github.blyznytsiaorg.bibernate.entity.type.TypeResolverFactory;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class EntityPersistent {
             typeResolverFactory.getTypeFieldResolvers().stream()
                     .filter(valueType -> valueType.isAppropriate(field)
                             && !ignoredRelationFields.contains(field.getName()))
-                    .findAny()
+                    .min(Comparator.comparing(TypeFieldResolver::priority))
                     .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet, entityClass));
         }
 
