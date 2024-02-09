@@ -9,6 +9,7 @@ import io.github.blyznytsiaorg.bibernate.BibernateEntityManagerFactory;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.EntityDao;
+import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.PostgresIdentity;
@@ -22,8 +23,9 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     private EntityDao entityDao;
 
-    public BibernateSessionFactory(BibernateDatabaseSettings bibernateDatabaseSettings) {
-        super(bibernateDatabaseSettings);
+    public BibernateSessionFactory(BibernateDatabaseSettings bibernateDatabaseSettings,
+                                   SimpleRepositoryInvocationHandler simpleRepositoryInvocationHandler) {
+        super(bibernateDatabaseSettings, simpleRepositoryInvocationHandler);
     }
 
     public BibernateSession openSession() {

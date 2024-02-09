@@ -10,5 +10,9 @@ import lombok.Setter;
 public class JoinTableMetadata {
     private String name;
     private String joinColumn;
+    private String joinColumnDatabaseType;
     private String inverseJoinColumn;
+    private String inverseJoinColumnDatabaseType;
+    private String foreignKey;
+    private String inverseForeignKey;
 }

@@ -1,8 +1,36 @@
 package io.github.blyznytsiaorg.bibernate.entity.metadata;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.databaseTypeForInternalJavaType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.databaseTypeForJoinColumn;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.foreignKeyForInverseJoinColumn;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.foreignKeyForJoinColumn;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getIndexMetadata;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.inverseJoinColumnJoinTableDatabaseType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.inverseTableJoinColumnName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isAnnotationPresent;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDynamicUpdate;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isImmutable;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isSupportedCollection;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnJoinTableDatabaseType;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinTableNameCorrect;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.tableJoinColumnNameCorrect;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.getCascadeTypesFromAnnotation;
 
+import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinTable;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.GeneratedValueMetadata;
@@ -31,12 +59,6 @@ public class EntityMetadataCollector {
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
 
-    public EntityMetadataCollector(String baseEntityPackage) {
-        this.reflections = new Reflections(baseEntityPackage);
-        this.inMemoryEntityMetadata = new HashMap<>();
-        this.tableNames = new HashMap<>();
-    }
-
     @Deprecated(forRemoval = true)
     public EntityMetadataCollector(Class<?> clazz) {
         this.reflections = new Reflections(clazz);
@@ -44,7 +66,7 @@ public class EntityMetadataCollector {
         this.tableNames = new HashMap<>();
     }
 
-    public void collectMetadata() {
+    public Map<Class<?>, EntityMetadata> collectMetadata() {
         Set<Class<?>> entities = reflections.getTypesAnnotatedWith(Entity.class);
 
         for (Class<?> entityClass : entities) {
@@ -59,12 +81,15 @@ public class EntityMetadataCollector {
                 var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate, entityClass);
 
                 for (Field field : entityClass.getDeclaredFields()) {
-                    entityMetadata.addEntityColumn(createEntityColumnDetails(field));
+                    entityMetadata.addEntityColumn(createEntityColumnDetails(field, entityClass));
                 }
+                var indexMetadata = getIndexMetadata(entityClass);
+                entityMetadata.addIndexMetadata(indexMetadata);
 
                 inMemoryEntityMetadata.put(entityClass, entityMetadata);
             }
         }
+        return inMemoryEntityMetadata;
     }
 
     private void checkTableNameOnDuplicate(Class<?> entityClass, String tableName) {
@@ -77,10 +102,11 @@ public class EntityMetadataCollector {
         }
     }
 
-    private EntityColumnDetails createEntityColumnDetails(Field field) {
+    private EntityColumnDetails createEntityColumnDetails(Field field, Class<?> entityClass) {
         var entityColumnDetails = EntityColumnDetails.builder()
                 .field(field)
                 .fieldName(field.getName())
+                .fieldType(field.getType())
                 .fieldType(isSupportedCollection(field) ? getCollectionGenericType(field) : field.getType())
                 .isCollection(isSupportedCollection(field))
                 .column(getColumn(field))
@@ -92,7 +118,7 @@ public class EntityMetadataCollector {
                 .manyToOne(getManyToOne(field))
                 .manyToMany(getManyToMany(field))
                 .joinColumn(getJoinColumn(field))
-                .joinTable(getJoinTable(field));
+                .joinTable(getJoinTable(field, entityClass));
 
         return entityColumnDetails.build();
     }
@@ -120,24 +146,50 @@ public class EntityMetadataCollector {
         return null;
     }
 
-    private JoinTableMetadata getJoinTable(Field field) {
-        if (isAnnotationPresent(field, JoinTable.class)) {
+    private JoinTableMetadata getJoinTable(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(JoinTable.class) && (!field.isAnnotationPresent(ManyToMany.class))) {
+            throw new MappingException((("No @ManyToMany annotation in class '%s' on field '%s' "
+                    + "annotated with annotated @JoinTable")
+                    .formatted(entityClass.getSimpleName(), field.getName())));
+        }
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+
             return JoinTableMetadata
                     .builder()
-                    .name(joinTableName(field))
-                    .joinColumn(tableJoinColumnName(field))
+                    .name(joinTableNameCorrect(field, entityClass))
+                    .joinColumn(tableJoinColumnNameCorrect(field, entityClass))
                     .inverseJoinColumn(inverseTableJoinColumnName(field))
+                    .joinColumnDatabaseType(joinColumnJoinTableDatabaseType(field, entityClass))
+                    .inverseJoinColumnDatabaseType(inverseJoinColumnJoinTableDatabaseType(field))
+                    .foreignKey(foreignKeyForJoinColumn(field))
+                    .inverseForeignKey(foreignKeyForInverseJoinColumn(field))
                     .build();
         }
         return null;
-    }
+}
 
     private JoinColumnMetadata getJoinColumn(Field field) {
-        if (isAnnotationPresent(field, JoinColumn.class)) {
+
+        if (field.isAnnotationPresent(JoinColumn.class)
+                && (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class))) {
+            throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
+                    + "annotated with @JoinColumn").formatted(field.getName()));
+        }
+        if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
+
             String joinColumnName = joinColumnName(field);
-            return JoinColumnMetadata
-                    .builder()
+            String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
+            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+            String foreignKeyName = null;
+
+            if (joinColumn != null && (joinColumn.foreignKey() != null)) {
+                foreignKeyName = joinColumn.foreignKey().name();
+
+            }
+            return JoinColumnMetadata.builder()
                     .name(joinColumnName)
+                    .databaseType(databaseTypeForJoinColumn)
+                    .foreignKeyName(foreignKeyName)
                     .build();
         }
         return null;
@@ -166,10 +218,10 @@ public class EntityMetadataCollector {
 
     private OneToManyMetadata getOneToMany(Field field) {
         if (isAnnotationPresent(field, OneToMany.class)) {
-            String mappedByJoinColumnName = mappedByJoinColumnName(field);
+            OneToMany oneToManyAnnotation = field.getAnnotation(OneToMany.class);
             return OneToManyMetadata.builder()
-                    .mappedByJoinColumnName(mappedByJoinColumnName)
-                    .cascadeTypes(getCascadeTypesFromAnnotation(field.getAnnotation(OneToMany.class)))
+                    .mappedByJoinColumnName(oneToManyAnnotation.mappedBy())
+                    .cascadeTypes(getCascadeTypesFromAnnotation(oneToManyAnnotation))
                     .build();
         }
         return null;
@@ -177,7 +229,7 @@ public class EntityMetadataCollector {
 
     private OneToOneMetadata getOneToOne(Field field) {
         if (isAnnotationPresent(field, OneToOne.class)) {
-            FetchType fetchType = field.getAnnotation(OneToOne.class).fetch();
+            OneToOne oneToOne = field.getAnnotation(OneToOne.class);
             Class<?> parentClass;
             Class<?> childClass;
 
@@ -190,9 +242,10 @@ public class EntityMetadataCollector {
             }
             return OneToOneMetadata.builder()
                     .joinedTable(table(field.getType()))
-                    .fetchType(fetchType)
+                    .fetchType(oneToOne.fetch())
                     .parentClass(parentClass)
                     .childClass(childClass)
+                    .mappedBy(oneToOne.mappedBy())
                     .cascadeTypes(getCascadeTypesFromAnnotation(field.getAnnotation(OneToOne.class)))
                     .build();
         }
@@ -208,6 +261,20 @@ public class EntityMetadataCollector {
 
     private ColumnMetadata getColumn(Field field) {
         String columnName = columnName(field);
-        return new ColumnMetadata(columnName);
+        String databaseType = databaseTypeForInternalJavaType(field);
+        ColumnMetadata.ColumnMetadataBuilder builder = ColumnMetadata.builder()
+                .name(columnName)
+                .databaseType(databaseType)
+                .unique(false)
+                .nullable(true)
+                .columnDefinition("");
+
+        Column annotation = field.getAnnotation(Column.class);
+        if (annotation != null) {
+            builder.unique(annotation.unique())
+                    .nullable(annotation.nullable())
+                    .columnDefinition(annotation.columnDefinition());
+        }
+        return builder.build();
     }
 }

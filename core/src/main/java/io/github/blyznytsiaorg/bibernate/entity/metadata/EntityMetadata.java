@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.metadata;
 
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IndexMetadata;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import lombok.Getter;
 
@@ -13,6 +14,7 @@ public class EntityMetadata {
     private final boolean immutable;
     private final boolean dynamicUpdate;
     private final Class<?> type;
+    private final List<IndexMetadata> indexMetadatas;
     private final List<EntityColumnDetails> entityColumns;
 
 
@@ -21,7 +23,12 @@ public class EntityMetadata {
         this.immutable = immutable;
         this.dynamicUpdate = dynamicUpdate;
         this.type = type;
+        this.indexMetadatas = new ArrayList<>();
         this.entityColumns = new ArrayList<>();
+    }
+
+    public void addIndexMetadata(List<IndexMetadata> indexMetadata) {
+        indexMetadatas.addAll(indexMetadata);
     }
 
     public void addEntityColumn(EntityColumnDetails entityColumn) {

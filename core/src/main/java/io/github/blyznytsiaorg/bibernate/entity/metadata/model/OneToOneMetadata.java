@@ -13,6 +13,7 @@ import java.util.List;
 @Setter
 @Builder
 public class OneToOneMetadata {
+    private String  mappedBy;
 
     private List<CascadeType> cascadeTypes;
     String joinedTable;

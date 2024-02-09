@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JoinColumn {
     String name() default "";
+    ForeignKey foreignKey() default @ForeignKey(name = "");
 }

@@ -9,4 +9,6 @@ import lombok.Setter;
 @Builder
 public class JoinColumnMetadata {
     private String name;
+    private String databaseType;
+    private String foreignKeyName;
 }
