@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.onetomany;
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
+import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
         
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.unidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -62,7 +63,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.unidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -87,7 +88,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.unidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -121,13 +122,13 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.badannotation");
         try (var entityManager = persistent.createBibernateEntityManager(); 
              var session = entityManager.getBibernateSessionFactory().openSession()) {
                 // when
                 // then
-                assertThrows(BibernateGeneralException.class, 
-                        () -> session.findById(testdata.onetomany.unidirectional.badannotation.Person.class, 1L));
+                assertThrows(MappingException.class, 
+                        () -> session.findById(testdata.onetomany.badannotation.Person.class, 1L));
         }
     }
 
@@ -138,7 +139,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.unidirectional.notannotated");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -170,7 +171,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetomany.unidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             var session = sessionFactory.openSession();

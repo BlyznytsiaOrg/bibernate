@@ -1,4 +1,4 @@
-package testdata.onetomany.unidirectional.badannotation;
+package testdata.onetomany.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;

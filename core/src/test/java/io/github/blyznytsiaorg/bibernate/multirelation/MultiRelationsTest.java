@@ -24,7 +24,7 @@ class MultiRelationsTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.multirelation");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -71,7 +71,7 @@ class MultiRelationsTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.multirelation");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -104,7 +104,7 @@ class MultiRelationsTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.multirelation");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -143,7 +143,7 @@ class MultiRelationsTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.multirelation");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
