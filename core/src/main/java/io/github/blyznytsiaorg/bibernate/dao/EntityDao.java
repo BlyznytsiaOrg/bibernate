@@ -13,6 +13,7 @@ import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
+import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -204,13 +205,16 @@ public class EntityDao implements Dao {
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
-        var fieldIdName = columnIdName(entityClass);
-
-        deleteByColumnValue(entityClass, fieldIdName, primaryKey);
+        deleteByColumnValue(entityClass, columnIdName(entityClass), primaryKey, false);
     }
 
     @Override
     public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value) {
+        return deleteByColumnValue(entityClass, columnName, value, true);
+    }
+
+    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value,
+                                           boolean returnDeletedEntities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(columnName, FIELD_MUST_BE_NOT_NULL);
 
@@ -219,10 +223,14 @@ public class EntityDao implements Dao {
         var entityMetadata = DeprecatedEntityMetadataHolder.getEntityMetadata(entityClass);
         var tableName = entityMetadata.getTableName();
 
-        List<T> deletedEntities = findAllByColumnValue(entityClass, columnName, value);
-
         var session = BibernateSessionContextHolder.getBibernateSession();
         var relationsForRemoval = entityMetadata.getCascadeRemoveRelations();
+
+        List<T> deletedEntities = Collections.emptyList();
+        if (returnDeletedEntities || CollectionUtils.isNotEmpty(relationsForRemoval)) {
+            deletedEntities = findAllByColumnValue(entityClass, columnName, value);
+        }
+
         removeToManyRelations(entityClass, value, session, relationsForRemoval);
 
         var query = sqlBuilder.delete(tableName, columnName);
@@ -237,9 +245,8 @@ public class EntityDao implements Dao {
 
             statement.execute();
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
-                    .formatted(entityClass, value, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
+            log.error(CANNOT_EXECUTE_DELETE_ENTITY_CLASS.formatted(entityClass, value, exe.getMessage()));
+            return Collections.emptyList();
         }
 
         removeToOneRelations(deletedEntities, session, relationsForRemoval);
@@ -260,7 +267,7 @@ public class EntityDao implements Dao {
                 });
     }
 
-    private static <T> void removeToOneRelations(List<T> deletedEntities, BibernateSession session, 
+    private static <T> void removeToOneRelations(List<T> deletedEntities, BibernateSession session,
                                                  List<EntityColumnDetails> relationsForRemoval) {
         relationsForRemoval
                 .stream()

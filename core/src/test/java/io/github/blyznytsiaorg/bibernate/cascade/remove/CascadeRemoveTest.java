@@ -133,7 +133,6 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM persons WHERE id = ?;",
                         "SELECT * FROM notes WHERE id = ?;",
                         "DELETE FROM notes WHERE id = ?;",
-                        "SELECT * FROM persons WHERE id = ?;",
                         "DELETE FROM persons WHERE id = ?;"));
 
                 noteOptional = session.findById(testdata.cascade.remove.manytoone.bidirectional.Note.class, 1L);
@@ -145,9 +144,9 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         }
     }
 
-    @DisplayName("Should throw exception when remove cascade ManyToOne unidirectional. Person with many Notes.")
+    @DisplayName("Should not remove cascade ManyToOne unidirectional. Person with many Notes.")
     @Test
-    void shouldThrowExceptionWhenRemoveParentWithChildren_manyToOne_unidirectional() {
+    void shouldNotRemoveParentWithChildren_manyToOne_unidirectional() {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
@@ -167,8 +166,13 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM notes WHERE id = ?;",
                         "SELECT * FROM persons WHERE id = ?;"));
 
-                assertThrows(BibernateGeneralException.class,
-                        () -> session.deleteById(testdata.cascade.remove.manytoone.unidirectional.Note.class, 1L));
+                session.deleteById(testdata.cascade.remove.manytoone.unidirectional.Note.class, 1L);
+                
+                noteOptional = session.findById(testdata.cascade.remove.manytoone.unidirectional.Note.class, 1L);
+                var personOptional = session.findById(testdata.cascade.remove.manytoone.unidirectional.Person.class, 1L);
+
+                assertThat(noteOptional).isEmpty();
+                assertThat(personOptional).isPresent();
             }
         }
     }
