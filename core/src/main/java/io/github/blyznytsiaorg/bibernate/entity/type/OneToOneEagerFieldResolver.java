@@ -32,9 +32,4 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
             );
         }
     }
-
-    @Override
-    public int priority() {
-        return 0;
-    }
 }

@@ -22,8 +22,4 @@ public class RegularFieldFieldResolver implements TypeFieldResolver {
         return getValueFromResultSet(field, resultSet, fieldName);
     }
 
-    @Override
-    public int priority() {
-        return 0;
-    }
 }
