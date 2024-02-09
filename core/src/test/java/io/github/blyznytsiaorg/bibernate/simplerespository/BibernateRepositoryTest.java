@@ -274,7 +274,6 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             //when
             personRepository.delete(1L);
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id = ?;", 
                     "DELETE FROM persons WHERE id = ?;"));
 
             //then
@@ -300,9 +299,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             List<Long> ids = Arrays.asList(1L, 2L);
             personRepository.deleteAll(ids);
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id = ?;",
                     "DELETE FROM persons WHERE id = ?;",
-                    "SELECT * FROM persons WHERE id = ?;",
                     "DELETE FROM persons WHERE id = ?;"
             ));
 
