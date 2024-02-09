@@ -30,7 +30,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var simpleRepositoryProxy = bibernateSessionFactory.getSimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             List<User> users = userRepository.findByUsernameNull();
@@ -58,7 +58,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
-            var simpleRepositoryProxy = new SimpleRepositoryInvocationHandler();
+            var simpleRepositoryProxy = bibernateSessionFactory.getSimpleRepositoryInvocationHandler();
             var userRepository = simpleRepositoryProxy.registerRepository(UserRepository.class);
             //when
             Optional<User> user = userRepository.findByUsernameAndAge("Levik5", 18);

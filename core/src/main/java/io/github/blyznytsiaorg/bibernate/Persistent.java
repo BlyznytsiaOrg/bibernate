@@ -5,6 +5,7 @@ import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
+import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,8 +20,10 @@ import java.util.Map;
 @Slf4j
 public class Persistent {
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
+    public final String entityWithRepositoriesPackageName;
 
-    public Persistent(String packageName) {
+    public Persistent(String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
         var configFileName = bibernateConfiguration.getConfigFileName();
@@ -28,19 +31,21 @@ public class Persistent {
                 configFileName);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(String configFileName, String packageName) {
+    public Persistent(String configFileName, String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(HikariDataSource dataSource, String packageName) {
+    public Persistent(HikariDataSource dataSource, String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
         var configFileName = bibernateConfiguration.getConfigFileName();
@@ -48,43 +53,47 @@ public class Persistent {
                 configFileName, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(String configFileName, HikariDataSource dataSource, String packageName) {
+    public Persistent(String configFileName, HikariDataSource dataSource, String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
                 configFileName, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings, String packageName) {
+    public Persistent(Map<String, String> externalBibernateSettings, String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource, String packageName) {
+    public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource,
+                      String entityWithRepositoriesPackageName) {
+        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null, dataSource);
         enableFlyway();
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
-        bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
+        bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
     public BibernateEntityManagerFactory createBibernateEntityManager() {
-        return new BibernateEntityManagerFactory(bibernateDatabaseSettings);
+        return new BibernateEntityManagerFactory(bibernateDatabaseSettings, new SimpleRepositoryInvocationHandler());
     }
 
     private FlywayConfiguration enableFlyway() {
         return new FlywayConfiguration(bibernateDatabaseSettings);
     }
 
-    private RedisConfiguration redisConfiguration() {
+    private RedisConfiguration enabledRedisConfiguration() {
         return new RedisConfiguration(bibernateDatabaseSettings);
     }
 }
