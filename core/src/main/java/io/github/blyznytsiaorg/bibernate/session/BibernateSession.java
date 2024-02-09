@@ -106,7 +106,16 @@ public interface BibernateSession extends Closeable {
      * @param entity      the entity to save
      * @return the saved entity
      */
-    <T> T save(Class<T> entityClass, Object entity);
+    <T> T save(Class<T> entityClass, T entity);
+
+    /**
+     * Saves a collection of entities into the specified table.
+     *
+     * @param entityClass The Class object representing the type of entities to be saved.
+     * @param entities    A collection of entities to be persisted into the database.
+     * @param <T>         The generic type representing the entity class.
+     */
+    <T> void saveAll(Class<T> entityClass, Collection<T> entities);
 
     /**
      * Flushes changes to the underlying database.
@@ -126,8 +135,24 @@ public interface BibernateSession extends Closeable {
      */
     <T> void deleteById(Class<T> entityClass, Object primaryKey);
 
+    /**
+     * Deletes records from the specified table based on the provided collection of primary key values.
+     *
+     * @param entityClass The Class object representing the type of entities for which records will be deleted.
+     * @param primaryKeys A collection of primary key values identifying the records to be deleted.
+     * @param <T>         The generic type representing the entity class.
+     */
     <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys);
 
+    /**
+     * Deletes records from the specified table where the value in the specified column matches the given criteria.
+     *
+     * @param entityClass The Class object representing the type of entities for which records will be deleted.
+     * @param columnName  The name of the column used in the WHERE condition for deletion.
+     * @param columnValue The value to match in the specified column for deletion.
+     * @param <T>         The generic type representing the entity class.
+     * @return A list of entities of type T that were deleted from the table.
+     */
     <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue);
 
     /**

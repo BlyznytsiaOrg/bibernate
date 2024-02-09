@@ -7,17 +7,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
-public class InsertEntityAction extends EntityAction {
+public class InsertEntityAction<T> extends EntityAction {
 
     private final BibernateSession bibernateSession;
     @Getter
-    private final Class<?> entityClass;
-    private final Object entity;
+    private final Class<T> entityClass;
+    private final T entity;
 
     @Override
     public void execute() {

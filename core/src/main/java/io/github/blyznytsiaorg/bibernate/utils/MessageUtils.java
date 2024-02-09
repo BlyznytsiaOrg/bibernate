@@ -44,6 +44,7 @@ public class MessageUtils {
         public static final String QUERY_BIND_VALUES = QUERY + " bindValues {}";
         public static final String UPDATE = "Update effected row {} for entity clazz {} with id {}";
         public static final String SAVE = "Save entity clazz {}";
+        public static final String SAVE_ALL = "Save class entities {}";
         public static final String DELETE = "Delete entity {} with {}={}";
         public static final String DELETE_ALL = "Delete entity {} with primaryKeys {}, batch size {}.";
         public static final String ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID =

@@ -219,16 +219,28 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
         if (isColumnVersionFound(entityClass)) {
             setVersionValueIfNull(entityClass, entity);
         }
-        identity.saveWithIdentity(entity);
+        identity.saveWithIdentity(entityClass, Collections.singletonList(entity));
         log.trace(SAVE, entityClass.getSimpleName());
         return entityClass.cast(entity);
+    }
+
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entities) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        validateCollection(entities);
+
+        if (isColumnVersionFound(entityClass)) {
+            setVersionValueIfNull(entityClass, entities);
+        }
+        identity.saveWithIdentity(entityClass, entities);
+        log.trace(SAVE_ALL, entityClass.getSimpleName());
     }
 
     @Override

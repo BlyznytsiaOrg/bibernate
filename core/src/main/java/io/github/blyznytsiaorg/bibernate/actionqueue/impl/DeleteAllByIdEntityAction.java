@@ -11,9 +11,8 @@ import java.util.Collection;
 import static io.github.blyznytsiaorg.bibernate.actionqueue.ActionType.DELETE;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 public class DeleteAllByIdEntityAction extends EntityAction {

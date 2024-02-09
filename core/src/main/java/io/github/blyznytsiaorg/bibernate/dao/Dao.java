@@ -30,7 +30,9 @@ public interface Dao {
 
     <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff);
 
-    <T> T save(Class<T> entityClass, Object entity);
+    <T> T save(Class<T> entityClass, T entity);
+
+    <T> void saveAll(Class<T> entityClass, Collection<T> entities);
 
     <T> void deleteById(Class<T> entityClass, Object primaryKey);
 

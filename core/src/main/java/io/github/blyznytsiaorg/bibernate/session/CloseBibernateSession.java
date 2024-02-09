@@ -78,7 +78,7 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
             throw new ImmutableEntityException(
@@ -86,6 +86,11 @@ public class CloseBibernateSession implements BibernateSession {
             );
         }
         return bibernateSession.save(entityClass, entity);
+    }
+
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
     }
 
     @Override

@@ -63,8 +63,13 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         return dao.save(entityClass, entity);
+    }
+
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        dao.saveAll(entityClass, entity);
     }
 
     @Override

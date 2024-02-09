@@ -16,20 +16,26 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isIm
  * Implementation of the {@link BibernateSession} interface that provides second-level caching functionality
  * for immutable entities fetched from the database.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
 public class BibernateSecondLevelCacheSession implements BibernateSession {
 
-    /** Separator used in constructing cache keys. */
-    public static final String DOT = ".";
+    /**
+     * Separator used in constructing cache keys.
+     */
+    private static final String DOT = ".";
     private static final String SEPARATOR = "_";
 
-    /** The underlying BibernateSession implementation. */
+    /**
+     * The underlying BibernateSession implementation.
+     */
     private final BibernateSession bibernateSession;
-    /** The distributed set used for caching entities. */
+    /**
+     * The distributed set used for caching entities.
+     */
     private final DistributedSet distributedSet;
 
     /**
@@ -58,6 +64,19 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
         return bibernateSession.findById(entityClass, primaryKey);
     }
 
+
+    /**
+     * Retrieves all records from the specified table and maps them to a list of entities of the given type.
+     *
+     * @param entityClass The Class object representing the type of entities to be retrieved.
+     * @param <T>         The generic type representing the entity class.
+     * @return A list of entities of type T containing all records from the specified table.
+     */
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return bibernateSession.findAll(entityClass);
+    }
+
     /**
      * Retrieves entities by the value of a specific column.
      *
@@ -66,11 +85,6 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * @param columnValue The value of the column
      * @return A list of entities matching the criteria
      */
-    @Override
-    public <T> List<T> findAll(Class<T> entityClass) {
-        return bibernateSession.findAll(entityClass);
-    }
-
     @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         return bibernateSession.findAllByColumnValue(entityClass, columnName, columnValue);
@@ -147,7 +161,7 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * @return The saved entity
      */
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         return bibernateSession.save(entityClass, entity);
     }
 
@@ -156,6 +170,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * This method synchronizes the state of the Hibernate session with the database.
      * Any changes that have been queued for insertion, update, or deletion are executed immediately.
      */
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
+    }
+
     @Override
     public void flush() {
         bibernateSession.flush();

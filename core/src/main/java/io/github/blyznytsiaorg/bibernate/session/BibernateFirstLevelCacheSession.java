@@ -108,11 +108,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
-        var insertEntityAction = new InsertEntityAction(bibernateSession, entityClass, entity);
+    public <T> T save(Class<T> entityClass, T entity) {
+        var insertEntityAction = new InsertEntityAction<>(bibernateSession, entityClass, entity);
         defaultActionQueue.addEntityAction(insertEntityAction);
 
         return entityClass.cast(entity);
+    }
+
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
     }
 
     @Override
