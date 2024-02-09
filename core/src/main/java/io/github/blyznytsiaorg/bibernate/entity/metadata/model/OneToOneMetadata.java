@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class OneToOneMetadata {
+    private String  mappedBy;
 
     private List<CascadeType> cascadeTypes;
 }

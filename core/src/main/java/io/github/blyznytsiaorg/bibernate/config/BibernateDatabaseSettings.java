@@ -35,7 +35,10 @@ public class BibernateDatabaseSettings {
     private static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
     private static final String SECOND_LEVEL_CACHE_HOST = "bibernate.secondLevelCache.host";
     private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
+    private static final String BB2DDL_AUTO = "bibernate.2ddl.auto";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
+    public static final String NONE = "none";
+    public static final String CREATE = "create";
     private final Map<String, String> bibernateSettingsProperties;
     private final String configurationErrorMessage;
     private final String bibernateFileName;
@@ -48,7 +51,7 @@ public class BibernateDatabaseSettings {
      * @param bibernateSettingsProperties the Bibernate settings properties loaded from a configuration file
      * @param bibernateFileName           the name of the configuration file
      */
-    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, 
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
                                      String bibernateFileName) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
@@ -130,7 +133,7 @@ public class BibernateDatabaseSettings {
      * @return true if SQL logging is enabled, otherwise false
      */
     public boolean isShowSql() {
-        return getProperty(SHOW_SQL, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(SHOW_SQL, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     /**
@@ -139,7 +142,7 @@ public class BibernateDatabaseSettings {
      * @return true if query collection is enabled, otherwise false
      */
     public boolean isCollectQueries() {
-        return getProperty(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(COLLECT_QUERIES, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     /**
@@ -148,7 +151,17 @@ public class BibernateDatabaseSettings {
      * @return true if Flyway migration is enabled, otherwise false
      */
     public boolean isFlywayEnabled() {
-        return getProperty(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
+    }
+
+    /**
+     * Checks if DDL auto creation is enabled.
+     *
+     * @return true if DDL auto create is enabled, otherwise false
+     */
+    public boolean isDDLCreate() {
+        String ddlProperty = getPropertyString(BB2DDL_AUTO, NONE);
+        return ddlProperty.equals(CREATE);
     }
 
     /**
@@ -157,7 +170,7 @@ public class BibernateDatabaseSettings {
      * @return true if the second level cache is enabled, otherwise false
      */
     public boolean isSecondLevelCacheEnabled() {
-        return getProperty(SECOND_LEVEL_CACHE, DEFAULT_BOOLEAN_FALSE_VALUE);
+        return getPropertyBoolean(SECOND_LEVEL_CACHE, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
     /**
@@ -185,7 +198,18 @@ public class BibernateDatabaseSettings {
      * @param defaultValue the default value if the property is not found
      * @return the boolean property value
      */
-    private boolean getProperty(String key, String defaultValue) {
+    private boolean getPropertyBoolean(String key, String defaultValue) {
         return Boolean.parseBoolean(bibernateSettingsProperties.getOrDefault(key, defaultValue));
+    }
+
+    /**
+     * Retrieves a String property value from the Bibernate settings.
+     *
+     * @param key          the property key
+     * @param defaultValue the default value if the property is not found
+     * @return the String property value
+     */
+    private String getPropertyString(String key, String defaultValue) {
+        return bibernateSettingsProperties.getOrDefault(key, defaultValue);
     }
 }

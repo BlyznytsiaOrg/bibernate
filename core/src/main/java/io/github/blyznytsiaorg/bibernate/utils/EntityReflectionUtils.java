@@ -3,30 +3,45 @@ package io.github.blyznytsiaorg.bibernate.utils;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
+import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
 
+import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
+import io.github.blyznytsiaorg.bibernate.annotation.ForeignKey;
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinTable;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.SequenceConf;
+import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
+import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IndexMetadata;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.MappingException;
+import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
-
-import io.github.blyznytsiaorg.bibernate.annotation.*;
-import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
-import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
 
 /**
@@ -37,7 +52,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @UtilityClass
 public class EntityReflectionUtils {
-
+    public static final String JAVA_LANG = "java.lang";
+    public static final String JAVA_MATH = "java.math";
+    public static final String JAVA_SQL = "java.sql";
+    public static final String JAVA_TIME = "java.time";
     private static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
     private static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
     public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id field for entity [%s]";
@@ -46,6 +64,7 @@ public class EntityReflectionUtils {
     private static final String SNAKE_REGEX = "([a-z])([A-Z]+)";
     private static final String REPLACEMENT = "$1_$2";
     private static final String ID_POSTFIX = "_id";
+    public static final String JOIN_TABLE_NAME_PATTERN = "%s_%s";
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -62,8 +81,17 @@ public class EntityReflectionUtils {
         return entityClass.isAnnotationPresent(DynamicUpdate.class);
     }
 
-    public static boolean isColumnHasAnnotation(Field field, Class<? extends Annotation> annotationClass) {
+    public static boolean isColumnHasAnnotation(Field field,
+                                                Class<? extends Annotation> annotationClass) {
         return field.isAnnotationPresent(annotationClass);
+    }
+
+    public static List<IndexMetadata> getIndexMetadata(Class<?> entityClass) {
+        return Optional.ofNullable(entityClass.getAnnotation(Table.class))
+                .map(table -> Arrays.stream(table.indexes())
+                        .map(index -> new IndexMetadata(index.name(), index.columnList()))
+                        .toList())
+                .orElseGet(ArrayList::new);
     }
 
     public static String columnName(Field field) {
@@ -73,18 +101,156 @@ public class EntityReflectionUtils {
                 .orElse(getSnakeString(field.getName()));
     }
 
+    public static String databaseTypeForInternalJavaType(Field field) {
+        if (isInternalJavaType(field)) {
+            Column annotation = field.getAnnotation(Column.class);
+            String columnDefinition = (annotation != null) ? annotation.columnDefinition() : "";
+            return columnDefinition.isEmpty() ? convertToDatabaseType(field.getType()) : columnDefinition;
+        }
+        return null;
+    }
+
+    private boolean isInternalJavaType(Field field) {
+        Class<?> fieldType = field.getType();
+        String packageName = fieldType.getPackageName();
+        return packageName.equals(JAVA_LANG) || packageName.equals(JAVA_MATH)
+                || packageName.equals(JAVA_SQL) || packageName.equals(JAVA_TIME);
+    }
+
+    public static String mappedByJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
+                .map(OneToMany::mappedBy)
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(mappedByName -> {
+                    Class<?> collectionGenericType = getCollectionGenericType(field);
+
+                    return getMappedByColumnName(mappedByName, collectionGenericType);
+                })
+                .orElse(joinColumnName(field));
+    }
+
+    private static Optional<String> getMappedByColumnName(String mappedByName,
+                                                          Class<?> collectionGenericType) {
+        return Arrays.stream(collectionGenericType.getDeclaredFields())
+                .filter(f -> Objects.equals(f.getName(), mappedByName))
+                .findFirst()
+                .map(EntityReflectionUtils::joinColumnName);
+    }
+
     public static String joinTableName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                 .map(JoinTable::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(null);
     }
-    
+
+    public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .map(JoinTable::name)
+                        .filter(Predicate.not(String::isEmpty))
+                        .orElseGet(() -> getManyManyDefaultTableName(field, entityClass));
+            }
+        }
+        return null;
+    }
+
+    private static String getManyManyDefaultTableName(Field field, Class<?> entityClass) {
+        if(field.isAnnotationPresent(ManyToMany.class)) {
+            Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
+            String thisEntityTableName = table(entityClass);
+            String relationEntityTableName = table(collectionGenericType);
+            return JOIN_TABLE_NAME_PATTERN.formatted(thisEntityTableName, relationEntityTableName);
+        }
+        return null;
+    }
+
+    public static String tableJoinColumnNameCorrect(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .map(JoinTable::joinColumn)
+                        .map(JoinColumn::name)
+                        .orElseGet(() -> defaultTableJoinColumnName(entityClass));
+            }
+        }
+        return null;
+    }
+
+    private static String defaultTableJoinColumnName(Class<?> entityClass) {
+        String columnIdName = columnIdName(entityClass);
+        return JOIN_TABLE_NAME_PATTERN.formatted(entityClass.getSimpleName().toLowerCase(), columnIdName);
+    }
+
     public static String inverseTableJoinColumnName(Field field) {
-        return Optional.ofNullable(field.getAnnotation(JoinTable.class))
-                .map(JoinTable::inverseJoinColumn)
-                .map(JoinColumn::name)
-                .orElse(null);
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .map(JoinTable::inverseJoinColumn)
+                        .map(JoinColumn::name)
+                        .orElseGet(() -> defaultInverseTableJoinColumnName(field));
+            }
+        }
+        return null;
+    }
+
+    public static String defaultInverseTableJoinColumnName(Field field) {
+        Class<?> collectionGenericType = getCollectionGenericType(field);
+        String columnIdName = columnIdName(collectionGenericType);
+        return JOIN_TABLE_NAME_PATTERN.formatted(collectionGenericType.getSimpleName().toLowerCase(), columnIdName);
+    }
+
+    public static String joinColumnJoinTableDatabaseType(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                Class<?> typeOfIdField = getTypeOfIdField(entityClass);
+                return convertToDatabaseType(typeOfIdField);
+            }
+        }
+        return null;
+    }
+
+    public static String inverseJoinColumnJoinTableDatabaseType(Field field) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
+                Class<?> typeOfIdField = getTypeOfIdField(collectionGenericType);
+                return convertToDatabaseType(typeOfIdField);
+            }
+        }
+        return null;
+    }
+
+    public static String foreignKeyForJoinColumn(Field field) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .map(JoinTable::foreignKey)
+                        .map(ForeignKey::name)
+                        .orElseGet(DDLUtils::getForeignKeyConstraintName);
+            }
+        }
+        return null;
+    }
+
+    public static String foreignKeyForInverseJoinColumn(Field field) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.mappedBy().isEmpty()) {
+                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .map(JoinTable::inverseForeignKey)
+                        .map(ForeignKey::name)
+                        .orElseGet(DDLUtils::getForeignKeyConstraintName);
+            }
+        }
+        return null;
     }
 
     public static String tableJoinColumnName(Field field) {
@@ -96,18 +262,42 @@ public class EntityReflectionUtils {
 
     public static String joinColumnName(Class<?> sourceType, Class<?> fieldType) {
         return Arrays.stream(sourceType.getDeclaredFields())
-          .filter(field -> fieldType.isAssignableFrom(field.getType()) 
+          .filter(field -> fieldType.isAssignableFrom(field.getType())
             || (isSupportedCollection(field) && fieldType.isAssignableFrom(getCollectionGenericType(field))))
           .map(EntityReflectionUtils::joinColumnName)
           .findFirst()
           .orElse(null);
     }
-    
+
     public static String joinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
                 .map(JoinColumn::name)
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(getSnakeString(field.getName()).concat(ID_POSTFIX));
+    }
+
+    public static String databaseTypeForJoinColumn(Field field) {
+        Class<?> fieldType = field.getType();
+        if (field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToOne.class)) {
+            OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+            ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+            if (oneToOne != null && oneToOne.mappedBy().isEmpty()) {
+                Class<?> idTypeOfRelation = getTypeOfIdField(fieldType);
+                return convertToDatabaseType(idTypeOfRelation);
+            } else if (manyToOne != null) {
+                return convertToDatabaseType(getTypeOfIdField(fieldType));
+            }
+        }
+        return null;
+    }
+
+    private static Class<?> getTypeOfIdField(Class<?> fieldType) {
+        return Arrays.stream(fieldType.getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(Id.class))
+                .map(Field::getType)
+                .findFirst()
+                .orElseThrow(() -> new MappingException(
+                        "Can't find @Id annotation in class '%s'".formatted(fieldType.getSimpleName())));
     }
 
     public static String columnIdName(Class<?> entityClass) {
@@ -131,7 +321,7 @@ public class EntityReflectionUtils {
     }
 
     public static void setVersionValueIfNull(Class<?> entityClass,
-                                               Object entity) {
+                                             Object entity) {
         Arrays.stream(entityClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Version.class))
                 .forEach(field -> {
@@ -147,7 +337,9 @@ public class EntityReflectionUtils {
         return findColumnValueByAnnotation(entityClass, Version.class, entity);
     }
 
-    private static Object findColumnValueByAnnotation(Class<?> entityClass, Class<? extends Annotation> annotationClass, Object entity) {
+    private static Object findColumnValueByAnnotation(Class<?> entityClass,
+                                                      Class<? extends Annotation> annotationClass,
+                                                      Object entity) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(annotationClass))
                 .map(field -> getValueFromObject(entity, field))
@@ -179,7 +371,7 @@ public class EntityReflectionUtils {
                 .orElseThrow(() -> new MissingAnnotationException(
                         UNABLE_TO_GET_ID_NAME_FOR_ENTITY.formatted(entityClass.getSimpleName())));
     }
-    
+
     public static Object getFieldValue(Field field, Object obj) {
         try {
             field.setAccessible(true);
@@ -189,7 +381,7 @@ public class EntityReflectionUtils {
               .formatted(field.getName(), obj.getClass(), exe.getMessage()));
         }
     }
-    
+
     public static Field getEntityIdField(Object entity) {
         try {
             var columnIdName = columnIdName(entity.getClass());
@@ -379,7 +571,7 @@ public class EntityReflectionUtils {
         return value;
     }
 
-    private String getSnakeString(String str) {
+    public static String getSnakeString(String str) {
         return str.replaceAll(SNAKE_REGEX, REPLACEMENT).toLowerCase();
     }
 }

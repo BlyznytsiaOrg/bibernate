@@ -1,12 +1,16 @@
 package io.github.blyznytsiaorg.bibernate.entity.metadata.model;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
+@Builder
 public class ColumnMetadata {
     private String name;
+    private String databaseType;
+    private boolean unique;
+    private boolean nullable;
+    private String columnDefinition;
 }

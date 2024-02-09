@@ -7,7 +7,10 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface JoinColumn {
-    String name() default "";
-    ForeignKey foreignKey() default @ForeignKey(name = "");
+public @interface ForeignKey {
+
+    /**
+     * The name of the foreign key constraint.
+     */
+    String name();
 }

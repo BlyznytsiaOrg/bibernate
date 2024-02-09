@@ -1,14 +1,15 @@
 package io.github.blyznytsiaorg.bibernate.entity.metadata.model;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
-public class JoinColumnMetadata {
+@AllArgsConstructor
+public class IndexMetadata {
+
     private String name;
-    private String databaseType;
-    private String foreignKeyName;
+
+    private String columnList;
 }

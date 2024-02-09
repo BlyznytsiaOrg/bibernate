@@ -26,6 +26,12 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String REDIS_LATEST = "redis:latest";
     private static final int REDIS_DEFAULT_PORT = 6379;
     public static final String PACKAGE_NAME = "testdata";
+    public static final String PACKAGE_NAME_FOR_DDL = "testdata.entity";
+    public static final String PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH = "testdata.mismatchcolumnlistindex";
+    public static final String PACKAGE_NAME_FOR_NO_RELATION_FOUND= "testdata.notexistedrelation";
+    public static final String PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE= "testdata.jointablewithoutmanytomany";
+    public static final String PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION = "testdata.joincolumnmappingexception";
+    public static final String CREATE = "create";
 
     @Container
     private final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(POSTGRES_LATEST)
@@ -38,6 +44,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
             .withExposedPorts(REDIS_DEFAULT_PORT);
 
     public static final String BIBERNATE_FLYWAY_ENABLED = "bibernate.flyway.enabled";
+    public static final String BB2DDL_AUTO = "bibernate.2ddl.auto";
     public static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
     private static final String SECOND_LEVEL_CACHE_HOST = "bibernate.secondLevelCache.host";
     private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
@@ -90,6 +97,31 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     public Persistent createPersistentWithFlayWayEnabled() {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
         return new Persistent(bibernateSettings, PACKAGE_NAME);
+    }
+
+    public Persistent createPersistentWithBb2ddlCreate() {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_DDL);
+    }
+
+    public Persistent createPersistentIndexColumnListMismatch() {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH);
+    }
+
+    public Persistent createPersistentNoRelationFound() {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_RELATION_FOUND);
+    }
+
+    public Persistent createPersistentNoManyToManyOnJoinTable() {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE);
+    }
+
+    public Persistent createPersistentJoinColumnMappingException() {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION);
     }
 
     public Persistent createPersistentWithSecondLevelCache() {

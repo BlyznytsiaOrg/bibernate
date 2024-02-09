@@ -29,6 +29,7 @@
         <jetbrains.version>24.1.0</jetbrains.version>
         <jedis.version>5.1.0</jedis.version>
         <kryo.version>5.5.0</kryo.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
     </properties>
 
     <dependencies>
@@ -103,6 +104,12 @@
             <artifactId>annotations</artifactId>
             <version>${jetbrains.version}</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <!-- Testing dependencies -->

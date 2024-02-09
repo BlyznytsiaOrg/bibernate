@@ -6,8 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface JoinColumn {
+@Target(ElementType.TYPE)
+public @interface Index {
+
+    /**
+     * (Optional) The name of the index; defaults to a provider-generated name.
+     */
     String name() default "";
-    ForeignKey foreignKey() default @ForeignKey(name = "");
+
+    /**
+     * (Required) The names of the columns to be included in the index,
+     * in order.
+     */
+    String columnList();
 }
