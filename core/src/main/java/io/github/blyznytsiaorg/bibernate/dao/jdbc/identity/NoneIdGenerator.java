@@ -3,6 +3,10 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.List;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
@@ -38,25 +42,28 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
         var tableName = table(entityClass);
         var query = insert(entityClass, tableName);
         var entityArr = entities.toArray();
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
             for (int i = 0; i < entityArr.length; i++) {
                 populatePreparedStatement(entityArr[i], statement);
-                statement.addBatch();
+                ps.addBatch();
                 addToExecutedQueries(query);
 
                 if (i % getBatchSize() == 0 && i != 0) {
-                    statement.executeBatch();
+                    ps.executeBatch();
                 }
             }
 
-            statement.executeBatch();
+            ps.executeBatch();
             showSql(() -> log.debug(QUERY, query));
         } catch (Exception e) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
+        } finally {
+          close(connection, ps);
         }
     }
 }

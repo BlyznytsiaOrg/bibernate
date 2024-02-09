@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,4 +44,10 @@ public interface Dao {
     <T> void delete(Class<T> entityClass, Object entity);
 
     <T> void deleteAll(Class<T> entityClass, Collection<T> entities);
+
+    void startTransaction() throws SQLException;
+
+    void commitTransaction() throws SQLException;
+
+    void rollbackTransaction() throws SQLException;
 }

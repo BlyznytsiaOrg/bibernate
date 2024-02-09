@@ -13,9 +13,22 @@ import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTI
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setIdField;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_CLOSE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
+
+import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
+import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import javax.sql.DataSource;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Blyzhnytsia Team
@@ -35,40 +48,50 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
         return IDENTITY;
     }
 
-    @Override
-    public <T> void handle(Class<T> entityClass, Collection<T> entities, DataSource dataSource) {
-        var tableName = table(entityClass);
-        var query = insert(entityClass, tableName);
-        var entityArr = entities.toArray();
+  @Override
+  public <T> void handle(Class<T> entityClass, Collection<T> entities, DataSource dataSource) {
+    var tableName = table(entityClass);
+    var query = insert(entityClass, tableName);
+    var entityArr = entities.toArray();
 
-        showSql(() -> log.debug(QUERY, query));
+    showSql(() -> log.debug(QUERY, query));
 
-        var countEntity = 0;
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query, RETURN_GENERATED_KEYS)) {
+    var countEntity = 0;
+    Connection connection = null;
+    PreparedStatement ps = null;
+    try {
+      connection = dataSource.getConnection();
+      ps = connection.prepareStatement(query, RETURN_GENERATED_KEYS);
+      for (int i = 0; i < entityArr.length; i++) {
+        populatePreparedStatement(entityArr[i], ps);
+        ps.addBatch();
+        addToExecutedQueries(query);
 
-            for (int i = 0; i < entityArr.length; i++) {
-                populatePreparedStatement(entityArr[i], statement);
-                statement.addBatch();
-                addToExecutedQueries(query);
-
-                if (i % getBatchSize() == 0 && i != 0) {
-                    statement.executeBatch();
-                    var generatedKeys = statement.getGeneratedKeys();
-                    while (generatedKeys.next()) {
-                        setIdField(entityArr[countEntity++], generatedKeys.getObject(1));
-                    }
-                }
-            }
-
-            statement.executeBatch();
-            var generatedKeys = statement.getGeneratedKeys();
-            while (generatedKeys.next()) {
-                setIdField(entityArr[countEntity++], generatedKeys.getObject(1));
-            }
-        } catch (Exception e) {
-            throw new BibernateGeneralException(
-                    CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
+        if (i % getBatchSize() == 0 && i != 0) {
+          ps.executeBatch();
+          var generatedKeys = ps.getGeneratedKeys();
+          while (generatedKeys.next()) {
+            updateEntity(entityArr[countEntity++], generatedKeys.getObject(1));
+          }
         }
+      }
+
+      ps.executeBatch();
+      var generatedKeys = ps.getGeneratedKeys();
+      while (generatedKeys.next()) {
+        updateEntity(entityArr[countEntity++], generatedKeys.getObject(1));
+      }
+    } catch (Exception e) {
+      throw new BibernateGeneralException(
+          CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
+    } finally {
+      close(connection, ps);
     }
+  }
+  
+  private void updateEntity(Object entity, Object value) {
+      setIdField(entity, value);
+      addUpdatedEntity(entity);
+  }
+
 }

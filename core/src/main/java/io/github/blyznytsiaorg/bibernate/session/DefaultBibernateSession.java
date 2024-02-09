@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -105,5 +106,20 @@ public class DefaultBibernateSession implements BibernateSession {
     @Override
     public Dao getDao() {
         return dao;
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        dao.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        dao.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        dao.rollbackTransaction();
     }
 }

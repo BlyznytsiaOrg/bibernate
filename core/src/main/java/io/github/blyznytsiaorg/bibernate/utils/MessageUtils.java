@@ -12,6 +12,10 @@ public class MessageUtils {
 
     @UtilityClass
     public static class ExceptionMessage {
+        public static final String CANNOT_COMMIT_TRANSACTION =
+            "Cannot commit transaction: %s";
+        public static final String CANNOT_CLOSE =
+            "Cannot close connection [%s] or prepared statement [%s]: %s";
         public static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS =
                 "Cannot execute findById entityClass [%s]. Message: %s";
         public static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS =

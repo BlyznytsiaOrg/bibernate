@@ -11,6 +11,9 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
+import io.github.blyznytsiaorg.bibernate.transaction.Transaction;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
+import java.sql.Connection;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
@@ -133,20 +136,25 @@ public class EntityDao implements Dao {
         addToExecutedQueries(query);
 
         List<T> items = new ArrayList<>();
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
 
-            populatePreparedStatement(bindValues, statement);
+            populatePreparedStatement(bindValues, ps);
 
-            var resultSet = statement.executeQuery();
+            var resultSet = ps.executeQuery();
             while (resultSet.next()) {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
 
         return items;
@@ -156,21 +164,25 @@ public class EntityDao implements Dao {
     public int find(String query, Object[] bindValues) {
         var dataSource = bibernateDatabaseSettings.getDataSource();
         addToExecutedQueries(query);
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
 
-            populatePreparedStatement(bindValues, statement);
+            populatePreparedStatement(bindValues, ps);
 
-            var resultSet = statement.executeQuery();
+            var resultSet = ps.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getInt(1);
             }
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_QUERY.formatted(query, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
 
         return 0;
@@ -196,13 +208,16 @@ public class EntityDao implements Dao {
         String query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
         addToExecutedQueries(query);
 
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             showSql(() -> log.debug(QUERY, query));
 
-            populatePreparedStatement(entity, statement, fieldIdName, fieldIdValue, fieldVersionValue, diff);
-            var resultSet = statement.executeUpdate();
+            populatePreparedStatement(entity, ps, fieldIdName, fieldIdValue, fieldVersionValue, diff);
+            var resultSet = ps.executeUpdate();
             log.trace(UPDATE, resultSet, entityClass.getSimpleName(), fieldIdValue);
 
             if (isVersionFound && resultSet == 0) {
@@ -215,6 +230,8 @@ public class EntityDao implements Dao {
             String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
                     .formatted(entityClass, fieldIdValue, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
     }
 
@@ -277,18 +294,22 @@ public class EntityDao implements Dao {
 
         var query = sqlBuilder.delete(tableName, columnName);
         addToExecutedQueries(query);
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             showSql(() -> log.debug(QUERY_BIND_VALUE, query, columnName, value));
 
-            statement.setObject(1, value);
+            ps.setObject(1, value);
 
-            statement.execute();
+            ps.execute();
         } catch (Exception exe) {
             log.error(CANNOT_EXECUTE_DELETE_ENTITY_CLASS.formatted(entityClass, value, exe.getMessage()));
             return Collections.emptyList();
+        } finally {
+            close(connection, ps);
         }
 
         removeToOneRelations(deletedEntities, session, relationsForRemoval);
@@ -360,23 +381,60 @@ public class EntityDao implements Dao {
         }
 
         addToExecutedQueries(query);
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
-            statement.setObject(1, primaryKey);
+            ps.setObject(1, primaryKey);
 
             if (isVersionFound) {
-                statement.setObject(2, fieldVersionValue);
+                ps.setObject(2, fieldVersionValue);
             }
 
-            statement.execute();
+            ps.execute();
             log.trace(DELETE, entityClass.getSimpleName(), fieldIdName, primaryKey);
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
                     .formatted(entityClass, primaryKey, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        getTransaction().start();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        var transaction = TransactionHolder.getTransaction();
+        if(transaction != null) {
+            transaction.commit();
+            TransactionHolder.removeTransaction();
+        }
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        var transaction = TransactionHolder.getTransaction();
+        if(transaction != null) {
+            transaction.rollback();
+            TransactionHolder.removeTransaction();
+        }
+    }
+
+    private Transaction getTransaction() throws SQLException {
+        var transaction = TransactionHolder.getTransaction();
+        if(transaction == null) {
+            var connection = bibernateDatabaseSettings.getDataSource().getConnection();
+            transaction = new Transaction(connection);
+            TransactionHolder.setTransaction(new Transaction(connection));
+        }
+        return transaction;
     }
 
     @Override
@@ -531,6 +589,20 @@ public class EntityDao implements Dao {
     private void validateCollection(Collection<?> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new BibernateGeneralException(COLLECTION_MUST_BE_NOT_EMPTY);
+        }
+    }
+
+    protected void close(Connection connection, PreparedStatement ps) {
+        try {
+            if (ps != null) {
+                ps.close();
+            }
+            if (TransactionHolder.getTransaction() == null) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            throw new BibernateGeneralException(
+                CANNOT_CLOSE.formatted(connection, ps, e.getMessage()), e);
         }
     }
 }

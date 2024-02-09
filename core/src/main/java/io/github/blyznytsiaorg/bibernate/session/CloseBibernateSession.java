@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.session;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
 import io.github.blyznytsiaorg.bibernate.exception.ImmutableEntityException;
+import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -158,6 +159,21 @@ public class CloseBibernateSession implements BibernateSession {
     public Dao getDao() {
         verifySessionNotClosed();
         return bibernateSession.getDao();
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        bibernateSession.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        bibernateSession.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        bibernateSession.rollbackTransaction();
     }
 
     private void verifySessionNotClosed() {
