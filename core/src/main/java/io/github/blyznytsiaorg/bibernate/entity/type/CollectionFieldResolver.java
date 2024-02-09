@@ -2,7 +2,7 @@ package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 
@@ -32,7 +32,7 @@ public class CollectionFieldResolver implements TypeFieldResolver {
         }
         
         var collectionGenericType = getCollectionGenericType(field);
-        var session = BibernateSessionContextHolder.getBibernateSession();
+        var session = BibernateContextHolder.getBibernateSession();
 
         if (EntityRelationsUtils.isOneToMany(field)) {
             return new PersistentList<>(() ->

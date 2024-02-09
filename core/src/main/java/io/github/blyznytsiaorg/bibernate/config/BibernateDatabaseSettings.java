@@ -1,14 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.config;
 
 import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Configuration class for Bibernate database settings.
@@ -21,17 +19,11 @@ import java.util.Objects;
 @Slf4j
 public class BibernateDatabaseSettings {
 
-    public static final String SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY = " should not be null. Please configure it %s";
     public static final String DB_URL = "db.url";
     public static final String DB_USER = "db.user";
     public static final String DB_PASSWORD = "db.password";
     public static final String DB_MAXIMUM_POOL_SIZE = "db.maxPoolSize";
-    private static final String DEFAULT_MAXIMUM_POOL_SIZE = "20";
     private static final String SHOW_SQL = "bibernate.show_sql";
-    private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
-    private static final String DEFAULT_REDIS_HOST = "localhost";
-    private static final String DEFAULT_REDIS_PORT = "6379";
-    private static final String DEFAULT_BATCH_SIZE = "1";
     private static final String BATCH_SIZE = "bibernate.batch_size";
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
     private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
@@ -40,10 +32,19 @@ public class BibernateDatabaseSettings {
     private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
     private static final String BB2DDL_AUTO = "bibernate.2ddl.auto";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
+
+    private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
+    private static final String DEFAULT_REDIS_HOST = "localhost";
+    private static final String DEFAULT_REDIS_PORT = "6379";
+    private static final String DEFAULT_BATCH_SIZE = "1";
+    private static final String DEFAULT_MAXIMUM_POOL_SIZE = "20";
     public static final String NONE = "none";
     public static final String CREATE = "create";
+    private static final String DEFAULT_DB_CONNECTION_URL = "jdbc:postgresql://localhost:5432/db";
+    private static final String DEFAULT_DB_USERNAME = "user";
+    private static final String DEFAULT_DB_PASSWORD = "password";
+
     private final Map<String, String> bibernateSettingsProperties;
-    private final String configurationErrorMessage;
     private final String bibernateFileName;
     private final TransactionalDatasource dataSource;
     private RedisConfiguration redisConfiguration;
@@ -54,10 +55,8 @@ public class BibernateDatabaseSettings {
      * @param bibernateSettingsProperties the Bibernate settings properties loaded from a configuration file
      * @param bibernateFileName           the name of the configuration file
      */
-    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
-                                     String bibernateFileName) {
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, String bibernateFileName) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
-        this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
         this.bibernateFileName = bibernateFileName;
         this.dataSource = createDataSource();
     }
@@ -75,7 +74,6 @@ public class BibernateDatabaseSettings {
                                      TransactionalDatasource dataSource) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
-        this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
         this.dataSource = dataSource;
     }
 
@@ -95,14 +93,10 @@ public class BibernateDatabaseSettings {
      */
     private TransactionalDatasource createDataSource() {
         log.trace("Creating dataSource...");
-        String url = bibernateSettingsProperties.get(DB_URL);
-        String user = bibernateSettingsProperties.get(DB_USER);
-        String password = bibernateSettingsProperties.get(DB_PASSWORD);
+        String url = bibernateSettingsProperties.getOrDefault(DB_URL, DEFAULT_DB_CONNECTION_URL);
+        String user = bibernateSettingsProperties.getOrDefault(DB_USER, DEFAULT_DB_USERNAME);
+        String password = bibernateSettingsProperties.getOrDefault(DB_PASSWORD, DEFAULT_DB_PASSWORD);
         String maxPoolSize = bibernateSettingsProperties.getOrDefault(DB_MAXIMUM_POOL_SIZE, DEFAULT_MAXIMUM_POOL_SIZE);
-
-        Objects.requireNonNull(url, DB_URL + configurationErrorMessage);
-        Objects.requireNonNull(user, DB_USER + configurationErrorMessage);
-        Objects.requireNonNull(password, DB_PASSWORD + configurationErrorMessage);
 
         var config = new HikariConfig();
         config.setJdbcUrl(url);
@@ -111,23 +105,6 @@ public class BibernateDatabaseSettings {
         config.setMaximumPoolSize(Integer.parseInt(maxPoolSize));
 
         return new TransactionalDatasource(config);
-    }
-
-    /**
-     * Generates an error message for missing configuration properties.
-     *
-     * @param bibernateSettings the Bibernate settings properties
-     * @param bibernateFileName the name of the Bibernate configuration file
-     * @return the error message
-     */
-    private String configureErrorMessage(Map<String, String> bibernateSettings, String bibernateFileName) {
-        String errorMessage;
-        if (Objects.nonNull(bibernateSettings)) {
-            errorMessage = SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY.formatted(bibernateFileName);
-        } else {
-            errorMessage = SHOULD_NOT_BE_NULL_CONFIGURE_BIBERNATE_PROPERTY.formatted(BIBERNATE_APPLICATION_PROPERTIES);
-        }
-        return errorMessage;
     }
 
     /**

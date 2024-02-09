@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.blyznytsiaorg.bibernate.Persistent.*;
+
 @Slf4j
 public abstract class AbstractPostgresInfrastructurePrep implements AbstractPostgresTableCreationPrep {
 
@@ -32,6 +34,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     public static final String PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE= "testdata.jointablewithoutmanytomany";
     public static final String PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION = "testdata.joincolumnmappingexception";
     public static final String CREATE = "create";
+    public static final String BIBERNATE_PROPERTIES = "bibernate.properties";
 
     @Container
     private final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(POSTGRES_LATEST)
@@ -94,81 +97,81 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     }
 
     public Persistent createPersistent(String packageName) {
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistent() {
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithFlayWayEnabled() {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithFlayWayEnabled(String packageName) {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithBb2ddlCreate() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_DDL);
+        return withExternalConfiguration(PACKAGE_NAME_FOR_DDL, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithBb2ddlCreate(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentIndexColumnListMismatch() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH);
+        return withExternalConfiguration(PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentIndexColumnListMismatch(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentNoRelationFound() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_RELATION_FOUND);
+        return withExternalConfiguration(PACKAGE_NAME_FOR_NO_RELATION_FOUND, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentNoRelationFound(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentNoManyToManyOnJoinTable() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE);
+        return withExternalConfiguration(PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentNoManyToManyOnJoinTable(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentJoinColumnMappingException() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION);
+        return withExternalConfiguration(PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentJoinColumnMappingException(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithSecondLevelCache() {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithSecondLevelCache(String packageName) {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, packageName);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     @AfterEach

@@ -3,10 +3,11 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling the "update" method.
@@ -42,8 +43,7 @@ public class SimpleRepositoryMethodUpdateHandler implements SimpleRepositoryMeth
                           MethodMetadata methodMetadata) {
         log.trace(HANDLE_METHOD, method.getName());
         if (parameters.length > 0) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-            try (var bringSession = sessionFactory.openSession()) {
+            try (var bringSession = getBibernateSessionFactory().openSession()) {
                 var entityClass = (Class<?>) repositoryDetails.entityType();
                 bringSession.update(entityClass, parameters[0]);
                 return Void.TYPE;

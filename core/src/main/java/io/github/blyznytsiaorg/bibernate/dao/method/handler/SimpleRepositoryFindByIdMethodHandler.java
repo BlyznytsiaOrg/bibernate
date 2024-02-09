@@ -4,12 +4,12 @@ import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
 import io.github.blyznytsiaorg.bibernate.exception.UnsupportedReturnTypeException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 import static java.util.Objects.nonNull;
 
 /**
@@ -54,9 +54,8 @@ public class SimpleRepositoryFindByIdMethodHandler implements SimpleRepositoryMe
         String methodName = method.getName();
         log.trace(HANDLE_METHOD, methodName);
         if (parameters.length > 0) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
             var entityClass = (Class<?>) repositoryDetails.entityType();
-            try (var bringSession = sessionFactory.openSession()) {
+            try (var bringSession = getBibernateSessionFactory().openSession()) {
                 var returnType = methodMetadata.getReturnType();
                 var primaryKey = parameters[0];
 

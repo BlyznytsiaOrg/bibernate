@@ -14,6 +14,8 @@ import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.PostgresIdentity;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.*;
+
 /**
  *
  *  @author Blyzhnytsia Team
@@ -49,7 +51,7 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
             );
         }
 
-        BibernateSessionContextHolder.setBibernateSession(bibernateSession);
+        setBibernateSession(bibernateSession);
         return bibernateSession;
     }
 
