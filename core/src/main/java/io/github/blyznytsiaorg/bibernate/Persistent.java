@@ -87,13 +87,14 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings, configFileName);
         setReflection(Persistent.class.getPackageName());
 
-        enableFlyway();
-        processDDLConfiguration(entitiesPackageName);
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
 
         var entityMetadataCollector = new EntityMetadataCollector(entitiesPackageName);
         Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
         setBibernateEntityMetadata(classEntityMetadataMap);
+
+        enableFlyway();
+        processDDLConfiguration();
     }
 
     /**
@@ -115,13 +116,14 @@ public class Persistent {
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings, configFileName, dataSource);
         setReflection(Persistent.class.getPackageName());
 
-        enableFlyway();
-        processDDLConfiguration(entitiesPackageName);
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
 
         var entityMetadataCollector = new EntityMetadataCollector(entitiesPackageName);
         Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
         setBibernateEntityMetadata(classEntityMetadataMap);
+
+        enableFlyway();
+        processDDLConfiguration();
     }
 
     /**
@@ -154,11 +156,10 @@ public class Persistent {
     /**
      * Processes DDL configuration for the specified package.
      *
-     * @param packageName the package name for which DDL configuration is processed
      * @return a new instance of {@link DDLConfiguration}
      */
-    private DDLConfiguration processDDLConfiguration(String packageName) {
-        return new DDLConfiguration(bibernateDatabaseSettings, packageName);
+    private DDLConfiguration processDDLConfiguration() {
+        return new DDLConfiguration(bibernateDatabaseSettings);
     }
 
     /**

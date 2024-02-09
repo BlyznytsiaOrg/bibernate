@@ -28,11 +28,6 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String REDIS_LATEST = "redis:latest";
     private static final int REDIS_DEFAULT_PORT = 6379;
     public static final String PACKAGE_NAME = "testdata";
-    public static final String PACKAGE_NAME_FOR_DDL = "testdata.entity";
-    public static final String PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH = "testdata.mismatchcolumnlistindex";
-    public static final String PACKAGE_NAME_FOR_NO_RELATION_FOUND= "testdata.notexistedrelation";
-    public static final String PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE= "testdata.jointablewithoutmanytomany";
-    public static final String PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION = "testdata.joincolumnmappingexception";
     public static final String CREATE = "create";
     public static final String BIBERNATE_PROPERTIES = "bibernate.properties";
 
@@ -114,60 +109,11 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
-    public Persistent createPersistentWithBb2ddlCreate() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(PACKAGE_NAME_FOR_DDL, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
     public Persistent createPersistentWithBb2ddlCreate(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
         return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
-    public Persistent createPersistentIndexColumnListMismatch() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentIndexColumnListMismatch(String packageName) {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentNoRelationFound() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(PACKAGE_NAME_FOR_NO_RELATION_FOUND, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentNoRelationFound(String packageName) {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentNoManyToManyOnJoinTable() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentNoManyToManyOnJoinTable(String packageName) {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentJoinColumnMappingException() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentJoinColumnMappingException(String packageName) {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
-
-    public Persistent createPersistentWithSecondLevelCache() {
-        bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
-    }
 
     public Persistent createPersistentWithSecondLevelCache(String packageName) {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());

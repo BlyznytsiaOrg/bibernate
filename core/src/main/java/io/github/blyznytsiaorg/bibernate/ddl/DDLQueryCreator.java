@@ -16,6 +16,7 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.JoinTableMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ManyToManyMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import lombok.Getter;
@@ -53,31 +54,32 @@ public class DDLQueryCreator {
     public static final String JAVA_TIME = "java.time";
     public static final String CREATE_TABLE = "create table %s (";
     public static final String BRACKET = ")";
-    private final Map<Class<?>, EntityMetadata> entityMetadatas;
-    private final HashMap<String, Class<?>> tableNames;
     private final List<String> dropSequences = new ArrayList<>();
     private final List<String> createSequences = new ArrayList<>();
     private final List<String> createTables = new ArrayList<>();
     private final List<String> createIndex = new ArrayList<>();
     private final List<String> createConstraints = new ArrayList<>();
     private final List<String> dropConstraints = new ArrayList<>();
-    private List<String> dropTables = new ArrayList<>();
+    private final List<String> dropTables = new ArrayList<>();
+    private final Map<Class<?>, EntityMetadata> bibernateEntityMetadata;
 
-    public DDLQueryCreator(EntityMetadataCollector entityMetadataCollector) {
-        this.entityMetadatas = entityMetadataCollector.getInMemoryEntityMetadata();
-        this.tableNames = entityMetadataCollector.getTableNames();
+    public DDLQueryCreator() {
+        bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
         createQueries();
     }
 
     public void createQueries() {
 
-        entityMetadatas.forEach((entityClass, entityMetadata) -> {
+        bibernateEntityMetadata.forEach((entityClass, entityMetadata) -> {
 
             Set<String> foreignNameConstraints = new HashSet<>();
 
             createIndexQuery(entityMetadata);
 
             String tableName = entityMetadata.getTableName();
+
+            dropTables.add(DROP_TABLE.formatted(tableName));
+
             StringBuilder builder = new StringBuilder(CREATE_TABLE.formatted(tableName));
 
             List<String> columnNameAndDatabaseTypeList = new ArrayList<>();
@@ -106,8 +108,6 @@ public class DDLQueryCreator {
             String query = builder.append(BRACKET).toString();
             createTables.add(query);
         });
-
-        createDropTablesQuery();
     }
 
     private static boolean ifIsToOneRelation(Field field) {
@@ -163,7 +163,7 @@ public class DDLQueryCreator {
             String inverseForeignKey = joinTable.getInverseForeignKey();
 
             Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(entityColumn.getField());
-            EntityMetadata relationEntityMetadata = entityMetadatas.get(collectionGenericType);
+            EntityMetadata relationEntityMetadata = bibernateEntityMetadata.get(collectionGenericType);
 
 
             var query = CREATE_TABLE_MANY_TO_MANY
@@ -185,7 +185,7 @@ public class DDLQueryCreator {
     private void processToOneRelations(Class<?> entityClass, Set<String> foreignNameConstraints,
                                        String tableName, List<String> nameDatabaseTypes,
                                        EntityColumnDetails entityColumn, Class<?> fieldType) {
-        EntityMetadata metadataOfRelation = entityMetadatas.get(fieldType);
+        EntityMetadata metadataOfRelation = bibernateEntityMetadata.get(fieldType);
         checkIfRelationExists(entityClass, fieldType, metadataOfRelation);
         JoinColumnMetadata joinColumn = entityColumn.getJoinColumn();
         String joinColumnName = joinColumn.getName();
@@ -348,25 +348,9 @@ public class DDLQueryCreator {
         }
     }
 
-    private Class<?> getTypeOfIdField(EntityMetadata metadataOfRelation) {
-        return metadataOfRelation.getEntityColumns()
-                .stream()
-                .filter(column -> column.getId() != null)
-                .map(EntityColumnDetails::getFieldType)
-                .findFirst()
-                .orElseThrow();
-    }
-
     private boolean isInternalJavaType(Class<?> fieldType) {
         String packageName = fieldType.getPackageName();
         return packageName.equals(JAVA_LANG) || packageName.equals(JAVA_MATH)
                 || packageName.equals(JAVA_SQL) || packageName.equals(JAVA_TIME);
-    }
-
-    private void createDropTablesQuery() {
-        dropTables = tableNames.keySet()
-                .stream()
-                .map(DROP_TABLE::formatted)
-                .toList();
     }
 }

@@ -3,7 +3,7 @@ package io.github.blyznytsiaorg.bibernate.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchRuntimeException;
 
-import io.github.blyznytsiaorg.bibernate.ddl.EntityMetadataCollector;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,9 @@ class EntityMetadataDuplicateTableNameTest {
                 .formatted(TABLE_NAME, FIRST_CLASS, SECOND_CLASS);
 
          // when
-        RuntimeException exception = catchRuntimeException(() -> new EntityMetadataCollector("testdata.duplicatetablename"));
+        EntityMetadataCollector collector = new EntityMetadataCollector("testdata.duplicatetablename");
+        RuntimeException exception = catchRuntimeException(collector::collectMetadata);
+
         String actualMessage = exception.getMessage();
 
         // then

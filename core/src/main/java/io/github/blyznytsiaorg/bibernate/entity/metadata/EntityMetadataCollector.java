@@ -43,12 +43,14 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToManyMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToOneMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
+import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Getter
@@ -169,22 +171,25 @@ public class EntityMetadataCollector {
 
     private JoinColumnMetadata getJoinColumn(Field field) {
 
-        if (field.isAnnotationPresent(JoinColumn.class)
-                && (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class))) {
+        if (field.isAnnotationPresent(JoinColumn.class)) {
+            if (field.isAnnotationPresent(OneToMany.class)) {
+                log.warn(("It is performance-efficient to map the relationship from the child side "
+                        + "[field: '%s', @OneToMany]").formatted(field.getName()));
+            } else if (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class)) {
             throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
                     + "annotated with @JoinColumn").formatted(field.getName()));
+            }
         }
+
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-            String foreignKeyName = null;
+            String foreignKeyName = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                    .map(JoinColumn::foreignKey)
+                    .map(ForeignKey::name)
+                    .orElseGet(DDLUtils::getForeignKeyConstraintName);
 
-            if (joinColumn != null && (joinColumn.foreignKey() != null)) {
-                foreignKeyName = joinColumn.foreignKey().name();
-
-            }
             return JoinColumnMetadata.builder()
                     .name(joinColumnName)
                     .databaseType(databaseTypeForJoinColumn)

@@ -15,6 +15,6 @@ public class Note {
     
     private String text;
     
-    @JoinColumn(name = "person_id")
+
     private Person person;
 }
