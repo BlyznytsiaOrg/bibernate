@@ -1,4 +1,4 @@
-package testdata.update;
+package testdata.update.withoutdynamic;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
@@ -10,8 +10,7 @@ import lombok.ToString;
 @ToString
 @Setter
 @Getter
-@Immutable
-public class PersonImmutable {
+public class PersonWithoutDynamicUpdate {
     @Id
     @Column(name = "id")
     private Long id;

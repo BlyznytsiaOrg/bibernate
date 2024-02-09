@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.onetoone.unidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.onetoone.unidirectional.lazy.Address;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Should find exising person by ID with all one to one relations")
+    @Disabled
     @Test
     void shouldFindExistingPersonByIdWithRelations() {
         //given

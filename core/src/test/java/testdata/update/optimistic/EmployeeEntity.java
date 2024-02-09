@@ -1,4 +1,4 @@
-package testdata.update;
+package testdata.update.optimistic;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;

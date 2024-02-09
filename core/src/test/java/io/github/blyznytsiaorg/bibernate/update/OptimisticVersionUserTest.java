@@ -6,7 +6,7 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import testdata.update.EmployeeEntity;
+import testdata.update.optimistic.EmployeeEntity;
 
 import java.util.List;
 
@@ -82,7 +82,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
         var entityStateWasChangeException = assertThrows(BibernateGeneralException.class, executable);
         assertThat(entityStateWasChangeException.getCause().getMessage())
-                .isEqualTo("Entity class testdata.update.EmployeeEntity was change need to get new data findByid[10]");
+                .isEqualTo("Entity class testdata.update.optimistic.EmployeeEntity was change need to get new data findByid[10]");
 
     }
 }

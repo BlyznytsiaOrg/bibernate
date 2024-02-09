@@ -126,9 +126,19 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH);
     }
 
+    public Persistent createPersistentIndexColumnListMismatch(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, packageName);
+    }
+
     public Persistent createPersistentNoRelationFound() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
         return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_RELATION_FOUND);
+    }
+
+    public Persistent createPersistentNoRelationFound(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, packageName);
     }
 
     public Persistent createPersistentNoManyToManyOnJoinTable() {
@@ -136,14 +146,29 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE);
     }
 
+    public Persistent createPersistentNoManyToManyOnJoinTable(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, packageName);
+    }
+
     public Persistent createPersistentJoinColumnMappingException() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
         return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION);
     }
 
+    public Persistent createPersistentJoinColumnMappingException(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, packageName);
+    }
+
     public Persistent createPersistentWithSecondLevelCache() {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
         return new Persistent(bibernateSettings, PACKAGE_NAME);
+    }
+
+    public Persistent createPersistentWithSecondLevelCache(String packageName) {
+        bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
+        return new Persistent(bibernateSettings, packageName);
     }
 
     @AfterEach

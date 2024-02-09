@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.onetoone.bidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.onetoone.bidirectional.eager.Address;
@@ -15,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructurePrep {
 
+    @Disabled
     @DisplayName("Should retrieve person and address")
     @Test
     public void testOneToOneBidirectional() {

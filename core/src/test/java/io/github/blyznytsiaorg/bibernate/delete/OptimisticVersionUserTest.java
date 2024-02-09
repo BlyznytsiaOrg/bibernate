@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.update.EmployeeEntity;
+import testdata.update.optimistic.EmployeeEntity;
 
 import java.util.List;
 import java.util.Optional;

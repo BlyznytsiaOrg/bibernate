@@ -5,7 +5,7 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.findbyid.Person;
-import testdata.update.PersonImmutable;
+import testdata.update.immutable.PersonImmutable;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,7 @@ class FindPersonFromSecondLevelCacheTest extends AbstractPostgresInfrastructureP
     void shouldPutInCacheOnlyImmutableEntity() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistentWithSecondLevelCache();
+        var persistent = createPersistentWithSecondLevelCache("testdata.findbyid");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -57,7 +57,7 @@ class FindPersonFromSecondLevelCacheTest extends AbstractPostgresInfrastructureP
     void shouldOnlyCacheImmutableEntity() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistentWithSecondLevelCache();
+        var persistent = createPersistentWithSecondLevelCache("testdata.update.immutable");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

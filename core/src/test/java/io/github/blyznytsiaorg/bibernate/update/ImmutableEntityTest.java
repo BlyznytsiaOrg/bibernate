@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import testdata.findbyid.Person;
-import testdata.update.PersonImmutable;
+import testdata.update.immutable.PersonImmutable;
 
 import java.util.List;
 import java.util.UUID;
@@ -82,7 +82,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             var entityStateWasChangeException = assertThrows(ImmutableEntityException.class, executable);
             assertThat(entityStateWasChangeException.getMessage())
-                    .isEqualTo("Immutable entity class testdata.update.PersonImmutable not allowed to change");
+                    .isEqualTo("Immutable entity class testdata.update.immutable.PersonImmutable not allowed to change");
         }
     }
 
