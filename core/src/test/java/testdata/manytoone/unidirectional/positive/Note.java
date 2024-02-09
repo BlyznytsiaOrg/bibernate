@@ -1,4 +1,4 @@
-package testdata.manytoone.unidirectional;
+package testdata.manytoone.unidirectional.positive;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;

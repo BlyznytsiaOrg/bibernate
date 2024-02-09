@@ -2,7 +2,7 @@ package testdata.manytoone.unidirectional.notannotated;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
-import testdata.manytoone.unidirectional.Person;
+import testdata.manytoone.unidirectional.positive.Person;
 
 @Getter
 @Entity

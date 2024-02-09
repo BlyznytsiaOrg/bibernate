@@ -19,7 +19,7 @@ class SequenceGeneratorTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupSequences(dataSource, CREATE_PERSON_ID_CUSTOM_SEQ);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.generatedvalue.sequencegenerator");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

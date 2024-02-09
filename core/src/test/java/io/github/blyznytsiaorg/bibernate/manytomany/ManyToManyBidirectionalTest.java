@@ -5,8 +5,8 @@ import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.manytomany.bidirectional.Course;
-import testdata.manytomany.bidirectional.Person;
+import testdata.manytomany.bidirectional.positive.Course;
+import testdata.manytomany.bidirectional.positive.Person;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,7 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytomany.bidirectional.positive");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -96,7 +96,7 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytomany.bidirectional.positive");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -151,7 +151,7 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytomany.bidirectional.positive");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -207,7 +207,7 @@ class ManyToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_COURSES_TABLES, CREATE_INSERT_PERSONS_COURSES_STATEMENTS);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytomany.bidirectional.error");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {

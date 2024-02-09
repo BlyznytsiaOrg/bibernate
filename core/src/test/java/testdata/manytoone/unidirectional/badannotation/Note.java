@@ -2,7 +2,7 @@ package testdata.manytoone.unidirectional.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
-import testdata.manytoone.unidirectional.Person;
+import testdata.manytoone.unidirectional.positive.Person;
 
 import java.util.ArrayList;
 import java.util.List;

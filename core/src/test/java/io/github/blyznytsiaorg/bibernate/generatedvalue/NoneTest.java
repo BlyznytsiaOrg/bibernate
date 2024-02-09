@@ -17,7 +17,7 @@ class NoneTest extends AbstractPostgresInfrastructurePrep {
   void shouldGenerateIdFromEntity() {
     //given
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-    var persistent = createPersistent();
+    var persistent = createPersistent("testdata.generatedvalue.none");
 
     try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
       var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
