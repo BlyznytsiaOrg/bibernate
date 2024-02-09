@@ -13,8 +13,8 @@ import java.util.Objects;
  * Configuration class for Bibernate database settings.
  * It provides methods to create a data source, access database properties, and configure various settings.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Getter
 @Slf4j
@@ -30,6 +30,8 @@ public class BibernateDatabaseSettings {
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
     private static final String DEFAULT_REDIS_HOST = "localhost";
     private static final String DEFAULT_REDIS_PORT = "6379";
+    private static final String DEFAULT_BATCH_SIZE = "1";
+    private static final String BATCH_SIZE = "bibernate.batch_size";
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
     private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
     private static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
@@ -68,7 +70,7 @@ public class BibernateDatabaseSettings {
      * @param dataSource                  the data source to be used
      */
     public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
-                                     String bibernateFileName, 
+                                     String bibernateFileName,
                                      HikariDataSource dataSource) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
@@ -189,6 +191,16 @@ public class BibernateDatabaseSettings {
      */
     public int getSecondLevelCachePost() {
         return Integer.parseInt(bibernateSettingsProperties.getOrDefault(SECOND_LEVEL_CACHE_POST, DEFAULT_REDIS_PORT));
+    }
+
+    /**
+     * Retrieves the batch size configuration for batch processing from the Bibernate settings properties.
+     * If the batch size is not explicitly configured, the method returns the default batch size value.
+     *
+     * @return The configured batch size for batch processing or the default batch size if not explicitly set.
+     */
+    public int getBatchSize() {
+        return Integer.parseInt(bibernateSettingsProperties.getOrDefault(BATCH_SIZE, DEFAULT_BATCH_SIZE));
     }
 
     /**

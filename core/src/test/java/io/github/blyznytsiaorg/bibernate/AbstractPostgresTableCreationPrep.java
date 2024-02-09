@@ -57,6 +57,10 @@ public interface AbstractPostgresTableCreationPrep {
             insert into employees(id, first_name, last_name, version) values (10, 'Levik', 'P', 1);
             """;
 
+    String CREATE_EMPLOYEE_GENERAL_INSERT_STATEMENT = """
+            insert into employees(first_name, last_name, version) values ('%s', '%s', %d);
+            """;
+
     String CREATE_PERSONS_INSERT_STATEMENT = """
             insert into persons(first_name, last_name) values ('FirstName', 'LastName');
             """;

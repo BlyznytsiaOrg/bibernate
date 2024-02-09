@@ -20,11 +20,14 @@ public class MessageUtils {
                 "Cannot execute save entityClass [%s]. Message: %s";
         public static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS =
                 "Cannot execute delete entityClass [%s] with primaryKey %s. Message: %s";
+        public static final String CANNOT_EXECUTE_DELETE_ENTITY_CLASS_ALL_BY_ID =
+                "Cannot execute delete entityClass [%s] with primaryKeys [%s]. Message: %s";
         public static final String CANNOT_EXECUTE_QUERY = "Cannot execute query %s. Message: %s";
         public static final String ENTITY_CLASS_MUST_BE_NOT_NULL = "EntityClass must be not null";
         public static final String FIELD_MUST_BE_NOT_NULL = "Field must be not null";
         public static final String ENTITY_MUST_BE_NOT_NULL = "Entity must be not null";
         public static final String PRIMARY_KEY_MUST_BE_NOT_NULL = "PrimaryKey must be not null";
+        public static final String COLLECTION_MUST_BE_NOT_EMPTY = "Collection must be not empty";
         public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
         public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA = "Entity %s was change need to get new data findBy%s[%s]";
         public static final String CANNOT_FIND_SEQUENCE_STRATEGY =
@@ -41,7 +44,9 @@ public class MessageUtils {
         public static final String QUERY_BIND_VALUES = QUERY + " bindValues {}";
         public static final String UPDATE = "Update effected row {} for entity clazz {} with id {}";
         public static final String SAVE = "Save entity clazz {}";
+        public static final String SAVE_ALL = "Save class entities {}";
         public static final String DELETE = "Delete entity {} with {}={}";
+        public static final String DELETE_ALL = "Delete entity {} with primaryKeys {}, batch size {}.";
         public static final String ENTITY_FOUND_IN_FIRST_LEVEL_CACHE_BY_ID =
                 "Entity {} found in firstLevel cache by id {}";
         public static final String SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING =
@@ -52,8 +57,12 @@ public class MessageUtils {
                 "Entity {} not found in firstLevel cache by id {}";
         public static final String DELETED_ENTITY_CLASS_WITH_PRIMARY_KEY_FROM_FIRST_LEVEL_CACHE =
                 "Deleted entityClass [{}] with primaryKey {} from firstLevelCache";
+        public static final String DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_FIRST_LEVEL_CACHE =
+                "Deleted entityClass [{}] with primaryKeys {} from firstLevelCache";
         public static final String DELETED_ENTITY_CLASS_WITH_PRIMARY_KEY_FROM_SNAPSHOT =
                 "Deleted entityClass [{}] with primaryKey {} from snapshot";
+        public static final String DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_SNAPSHOT =
+                "Deleted entityClass [{}] with primaryKeys {} from snapshot";
         public static final String UPDATE_ENTITY_IN_FIRST_LEVEL_CACHE_BY_ID =
                 "Update Entity {} in firstLevel cache by id {}";
         public static final String UPDATE_SNAPSHOT_FOR_ENTITY_ID = "Update snapshot for entity {} id {}";

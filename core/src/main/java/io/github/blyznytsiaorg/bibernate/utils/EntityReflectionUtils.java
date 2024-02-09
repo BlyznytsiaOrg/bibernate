@@ -36,10 +36,7 @@ import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -143,8 +140,7 @@ public class EntityReflectionUtils {
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(null);
     }
-
-    public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
+public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
@@ -184,7 +180,6 @@ public class EntityReflectionUtils {
         String columnIdName = columnIdName(entityClass);
         return JOIN_TABLE_NAME_PATTERN.formatted(entityClass.getSimpleName().toLowerCase(), columnIdName);
     }
-
     public static String inverseTableJoinColumnName(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
@@ -322,14 +317,19 @@ public class EntityReflectionUtils {
 
     public static void setVersionValueIfNull(Class<?> entityClass,
                                              Object entity) {
+        setVersionValueIfNull(entityClass, Collections.singletonList(entity));
+    }
+
+    public static void setVersionValueIfNull(Class<?> entityClass,
+                                             Collection<?> entities) {
         Arrays.stream(entityClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Version.class))
-                .forEach(field -> {
-                    Object value = getValueFromObject(entity, field);
+                .forEach(field -> entities.forEach(entity -> {
+                    var value = getValueFromObject(entity, field);
                     if (Objects.isNull(value)) {
                         setValueForObject(entity, field, 1);
                     }
-                });
+                }));
     }
 
     public static Object columnVersionValue(Class<?> entityClass,
@@ -419,11 +419,11 @@ public class EntityReflectionUtils {
         } catch (SQLException e) {
             log.warn("Cannot set [{}]", field.getName(), e);
         }
-        
+
         return null;
     }
 
-    public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot, 
+    public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot,
                                                      List<ColumnSnapshot> oldEntitySnapshot) {
         return IntStream.range(0, currentEntitySnapshot.size())
                 .filter(i -> !Objects.equals(currentEntitySnapshot.get(i), oldEntitySnapshot.get(i)))
@@ -452,24 +452,24 @@ public class EntityReflectionUtils {
 
         return (T) primaryKey;
     }
-    
+
     public static Class<?> getCollectionGenericType(Field field) {
         if (isSupportedCollection(field)) {
             var parametrizedType = (ParameterizedType) field.getGenericType();
             return (Class<?>) parametrizedType.getActualTypeArguments()[0];
         }
-        
+
         throw new BibernateGeneralException(
                 "Unable to get Collection generic type for a field that is not a supported Collection. Field type: [%s]"
                         .formatted(field.getType()));
     }
-    
+
     public static boolean isSupportedCollection(Field field) {
         return List.class.isAssignableFrom(field.getType());
     }
 
-    public static List<Field> getInsertEntityFields(Object entity) {
-        return Arrays.stream(entity.getClass().getDeclaredFields())
+    public static List<Field> getInsertEntityFields(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
             .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
                 && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
             //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
@@ -517,14 +517,14 @@ public class EntityReflectionUtils {
 
     }
 
-    public static SequenceConf getGeneratedValueSequenceConfig(Object entity, String tableName) {
-        return Arrays.stream(entity.getClass().getDeclaredFields())
+    public static SequenceConf getGeneratedValueSequenceConfig(Class<?> entityClass, String tableName) {
+        return Arrays.stream(entityClass.getDeclaredFields())
             .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
                 && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
             .map(field -> getSequenceConfFromField(field, tableName))
             .findFirst()
             .orElseThrow(() -> new MissingAnnotationException(
-                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entityClass.getSimpleName())));
 
     }
 

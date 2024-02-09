@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,20 +16,26 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isIm
  * Implementation of the {@link BibernateSession} interface that provides second-level caching functionality
  * for immutable entities fetched from the database.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
 public class BibernateSecondLevelCacheSession implements BibernateSession {
 
-    /** Separator used in constructing cache keys. */
-    public static final String DOT = ".";
+    /**
+     * Separator used in constructing cache keys.
+     */
+    private static final String DOT = ".";
     private static final String SEPARATOR = "_";
 
-    /** The underlying BibernateSession implementation. */
+    /**
+     * The underlying BibernateSession implementation.
+     */
     private final BibernateSession bibernateSession;
-    /** The distributed set used for caching entities. */
+    /**
+     * The distributed set used for caching entities.
+     */
     private final DistributedSet distributedSet;
 
     /**
@@ -55,6 +62,19 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
         }
 
         return bibernateSession.findById(entityClass, primaryKey);
+    }
+
+
+    /**
+     * Retrieves all records from the specified table and maps them to a list of entities of the given type.
+     *
+     * @param entityClass The Class object representing the type of entities to be retrieved.
+     * @param <T>         The generic type representing the entity class.
+     * @return A list of entities of type T containing all records from the specified table.
+     */
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return bibernateSession.findAll(entityClass);
     }
 
     /**
@@ -141,7 +161,7 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * @return The saved entity
      */
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         return bibernateSession.save(entityClass, entity);
     }
 
@@ -151,6 +171,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * Any changes that have been queued for insertion, update, or deletion are executed immediately.
      */
     @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
+    }
+
+    @Override
     public void flush() {
         bibernateSession.flush();
     }
@@ -158,6 +183,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         bibernateSession.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        bibernateSession.deleteAllById(entityClass, primaryKeys);
     }
 
     @Override
@@ -173,6 +203,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     /**
      * Closes the session and releases any resources associated with it.
      */
+    @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        bibernateSession.deleteAll(entityClass, entities);
+    }
+
     @Override
     public void close() {
         bibernateSession.close();

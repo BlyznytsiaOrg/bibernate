@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,8 @@ import java.util.Optional;
 public interface Dao {
 
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
+
+    <T> List<T> findAll(Class<T> entityClass);
 
     <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue);
 
@@ -27,11 +30,17 @@ public interface Dao {
 
     <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff);
 
-    <T> T save(Class<T> entityClass, Object entity);
+    <T> T save(Class<T> entityClass, T entity);
+
+    <T> void saveAll(Class<T> entityClass, Collection<T> entities);
 
     <T> void deleteById(Class<T> entityClass, Object primaryKey);
+
+    <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys);
 
     <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value);
 
     <T> void delete(Class<T> entityClass, Object entity);
+
+    <T> void deleteAll(Class<T> entityClass, Collection<T> entities);
 }

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,11 @@ public class CloseBibernateSession implements BibernateSession {
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         verifySessionNotClosed();
         return bibernateSession.findById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return bibernateSession.findAll(entityClass);
     }
 
     @Override
@@ -72,7 +78,7 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
             throw new ImmutableEntityException(
@@ -83,6 +89,11 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
+    }
+
+    @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
@@ -90,6 +101,16 @@ public class CloseBibernateSession implements BibernateSession {
             return;
         }
         bibernateSession.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return;
+        }
+        bibernateSession.deleteAllById(entityClass, primaryKeys);
     }
 
     @Override
@@ -110,6 +131,16 @@ public class CloseBibernateSession implements BibernateSession {
             return;
         }
         bibernateSession.delete(entityClass, entity);
+    }
+
+    @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return;
+        }
+        bibernateSession.deleteAll(entityClass, entities);
     }
 
     @Override
