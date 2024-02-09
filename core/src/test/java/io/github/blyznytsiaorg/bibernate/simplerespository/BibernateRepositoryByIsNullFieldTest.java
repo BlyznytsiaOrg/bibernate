@@ -54,7 +54,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
                 createUser(null, true, 12)
         );
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

@@ -23,7 +23,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             String uuid = UUID.randomUUID().toString();
@@ -61,7 +61,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -92,7 +92,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.findbyid");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
