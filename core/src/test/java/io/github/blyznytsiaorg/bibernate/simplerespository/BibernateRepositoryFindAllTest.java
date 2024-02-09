@@ -30,7 +30,7 @@ class BibernateRepositoryFindAllTest extends AbstractPostgresInfrastructurePrep 
 
         );
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
