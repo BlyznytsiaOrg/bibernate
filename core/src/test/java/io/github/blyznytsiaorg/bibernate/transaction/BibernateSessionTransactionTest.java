@@ -20,7 +20,7 @@ public class BibernateSessionTransactionTest extends AbstractPostgresInfrastruct
     void shouldNotSaveChangesAfterRollback() throws SQLException {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.generatedvalue.identity");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -66,7 +66,7 @@ public class BibernateSessionTransactionTest extends AbstractPostgresInfrastruct
     void shouldSaveChangesOnlyAfterCommit() throws SQLException {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.generatedvalue.identity");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
