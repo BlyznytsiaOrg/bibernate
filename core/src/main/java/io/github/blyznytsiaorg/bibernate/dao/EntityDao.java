@@ -13,7 +13,9 @@ import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
 import io.github.blyznytsiaorg.bibernate.transaction.Transaction;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
+
 import java.sql.Connection;
+
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
@@ -28,6 +30,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
@@ -412,7 +415,7 @@ public class EntityDao implements Dao {
     @Override
     public void commitTransaction() throws SQLException {
         var transaction = TransactionHolder.getTransaction();
-        if(transaction != null) {
+        if (transaction != null) {
             transaction.commit();
             TransactionHolder.removeTransaction();
         }
@@ -421,20 +424,10 @@ public class EntityDao implements Dao {
     @Override
     public void rollbackTransaction() throws SQLException {
         var transaction = TransactionHolder.getTransaction();
-        if(transaction != null) {
+        if (transaction != null) {
             transaction.rollback();
             TransactionHolder.removeTransaction();
         }
-    }
-
-    private Transaction getTransaction() throws SQLException {
-        var transaction = TransactionHolder.getTransaction();
-        if(transaction == null) {
-            var connection = bibernateDatabaseSettings.getDataSource().getConnection();
-            transaction = new Transaction(connection);
-            TransactionHolder.setTransaction(new Transaction(connection));
-        }
-        return transaction;
     }
 
     @Override
@@ -472,6 +465,16 @@ public class EntityDao implements Dao {
                     .formatted(entityClass, primaryKeys, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
+    }
+
+    private Transaction getTransaction() throws SQLException {
+        var transaction = TransactionHolder.getTransaction();
+        if (transaction == null) {
+            var connection = bibernateDatabaseSettings.getDataSource().getConnection();
+            transaction = new Transaction(connection);
+            TransactionHolder.setTransaction(new Transaction(connection));
+        }
+        return transaction;
     }
 
     private <T> void removeToManyRelations(Class<T> entityClass, Object value, BibernateSession session,
@@ -589,20 +592,6 @@ public class EntityDao implements Dao {
     private void validateCollection(Collection<?> objects) {
         if (CollectionUtils.isEmpty(objects)) {
             throw new BibernateGeneralException(COLLECTION_MUST_BE_NOT_EMPTY);
-        }
-    }
-
-    protected void close(Connection connection, PreparedStatement ps) {
-        try {
-            if (ps != null) {
-                ps.close();
-            }
-            if (TransactionHolder.getTransaction() == null) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            throw new BibernateGeneralException(
-                CANNOT_CLOSE.formatted(connection, ps, e.getMessage()), e);
         }
     }
 }

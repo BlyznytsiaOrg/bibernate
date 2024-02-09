@@ -3,8 +3,10 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_GET_ID_FROM_SEQUENCE;
@@ -70,7 +73,7 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
         } finally {
-          close(connection, ps);
+            close(connection, ps);
         }
     }
 
@@ -105,7 +108,7 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
         } catch (Exception e) {
             throw new BibernateGeneralException(CANNOT_GET_ID_FROM_SEQUENCE.formatted(sequenceName), e);
         } finally {
-          close(connection, ps);
+            close(connection, ps);
         }
         return result;
     }
@@ -118,5 +121,4 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
         }
         return seqConf;
     }
-    
 }

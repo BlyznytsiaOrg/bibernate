@@ -188,6 +188,8 @@ public interface BibernateSession extends Closeable {
     Dao getDao();
 
     void startTransaction() throws SQLException;
+
     void commitTransaction() throws SQLException;
+
     void rollbackTransaction() throws SQLException;
 }

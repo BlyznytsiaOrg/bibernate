@@ -10,12 +10,12 @@ import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Getter
 @Slf4j

@@ -3,24 +3,16 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getGeneratedValueField;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getInsertEntityFields;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromObject;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_CLOSE;
 
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
 
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
 import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_CLOSE;
 
 /**
  * @author Blyzhnytsia Team
@@ -76,24 +68,10 @@ public abstract class AbstractGenerator {
         return field.equals(generatedValueField) ? Optional.ofNullable(generatedId) : Optional.empty();
     }
 
-  protected void close(Connection connection, PreparedStatement ps) {
-    try {
-      if (ps != null) {
-        ps.close();
-      }
-      if (TransactionHolder.getTransaction() == null) {
-        connection.close();
-      }
-    } catch (SQLException e) {
-      throw new BibernateGeneralException(
-          CANNOT_CLOSE.formatted(connection, ps, e.getMessage()), e);
+    protected void addUpdatedEntity(Object entity) {
+        var transaction = TransactionHolder.getTransaction();
+        if (transaction != null) {
+            transaction.addUpdatedEntity(entity);
+        }
     }
-  }
-
-  protected void addUpdatedEntity(Object entity) {
-    var transaction = TransactionHolder.getTransaction();
-    if (transaction != null) {
-      transaction.addUpdatedEntity(entity);
-    }
-  }
 }

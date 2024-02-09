@@ -3,16 +3,19 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 import javax.sql.DataSource;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.NONE;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
@@ -61,7 +64,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
         } finally {
-          close(connection, ps);
+            close(connection, ps);
         }
     }
 }

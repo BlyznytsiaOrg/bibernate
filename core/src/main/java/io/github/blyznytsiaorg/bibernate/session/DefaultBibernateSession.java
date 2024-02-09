@@ -1,7 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+
 import java.sql.SQLException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,9 +15,8 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.CLOSE_SESSION;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
