@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,7 +45,7 @@ public class BibernateDatabaseSettings {
     private final Map<String, String> bibernateSettingsProperties;
     private final String configurationErrorMessage;
     private final String bibernateFileName;
-    private final HikariDataSource dataSource;
+    private final TransactionalDatasource dataSource;
     private RedisConfiguration redisConfiguration;
 
     /**
@@ -71,7 +72,7 @@ public class BibernateDatabaseSettings {
      */
     public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
                                      String bibernateFileName,
-                                     HikariDataSource dataSource) {
+                                     TransactionalDatasource dataSource) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
@@ -92,7 +93,7 @@ public class BibernateDatabaseSettings {
      *
      * @return the HikariDataSource object
      */
-    private HikariDataSource createDataSource() {
+    private TransactionalDatasource createDataSource() {
         log.trace("Creating dataSource...");
         String url = bibernateSettingsProperties.get(DB_URL);
         String user = bibernateSettingsProperties.get(DB_USER);
@@ -109,7 +110,7 @@ public class BibernateDatabaseSettings {
         config.setPassword(password);
         config.setMaximumPoolSize(Integer.parseInt(maxPoolSize));
 
-        return new HikariDataSource(config);
+        return new TransactionalDatasource(config);
     }
 
     /**

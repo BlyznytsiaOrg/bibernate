@@ -38,7 +38,6 @@ class SequenceTest extends AbstractPostgresInfrastructurePrep {
                 assertThat(savedPerson.getId()).isNotNull();
                 assertThat(savedPerson.getId()).isEqualTo(2L);
                 assertQueries(bibernateSessionFactory, List.of(
-                        //"select next value for persons_id_seq;",
                         "select nextval('persons_id_seq');",
                         "INSERT INTO persons ( id, first_name, last_name ) VALUES ( ?, ?, ? );"));
             }

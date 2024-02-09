@@ -9,6 +9,7 @@ import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityKey;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
+import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -229,6 +230,21 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return bibernateSession.getDao();
     }
 
+    @Override
+    public void startTransaction() throws SQLException {
+        bibernateSession.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        bibernateSession.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        bibernateSession.rollbackTransaction();
+    }
+
     private List<ColumnSnapshot> buildEntitySnapshot(Object entity) {
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
@@ -330,4 +346,5 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         return new EntityKey<>(entityClass, primaryKey, fieldIdType);
     }
+
 }

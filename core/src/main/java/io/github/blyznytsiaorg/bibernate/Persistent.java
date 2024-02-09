@@ -1,6 +1,5 @@
 package io.github.blyznytsiaorg.bibernate;
 
-import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
@@ -8,14 +7,15 @@ import io.github.blyznytsiaorg.bibernate.config.DDLConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Getter
 @Slf4j
@@ -47,7 +47,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(HikariDataSource dataSource, String entityWithRepositoriesPackageName) {
+    public Persistent(TransactionalDatasource dataSource, String entityWithRepositoriesPackageName) {
         this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateConfiguration = new BibernateConfiguration();
         var bibernateSettings = bibernateConfiguration.load();
@@ -60,7 +60,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(String configFileName, HikariDataSource dataSource, String entityWithRepositoriesPackageName) {
+    public Persistent(String configFileName, TransactionalDatasource dataSource, String entityWithRepositoriesPackageName) {
         this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         var bibernateSettings = new BibernateConfiguration(configFileName).load();
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings,
@@ -81,7 +81,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings, HikariDataSource dataSource,
+    public Persistent(Map<String, String> externalBibernateSettings, TransactionalDatasource dataSource,
                       String entityWithRepositoriesPackageName) {
         this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,

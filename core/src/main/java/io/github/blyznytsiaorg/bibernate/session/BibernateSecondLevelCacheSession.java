@@ -2,6 +2,9 @@ package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.cache.DistributedSet;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+
+import java.sql.SQLException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -221,5 +224,20 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     @Override
     public Dao getDao() {
         return bibernateSession.getDao();
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        bibernateSession.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        bibernateSession.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        bibernateSession.rollbackTransaction();
     }
 }

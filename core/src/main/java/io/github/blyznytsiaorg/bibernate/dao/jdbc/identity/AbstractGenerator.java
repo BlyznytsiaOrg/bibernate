@@ -1,14 +1,18 @@
 package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getGeneratedValueField;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getInsertEntityFields;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromObject;
+
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
 
 import java.lang.reflect.Field;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
  * @author Blyzhnytsia Team
@@ -62,5 +66,12 @@ public abstract class AbstractGenerator {
 
     protected static Optional<Object> getGeneratedValue(Field field, Field generatedValueField, Object generatedId) {
         return field.equals(generatedValueField) ? Optional.ofNullable(generatedId) : Optional.empty();
+    }
+
+    protected void addUpdatedEntity(Object entity) {
+        var transaction = TransactionHolder.getTransaction();
+        if (transaction != null) {
+            transaction.addUpdatedEntity(entity);
+        }
     }
 }

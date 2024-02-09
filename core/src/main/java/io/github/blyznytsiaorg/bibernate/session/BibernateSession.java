@@ -4,6 +4,7 @@ import io.github.blyznytsiaorg.bibernate.dao.Dao;
 
 import java.io.Closeable;
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -185,4 +186,10 @@ public interface BibernateSession extends Closeable {
      * @return the DAO instance
      */
     Dao getDao();
+
+    void startTransaction() throws SQLException;
+
+    void commitTransaction() throws SQLException;
+
+    void rollbackTransaction() throws SQLException;
 }

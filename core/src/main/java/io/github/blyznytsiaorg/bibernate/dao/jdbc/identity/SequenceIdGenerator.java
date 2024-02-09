@@ -3,6 +3,10 @@ package io.github.blyznytsiaorg.bibernate.dao.jdbc.identity;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
@@ -13,6 +17,7 @@ import java.util.Map;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_GET_ID_FROM_SEQUENCE;
@@ -44,27 +49,31 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
         var tableName = table(entityClass);
         var query = insert(entityClass, tableName);
         var entityArr = entities.toArray();
-
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
             for (int i = 0; i < entityArr.length; i++) {
                 var generatedId = generateId(entityClass, tableName, dataSource);
-                populatePreparedStatement(entityArr[i], statement, generatedId);
-                statement.addBatch();
+                populatePreparedStatement(entityArr[i], ps, generatedId);
+                ps.addBatch();
                 setIdField(entityArr[i], generatedId);
+                addUpdatedEntity(entityArr[i]);
                 addToExecutedQueries(query);
 
                 if (i % getBatchSize() == 0 && i != 0) {
-                    statement.executeBatch();
+                    ps.executeBatch();
                 }
             }
-            statement.executeBatch();
+            ps.executeBatch();
 
             showSql(() -> log.debug(QUERY, query));
         } catch (Exception e) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);
+        } finally {
+            close(connection, ps);
         }
     }
 
@@ -86,15 +95,20 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
         addToExecutedQueries(query);
         showSql(() -> log.debug(QUERY, query));
 
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-            var rs = statement.executeQuery();
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
+            var rs = ps.executeQuery();
             if (rs.next()) {
                 result = rs.getLong(1);
             }
             log.debug("Next ID:[{}] was fetched from db for sequence:[{}]", result, sequenceName);
         } catch (Exception e) {
             throw new BibernateGeneralException(CANNOT_GET_ID_FROM_SEQUENCE.formatted(sequenceName), e);
+        } finally {
+            close(connection, ps);
         }
         return result;
     }

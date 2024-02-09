@@ -3,15 +3,18 @@ package io.github.blyznytsiaorg.bibernate.utils;
 import lombok.experimental.UtilityClass;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @UtilityClass
 public class MessageUtils {
 
     @UtilityClass
     public static class ExceptionMessage {
+        public static final String CANNOT_CLOSE_PS =
+                "Cannot close prepared statement [%s]: %s";
+        public static final String CANNOT_CLOSE_CONNECTION =
+                "Cannot close connection [%s]: %s";
         public static final String CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS =
                 "Cannot execute findById entityClass [%s]. Message: %s";
         public static final String CANNOT_EXECUTE_UPDATE_ENTITY_CLASS =
@@ -31,9 +34,9 @@ public class MessageUtils {
         public static final String NON_UNIQUE_RESULT_FOR_FIND_BY_ID = "Non-unique result for findById on [%s]";
         public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA = "Entity %s was change need to get new data findBy%s[%s]";
         public static final String CANNOT_FIND_SEQUENCE_STRATEGY =
-            "Cannot find SEQUENCE strategy for entity entityClass [%s]";
+                "Cannot find SEQUENCE strategy for entity entityClass [%s]";
         public static final String CANNOT_GET_ID_FROM_SEQUENCE =
-            "Cannot get Id for sequence: [%s]";
+                "Cannot get Id for sequence: [%s]";
     }
 
     @UtilityClass
