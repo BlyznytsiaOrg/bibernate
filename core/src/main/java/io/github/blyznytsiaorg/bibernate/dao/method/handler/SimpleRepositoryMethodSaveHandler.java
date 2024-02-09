@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
@@ -11,8 +12,8 @@ import java.lang.reflect.Method;
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling the "save" method.
  * This handler saves an entity using the Bibernate session.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Slf4j
 public class SimpleRepositoryMethodSaveHandler implements SimpleRepositoryMethodHandler {
@@ -44,14 +45,17 @@ public class SimpleRepositoryMethodSaveHandler implements SimpleRepositoryMethod
         log.trace(HANDLE_METHOD, methodName);
         if (parameters.length > 0) {
             var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-            try (var bringSession = sessionFactory.openSession()) {
-                var entityClass  = (Class<?>) repositoryDetails.entityType();
-                var savedEntity = bringSession.save(entityClass, parameters[0]);
-                return entityClass.cast(savedEntity);
+            try (var bibernateSession = sessionFactory.openSession()) {
+                var entityClass = (Class<?>) repositoryDetails.entityType();
+                return executeHelper(entityClass, parameters[0], bibernateSession);
             }
         }
 
         log.warn(DELETE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
         return null;
+    }
+
+    private <T> T executeHelper(Class<T> entityClass, Object entity, BibernateSession bringSession) {
+        return bringSession.save(entityClass, entityClass.cast(entity));
     }
 }

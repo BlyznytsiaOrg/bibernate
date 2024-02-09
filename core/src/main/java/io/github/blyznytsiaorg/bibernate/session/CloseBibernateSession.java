@@ -3,10 +3,14 @@ package io.github.blyznytsiaorg.bibernate.session;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateSessionClosedException;
 import io.github.blyznytsiaorg.bibernate.exception.ImmutableEntityException;
+
+import java.sql.SQLException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -14,9 +18,8 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isImmutable;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -33,6 +36,11 @@ public class CloseBibernateSession implements BibernateSession {
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         verifySessionNotClosed();
         return bibernateSession.findById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return bibernateSession.findAll(entityClass);
     }
 
     @Override
@@ -77,7 +85,7 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
             throw new ImmutableEntityException(
@@ -88,6 +96,11 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        bibernateSession.saveAll(entityClass, entity);
+    }
+
+    @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
@@ -95,6 +108,16 @@ public class CloseBibernateSession implements BibernateSession {
             return;
         }
         bibernateSession.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return;
+        }
+        bibernateSession.deleteAllById(entityClass, primaryKeys);
     }
 
     @Override
@@ -118,6 +141,16 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        verifySessionNotClosed();
+        if (isImmutable(entityClass)) {
+            log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));
+            return;
+        }
+        bibernateSession.deleteAll(entityClass, entities);
+    }
+
+    @Override
     public void flush() {
         bibernateSession.flush();
     }
@@ -132,6 +165,21 @@ public class CloseBibernateSession implements BibernateSession {
     public Dao getDao() {
         verifySessionNotClosed();
         return bibernateSession.getDao();
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        bibernateSession.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        bibernateSession.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        bibernateSession.rollbackTransaction();
     }
 
     private void verifySessionNotClosed() {

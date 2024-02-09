@@ -1,19 +1,22 @@
 package io.github.blyznytsiaorg.bibernate.session;
 
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
+
+import java.sql.SQLException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.CLOSE_SESSION;
 
 /**
- *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @RequiredArgsConstructor
 @Slf4j
@@ -24,6 +27,11 @@ public class DefaultBibernateSession implements BibernateSession {
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         return dao.findById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> List<T> findAll(Class<T> entityClass) {
+        return dao.findAll(entityClass);
     }
 
     @Override
@@ -62,13 +70,23 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> T save(Class<T> entityClass, Object entity) {
+    public <T> T save(Class<T> entityClass, T entity) {
         return dao.save(entityClass, entity);
+    }
+
+    @Override
+    public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        dao.saveAll(entityClass, entity);
     }
 
     @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         dao.deleteById(entityClass, primaryKey);
+    }
+
+    @Override
+    public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        dao.deleteAllById(entityClass, primaryKeys);
     }
 
     @Override
@@ -82,6 +100,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        dao.deleteAll(entityClass, entities);
+    }
+
+    @Override
     public void close() {
         log.trace(CLOSE_SESSION);
     }
@@ -89,5 +112,20 @@ public class DefaultBibernateSession implements BibernateSession {
     @Override
     public Dao getDao() {
         return dao;
+    }
+
+    @Override
+    public void startTransaction() throws SQLException {
+        dao.startTransaction();
+    }
+
+    @Override
+    public void commitTransaction() throws SQLException {
+        dao.commitTransaction();
+    }
+
+    @Override
+    public void rollbackTransaction() throws SQLException {
+        dao.rollbackTransaction();
     }
 }

@@ -93,6 +93,11 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
+    public String selectAll(String tableName) {
+        return from(tableName)
+                .buildSelectStatement();
+    }
+
     /**
      * Generates an UPDATE SQL statement for updating records in a specified table based on the provided entity,
      * fieldIdName, and list of ColumnSnapshots representing the differences.
@@ -145,17 +150,17 @@ public class SqlBuilder {
         return fieldName + EQ + PARAMETER;
     }
 
-
     /**
-     * Generates an INSERT SQL statement for inserting a new record into a specified table based on the provided entity.
+     * Generates an INSERT SQL statement for inserting records into a specified table based on the provided entity class.
+     * The method utilizes reflection to extract the fields from the entity class and constructs the INSERT statement accordingly.
      *
-     * @param entity    The entity representing the data to be inserted.
-     * @param tableName The name of the table into which records will be inserted.
+     * @param entityClass The Class object representing the type of the entity for which records will be inserted.
+     * @param tableName   The name of the table into which records will be inserted.
      * @return The generated INSERT SQL statement as a string.
      */
-    public static String insert(Object entity, String tableName) {
+    public static String insert(Class<?> entityClass, String tableName) {
         var insert = InsertQueryBuilder.from(tableName);
-        getInsertEntityFields(entity).forEach(field -> insert.setField(columnName(field)));
+        getInsertEntityFields(entityClass).forEach(field -> insert.setField(columnName(field)));
 
         return insert.buildInsertStatement();
     }

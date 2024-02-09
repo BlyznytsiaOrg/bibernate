@@ -6,25 +6,29 @@ import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collection;
+
+import static io.github.blyznytsiaorg.bibernate.actionqueue.ActionType.DELETE;
+
 /**
  * @author Blyzhnytsia Team
  * @since 1.0
  */
 @RequiredArgsConstructor
-public class InsertEntityAction<T> extends EntityAction {
+public class DeleteAllByIdEntityAction extends EntityAction {
 
     private final BibernateSession bibernateSession;
     @Getter
-    private final Class<T> entityClass;
-    private final T entity;
+    private final Class<?> entityClass;
+    private final Collection<Object> primaryKeys;
 
     @Override
     public void execute() {
-        bibernateSession.save(entityClass, entity);
+        bibernateSession.deleteAllById(entityClass, primaryKeys);
     }
 
     @Override
     public ActionType getActionType() {
-        return ActionType.INSERT;
+        return DELETE;
     }
 }

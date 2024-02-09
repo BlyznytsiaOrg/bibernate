@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,8 +14,8 @@ import java.util.Objects;
  * Configuration class for Bibernate database settings.
  * It provides methods to create a data source, access database properties, and configure various settings.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Getter
 @Slf4j
@@ -30,6 +31,8 @@ public class BibernateDatabaseSettings {
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
     private static final String DEFAULT_REDIS_HOST = "localhost";
     private static final String DEFAULT_REDIS_PORT = "6379";
+    private static final String DEFAULT_BATCH_SIZE = "1";
+    private static final String BATCH_SIZE = "bibernate.batch_size";
     private static final String COLLECT_QUERIES = "bibernate.collect.queries";
     private static final String FLYWAY_ENABLED = "bibernate.flyway.enabled";
     private static final String SECOND_LEVEL_CACHE = "bibernate.secondLevelCache.enabled";
@@ -42,7 +45,7 @@ public class BibernateDatabaseSettings {
     private final Map<String, String> bibernateSettingsProperties;
     private final String configurationErrorMessage;
     private final String bibernateFileName;
-    private final HikariDataSource dataSource;
+    private final TransactionalDatasource dataSource;
     private RedisConfiguration redisConfiguration;
 
     /**
@@ -68,8 +71,8 @@ public class BibernateDatabaseSettings {
      * @param dataSource                  the data source to be used
      */
     public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
-                                     String bibernateFileName, 
-                                     HikariDataSource dataSource) {
+                                     String bibernateFileName,
+                                     TransactionalDatasource dataSource) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
         this.configurationErrorMessage = configureErrorMessage(bibernateSettingsProperties, bibernateFileName);
@@ -90,7 +93,7 @@ public class BibernateDatabaseSettings {
      *
      * @return the HikariDataSource object
      */
-    private HikariDataSource createDataSource() {
+    private TransactionalDatasource createDataSource() {
         log.trace("Creating dataSource...");
         String url = bibernateSettingsProperties.get(DB_URL);
         String user = bibernateSettingsProperties.get(DB_USER);
@@ -107,7 +110,7 @@ public class BibernateDatabaseSettings {
         config.setPassword(password);
         config.setMaximumPoolSize(Integer.parseInt(maxPoolSize));
 
-        return new HikariDataSource(config);
+        return new TransactionalDatasource(config);
     }
 
     /**
@@ -189,6 +192,16 @@ public class BibernateDatabaseSettings {
      */
     public int getSecondLevelCachePost() {
         return Integer.parseInt(bibernateSettingsProperties.getOrDefault(SECOND_LEVEL_CACHE_POST, DEFAULT_REDIS_PORT));
+    }
+
+    /**
+     * Retrieves the batch size configuration for batch processing from the Bibernate settings properties.
+     * If the batch size is not explicitly configured, the method returns the default batch size value.
+     *
+     * @return The configured batch size for batch processing or the default batch size if not explicitly set.
+     */
+    public int getBatchSize() {
+        return Integer.parseInt(bibernateSettingsProperties.getOrDefault(BATCH_SIZE, DEFAULT_BATCH_SIZE));
     }
 
     /**

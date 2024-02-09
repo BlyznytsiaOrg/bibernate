@@ -51,6 +51,8 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     public static final String DB_MAX_POOL_SIZE = "db.maxPoolSize";
     public static final String POOL_SIZE = "10";
     public static final String BIBERNATE_SHOW_SQL = "bibernate.show_sql";
+    public static final String DEFAULT_BATCH_SIZE = "2";
+    public static final String BATCH_SIZE = "bibernate.batch_size";
     public static final String BIBERNATE_COLLECT_QUERIES = "bibernate.collect.queries";
 
     protected DataSource dataSource;
@@ -77,6 +79,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         bibernateSettings.put(DB_PASSWORD, password);
         bibernateSettings.put(DB_MAX_POOL_SIZE, POOL_SIZE);
         bibernateSettings.put(BIBERNATE_SHOW_SQL, Boolean.TRUE.toString());
+        bibernateSettings.put(BATCH_SIZE, DEFAULT_BATCH_SIZE);
         bibernateSettings.put(BIBERNATE_COLLECT_QUERIES, Boolean.TRUE.toString());
 
         dataSource = createDataSource(jdbcUrl, databaseName, username, password);
