@@ -154,6 +154,11 @@ public class BibernateDatabaseSettings {
         return getPropertyBoolean(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
     }
 
+    /**
+     * Checks if DDL auto creation is enabled.
+     *
+     * @return true if DDL auto create is enabled, otherwise false
+     */
     public boolean isDDLCreate() {
         String ddlProperty = getPropertyString(BB2DDL_AUTO, NONE);
         return ddlProperty.equals(CREATE);
@@ -186,8 +191,6 @@ public class BibernateDatabaseSettings {
         return Integer.parseInt(bibernateSettingsProperties.getOrDefault(SECOND_LEVEL_CACHE_POST, DEFAULT_REDIS_PORT));
     }
 
-
-    private boolean getPropertyBoolean(String key, String defaultValue) {
     /**
      * Retrieves a boolean property value from the Bibernate settings.
      *
@@ -195,10 +198,17 @@ public class BibernateDatabaseSettings {
      * @param defaultValue the default value if the property is not found
      * @return the boolean property value
      */
-    private boolean getProperty(String key, String defaultValue) {
+    private boolean getPropertyBoolean(String key, String defaultValue) {
         return Boolean.parseBoolean(bibernateSettingsProperties.getOrDefault(key, defaultValue));
     }
 
+    /**
+     * Retrieves a String property value from the Bibernate settings.
+     *
+     * @param key          the property key
+     * @param defaultValue the default value if the property is not found
+     * @return the String property value
+     */
     private String getPropertyString(String key, String defaultValue) {
         return bibernateSettingsProperties.getOrDefault(key, defaultValue);
     }
