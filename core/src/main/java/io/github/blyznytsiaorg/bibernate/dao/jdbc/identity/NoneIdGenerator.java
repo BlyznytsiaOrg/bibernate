@@ -9,9 +9,7 @@ import java.util.List;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.NONE;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
@@ -48,7 +46,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
             connection = dataSource.getConnection();
             ps = connection.prepareStatement(query);
             for (int i = 0; i < entityArr.length; i++) {
-                populatePreparedStatement(entityArr[i], statement);
+                populatePreparedStatement(entityArr[i], ps);
                 ps.addBatch();
                 addToExecutedQueries(query);
 

@@ -13,22 +13,12 @@ import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTI
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setIdField;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_CLOSE;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
-import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
-import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
-import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import javax.sql.DataSource;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Blyzhnytsia Team
