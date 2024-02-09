@@ -111,7 +111,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTE_STATEMENT);
 
-        var persistent = createPersistent("testdata.cascade.remove.manytoone.bidirectional.");
+        var persistent = createPersistent("testdata.cascade.remove.manytoone.bidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
