@@ -1,7 +1,6 @@
 package testdata.cascade.remove.onetomany.bidirectional;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import lombok.Getter;
 
 import java.util.ArrayList;

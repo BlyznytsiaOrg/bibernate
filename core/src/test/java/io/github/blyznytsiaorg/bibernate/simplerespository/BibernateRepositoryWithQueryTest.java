@@ -21,7 +21,7 @@ class BibernateRepositoryWithQueryTest extends AbstractPostgresInfrastructurePre
         //given
         createTableWithData(5);
 
-        var persistent = createPersistent("");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

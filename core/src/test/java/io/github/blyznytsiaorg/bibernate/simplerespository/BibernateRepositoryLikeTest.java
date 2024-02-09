@@ -31,7 +31,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
                 createPerson("John4", "Smith4")
         );
 
-        var persistent = createPersistent("");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -56,7 +56,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -77,7 +77,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

@@ -16,7 +16,7 @@ class SavePersonTest extends AbstractPostgresInfrastructurePrep {
     void shouldSavePerson() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

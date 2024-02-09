@@ -27,7 +27,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -50,7 +50,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(3);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -78,7 +78,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         );
 
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -109,7 +109,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         );
 
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -138,7 +138,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         );
 
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -162,7 +162,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -191,7 +191,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -212,7 +212,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -236,7 +236,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -264,7 +264,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -289,7 +289,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
         //given
         createTableWithData(4);
 
-        var persistent = createPersistent("testdata");
+        var persistent = createPersistent();
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

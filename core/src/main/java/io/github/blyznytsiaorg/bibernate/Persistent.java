@@ -34,7 +34,6 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
 
         EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
-        entityMetadataCollector.collectMetadata();
 
         Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
         BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
@@ -76,7 +75,6 @@ public class Persistent {
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(redisConfiguration());
         EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
-        entityMetadataCollector.collectMetadata();
 
         Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
         BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);

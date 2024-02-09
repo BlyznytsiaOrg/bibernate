@@ -51,6 +51,11 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     }
 
     @Override
+    public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
+        return Optional.empty();
+    }
+
+    @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
         return bibernateSession.findByQuery(entityClass, query, bindValues);
     }
