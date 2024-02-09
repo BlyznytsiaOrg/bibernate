@@ -1,6 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;

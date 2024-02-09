@@ -7,7 +7,6 @@ import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.entity.BibernateEntityMetadataHolder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.DeprecatedEntityMetadataHolder;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
@@ -277,7 +276,8 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        var entityMetadata = DeprecatedEntityMetadataHolder.getEntityMetadata(entityClass);
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
+        var entityMetadata = bibernateEntityMetadata.get(entityClass);
         var tableName = entityMetadata.getTableName();
 
         List<T> deletedEntities = findAllByColumnValue(entityClass, columnName, value);

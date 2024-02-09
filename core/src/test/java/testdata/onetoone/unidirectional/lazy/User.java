@@ -1,6 +1,7 @@
 package testdata.onetoone.unidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import lombok.*;
 
 @Entity

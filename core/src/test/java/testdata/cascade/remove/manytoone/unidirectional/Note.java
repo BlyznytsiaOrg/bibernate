@@ -1,6 +1,7 @@
 package testdata.cascade.remove.manytoone.unidirectional;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import lombok.Getter;
 
 @Getter

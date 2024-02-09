@@ -59,9 +59,8 @@ public class EntityMetadataCollector {
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
 
-    @Deprecated(forRemoval = true)
-    public EntityMetadataCollector(Class<?> clazz) {
-        this.reflections = new Reflections(clazz);
+    public EntityMetadataCollector(String packageName) {
+        this.reflections = new Reflections(packageName);
         this.inMemoryEntityMetadata = new HashMap<>();
         this.tableNames = new HashMap<>();
     }

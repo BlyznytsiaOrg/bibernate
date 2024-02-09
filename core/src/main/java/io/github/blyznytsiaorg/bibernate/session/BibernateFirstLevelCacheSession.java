@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DeleteEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.InsertEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.UpdateEntityAction;
-import io.github.blyznytsiaorg.bibernate.annotation.FetchType;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.*;

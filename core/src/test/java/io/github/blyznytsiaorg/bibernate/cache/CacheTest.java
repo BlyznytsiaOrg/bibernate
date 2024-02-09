@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.simplerespository.Person;
+import testdata.cache.Person;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ class CacheTest extends AbstractPostgresInfrastructurePrep {
     void shouldUpdateEntityInDBButReturnCachedEntity() {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.cache");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

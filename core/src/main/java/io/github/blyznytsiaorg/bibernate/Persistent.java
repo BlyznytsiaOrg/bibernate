@@ -39,10 +39,9 @@ public class Persistent {
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
 
-        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
-
-        Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
-        BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
+        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(entityWithRepositoriesPackageName);
+        Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
+        BibernateEntityMetadataHolder.setBibernateEntityMetadata(classEntityMetadataMap);
     }
 
     public Persistent(String configFileName, String entityWithRepositoriesPackageName) {
@@ -80,18 +79,18 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
     }
 
-    public Persistent(Map<String, String> externalBibernateSettings, String entityWithRepositoriesPackageName) {
-        this.entityWithRepositoriesPackageName = entityWithRepositoriesPackageName;
+    public Persistent(Map<String, String> externalBibernateSettings, String entitesPackageName) {
+        this.entityWithRepositoriesPackageName = entitesPackageName;
         this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings,
                 null);
         enableFlyway();
-        processDDLConfiguration(entityWithRepositoriesPackageName);
+        processDDLConfiguration(entitesPackageName);
         BibernateReflectionHolder.setReflection(Persistent.class.getPackageName());
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
-        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(packageName);
 
-        Map<Class<?>, EntityMetadata> inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
-        BibernateEntityMetadataHolder.setBibernateEntityMetadata(inMemoryEntityMetadata);
+        EntityMetadataCollector entityMetadataCollector = new EntityMetadataCollector(entitesPackageName);
+        Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
+        BibernateEntityMetadataHolder.setBibernateEntityMetadata(classEntityMetadataMap);
 
     }
 

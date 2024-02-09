@@ -90,6 +90,10 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         jedis = new Jedis(redisHost, redisPort);
     }
 
+    public Persistent createPersistent(String packageName) {
+        return new Persistent(bibernateSettings, packageName);
+    }
+
     public Persistent createPersistent() {
         return new Persistent(bibernateSettings, PACKAGE_NAME);
     }
@@ -99,9 +103,19 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         return new Persistent(bibernateSettings, PACKAGE_NAME);
     }
 
+    public Persistent createPersistentWithFlayWayEnabled(String packageName) {
+        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
+        return new Persistent(bibernateSettings, packageName);
+    }
+
     public Persistent createPersistentWithBb2ddlCreate() {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
         return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_DDL);
+    }
+
+    public Persistent createPersistentWithBb2ddlCreate(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        return new Persistent(bibernateSettings, packageName);
     }
 
     public Persistent createPersistentIndexColumnListMismatch() {
