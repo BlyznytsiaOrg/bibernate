@@ -12,8 +12,11 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 public class TransactionJdbcUtils {
 
     public static void close(Connection connection, PreparedStatement ps) {
-        close(connection);
-        close(ps);
+        try {
+            close(ps);
+        } finally {
+            close(connection);
+        }
     }
 
     public static void close(PreparedStatement ps) {
