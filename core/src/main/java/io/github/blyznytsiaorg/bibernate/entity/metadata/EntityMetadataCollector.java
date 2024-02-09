@@ -92,13 +92,13 @@ public class EntityMetadataCollector {
     }
 
     private void checkTableNameOnDuplicate(Class<?> entityClass, String tableName) {
-        if (tableNames.containsKey(tableName)) {
-            Class<?> classWithSameTableName = tableNames.get(tableName);
-            throw new MappingException(ERROR_MESSAGE_ON_DUPLICATE_TABLE_NAME
-                    .formatted(tableName, entityClass.getSimpleName(), classWithSameTableName.getSimpleName()));
-        } else {
+//        if (tableNames.containsKey(tableName)) {
+//            Class<?> classWithSameTableName = tableNames.get(tableName);
+//            throw new MappingException(ERROR_MESSAGE_ON_DUPLICATE_TABLE_NAME
+//                    .formatted(tableName, entityClass.getSimpleName(), classWithSameTableName.getSimpleName()));
+//        } else {
             tableNames.put(tableName, entityClass);
-        }
+//        }
     }
 
     private EntityColumnDetails createEntityColumnDetails(Field field, Class<?> entityClass) {
@@ -147,9 +147,9 @@ public class EntityMetadataCollector {
 
     private JoinTableMetadata getJoinTable(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(JoinTable.class) && (!field.isAnnotationPresent(ManyToMany.class))) {
-            throw new MappingException((("No @ManyToMany annotation in class '%s' on field '%s' "
-                    + "annotated with annotated @JoinTable")
-                    .formatted(entityClass.getSimpleName(), field.getName())));
+//            throw new MappingException((("No @ManyToMany annotation in class '%s' on field '%s' "
+//                    + "annotated with annotated @JoinTable")
+//                    .formatted(entityClass.getSimpleName(), field.getName())));
         }
         if (field.isAnnotationPresent(ManyToMany.class)) {
 
@@ -169,15 +169,15 @@ public class EntityMetadataCollector {
 
     private JoinColumnMetadata getJoinColumn(Field field) {
 
-        if (field.isAnnotationPresent(JoinColumn.class)
-                && (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class))) {
-            throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
-                    + "annotated with @JoinColumn").formatted(field.getName()));
-        }
+//        if (field.isAnnotationPresent(JoinColumn.class)
+//                && (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class))) {
+//            throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
+//                    + "annotated with @JoinColumn").formatted(field.getName()));
+//        }
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
 
             String joinColumnName = joinColumnName(field);
-            String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
+            //String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
             JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
             String foreignKeyName = null;
 
@@ -187,7 +187,7 @@ public class EntityMetadataCollector {
             }
             return JoinColumnMetadata.builder()
                     .name(joinColumnName)
-                    .databaseType(databaseTypeForJoinColumn)
+                    //.databaseType(databaseTypeForJoinColumn)
                     .foreignKeyName(foreignKeyName)
                     .build();
         }
