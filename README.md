@@ -68,20 +68,26 @@ We can think of the API of Bibernate in terms of three basic elements:
 
 ## Features:
 
- - [Object-Relational Mapping (ORM)](/features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
- - [Automatic Persistence](/features/): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
- - [Hibernate Query Language(HQL)](/features/): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
- - [Caching Mechanisms](/features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
- - [Transaction Management](/features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
- - [Lazy Loading](/features/): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
- - [Criteria API](/features/): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
- - [Native SQL Queries:](/features/): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
- - [Schema Generation](/features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup and migration.
- - [Extensibility](/features/): Provides a flexible architecture that allows developers to extend and customize Bibernate functionality to meet specific application requirements.
- - [Bring Data Repository](/features/): Bpring Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
- - [Batch Processing](/features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
- - [Versioning](/features/): Supports versioning of entity data and implementing optimistic concurrency control.
- - [Flyway Migration Support](/features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
+ - [Object-Relational Mapping (ORM)](features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
+ - [Automatic Persistence](features/): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
+ - [Hibernate Query Language(HQL)](features/): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
+ - [Caching Mechanisms](features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
+ - [Transaction Management](features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
+ - [Lazy Loading](features/): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
+ - [Criteria API](features/): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
+ - [Native SQL Queries:](features/): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
+ - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup and migration.
+ - [Extensibility](features/): Provides a flexible architecture that allows developers to extend and customize Bibernate functionality to meet specific application requirements.
+ - [Bring Data Repository](features/): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
+ - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
+ - [Versioning](features/): Supports versioning of entity data and implementing optimistic concurrency control.
+ - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
+
+# additional items:
+ - [Annotation processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.
+ - [Runtime entity validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.
+ - [Reflection optimization](features/ReflectionOptimization.md): We gather all the details during startup and store them for later use because reflection is slow.
+
 
 ## Feedback and Contributions
 

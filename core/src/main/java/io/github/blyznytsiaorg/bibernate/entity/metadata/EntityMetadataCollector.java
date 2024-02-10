@@ -42,6 +42,7 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ManyToOneMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToManyMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToOneMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
+import io.github.blyznytsiaorg.bibernate.exception.EntitiesNotFoundException;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import lombok.Getter;
@@ -57,11 +58,14 @@ import java.util.Set;
 @Slf4j
 public class EntityMetadataCollector {
     public static final String ERROR_MESSAGE_ON_DUPLICATE_TABLE_NAME = "Detected duplicates for table name '%s' in classes '%s', '%s'";
+    public static final String CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE = "Cannot find any entities on classpath with this package ";
     private final Reflections reflections;
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
+    private final String packageName;
 
     public EntityMetadataCollector(String packageName) {
+        this.packageName = packageName;
         this.reflections = new Reflections(packageName);
         this.inMemoryEntityMetadata = new HashMap<>();
         this.tableNames = new HashMap<>();
@@ -69,6 +73,12 @@ public class EntityMetadataCollector {
 
     public Map<Class<?>, EntityMetadata> collectMetadata() {
         Set<Class<?>> entities = reflections.getTypesAnnotatedWith(Entity.class);
+
+        log.trace("Found entities size {}", entities.size());
+
+        if (entities.isEmpty()) {
+            throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE + packageName);
+        }
 
         for (Class<?> entityClass : entities) {
 
