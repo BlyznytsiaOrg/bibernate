@@ -1,11 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.manytoone;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.manytoone.unidirectional.Note;
+import testdata.manytoone.unidirectional.positive.Note;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,7 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytoone.unidirectional.positive");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -58,15 +59,8 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         // given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
-
-        var persistent = createPersistent();
-        try (var entityManager = persistent.createBibernateEntityManager();
-             var session = entityManager.getBibernateSessionFactory().openSession()) {
-            // when
-            // then
-            assertThrows(BibernateGeneralException.class,
-                    () -> session.findById(testdata.manytoone.unidirectional.badannotation.Note.class, 1L));
-        }
+        
+        assertThrows(MappingException.class, () -> createPersistent("testdata.manytoone.badannotation"));
     }
 
     @DisplayName("Should treat as regular field if not annotated with @ManyToOne")
@@ -76,7 +70,7 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytoone.unidirectional.notannotated");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
@@ -106,7 +100,7 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.manytoone.unidirectional.notannotated");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {

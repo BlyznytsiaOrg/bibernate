@@ -4,10 +4,15 @@ import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DefaultActionQueue;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.DeleteEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.InsertEntityAction;
 import io.github.blyznytsiaorg.bibernate.actionqueue.impl.UpdateEntityAction;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.dao.Dao;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityKey;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.entity.*;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.resetBibernateSession;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
@@ -34,6 +40,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private final DefaultActionQueue defaultActionQueue;
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
+    private final Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
@@ -41,9 +48,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
         flush();
+        EntityMetadata entityMetadata = bibernateEntityMetadata.get(entityClass);
         var fieldIdType = columnIdType(entityClass);
         primaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = new EntityKey<>(entityClass, primaryKey, fieldIdType);
+
+        if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
+            return getDao().findOneByWhereJoin(entityClass, primaryKey);
+            //TODO: add to persistentContext
+        }
+
         var cachedEntity = firstLevelCache.get(entityKey);
 
         if (Objects.isNull(cachedEntity)) {
@@ -86,6 +100,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
         flush();
         return bibernateSession.findByJoinTableField(entityClass, field, bindValues);
+    }
+
+    @Override
+    public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
+        return Optional.empty();
     }
 
     @Override
@@ -218,7 +237,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         log.trace(SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING);
         performDirtyChecking();
         defaultActionQueue.executeEntityAction();
-        BibernateSessionContextHolder.resetBibernateSession();
+        resetBibernateSession();
 
         clearCacheAndSnapshots();
 
@@ -302,12 +321,17 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
-            firstLevelCache.put(entityKey, entityFromDb);
+        //TODO: add entire oneToOne entity to cache
+            boolean isEntityHasLazyField = Arrays.stream(entityFromDb.getClass().getDeclaredFields())
+                    .anyMatch(field -> field.isAnnotationPresent(OneToOne.class) &&
+                            field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY);
 
-            List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
-            snapshots.put(entityKey, entityCurrentSnapshot);
-
-            log.trace(CREATED_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), finalPrimaryKey);
+            if (!isEntityHasLazyField) {
+                firstLevelCache.put(entityKey, entityFromDb);
+                List<ColumnSnapshot> entityCurrentSnapshot = buildEntitySnapshot(entityFromDb);
+                snapshots.put(entityKey, entityCurrentSnapshot);
+                log.trace(CREATED_SNAPSHOT_FOR_ENTITY_ID, entityClass.getSimpleName(), finalPrimaryKey);
+            }
         }
 
         return entityFromDb;
@@ -347,4 +371,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return new EntityKey<>(entityClass, primaryKey, fieldIdType);
     }
 
+    private boolean hasAnyOneToOneEagerFetchType(EntityMetadata entityMetadata) {
+        return entityMetadata.getEntityColumns().stream()
+                .map(EntityColumnDetails::getOneToOne)
+                .filter(Objects::nonNull)
+                .anyMatch(oneToOneMetadata -> oneToOneMetadata.getFetchType() == FetchType.EAGER);
+    }
 }

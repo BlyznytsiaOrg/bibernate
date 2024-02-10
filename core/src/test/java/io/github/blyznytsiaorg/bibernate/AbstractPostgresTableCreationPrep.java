@@ -29,9 +29,25 @@ public interface AbstractPostgresTableCreationPrep {
             CREATE TABLE IF NOT EXISTS addresses
             (
                 id      BIGINT primary key,
-                name    VARCHAR(255),
-                house_id BIGINT NOT NULL,
-                CONSTRAINT addresses_houses_FK FOREIGN KEY (house_id) REFERENCES houses
+                name    VARCHAR(255)
+            );
+                        
+            CREATE TABLE IF NOT EXISTS users (
+                id bigserial primary key,
+                first_name varchar(255),
+                last_name varchar(255),
+                address_id bigint not null,
+                house_id bigint not null,
+                CONSTRAINT users_addresses_FK FOREIGN KEY (address_id) REFERENCES addresses,
+                CONSTRAINT users_houses_FK FOREIGN KEY (house_id) REFERENCES houses
+            );
+            """;
+
+    String CREATE_USERS_ADDRESSES_FOR_BI_TABLES = """                   
+            CREATE TABLE IF NOT EXISTS addresses
+            (
+                id      BIGINT primary key,
+                name    VARCHAR(255)
             );
                         
             CREATE TABLE IF NOT EXISTS users (
@@ -78,9 +94,14 @@ public interface AbstractPostgresTableCreationPrep {
             """;
 
     String CREATE_INSERT_USERS_ADRESSES_STATEMENT = """
-            insert into houses(id, name) values (1, 'big');
-            insert into addresses(id, name, house_id) values (1, 'street', 1);
-            insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 1)
+            insert into houses(id, name) values (2, 'big');
+            insert into addresses(id, name) values (1, 'street');
+            insert into users(first_name, last_name, address_id, house_id) values ('FirstName', 'LastName', 1, 2)
+            """;
+
+    String CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT = """
+            insert into addresses(id, name) values (2, 'street');
+            insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 2)
             """;
 
     String CREATE_NOTES_TABLE = """

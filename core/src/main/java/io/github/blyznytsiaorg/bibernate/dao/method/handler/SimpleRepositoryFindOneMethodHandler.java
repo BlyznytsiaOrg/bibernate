@@ -4,10 +4,11 @@ import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.EntityNotFoundException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingRequiredParametersInMethod;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Handler for executing the "findOne" method in a simple repository.
@@ -60,9 +61,7 @@ public class SimpleRepositoryFindOneMethodHandler implements SimpleRepositoryMet
         var methodName = method.getName();
         log.trace(HANDLE_METHOD, methodName);
         if (parameters.length > 0) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-
-            try (var bringSession = sessionFactory.openSession()) {
+            try (var bringSession = getBibernateSessionFactory().openSession()) {
                 var entityType = (Class<?>) repositoryDetails.entityType();
                 var primaryKey = parameters[0];
 

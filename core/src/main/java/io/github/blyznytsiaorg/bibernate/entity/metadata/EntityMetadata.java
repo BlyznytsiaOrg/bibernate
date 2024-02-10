@@ -13,13 +13,16 @@ public class EntityMetadata {
     private final String tableName;
     private final boolean immutable;
     private final boolean dynamicUpdate;
+    private final Class<?> type;
     private final List<IndexMetadata> indexMetadatas;
     private final List<EntityColumnDetails> entityColumns;
 
-    public EntityMetadata(String tableName, boolean immutable, boolean dynamicUpdate) {
+
+    public EntityMetadata(String tableName, boolean immutable, boolean dynamicUpdate, Class<?> type) {
         this.tableName = tableName;
         this.immutable = immutable;
         this.dynamicUpdate = dynamicUpdate;
+        this.type = type;
         this.indexMetadatas = new ArrayList<>();
         this.entityColumns = new ArrayList<>();
     }

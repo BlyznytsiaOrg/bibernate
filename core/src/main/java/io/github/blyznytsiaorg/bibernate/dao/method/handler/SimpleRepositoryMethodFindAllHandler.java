@@ -2,13 +2,13 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 import static java.util.Objects.nonNull;
 
 /**
@@ -55,8 +55,7 @@ public class SimpleRepositoryMethodFindAllHandler implements SimpleRepositoryMet
 
         if (nonNull(returnType.getGenericEntityClass()) &&
                 List.class.isAssignableFrom((Class<?>) returnType.getGenericEntityClass().getRawType())) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-            try (var bringSession = sessionFactory.openSession()) {
+            try (var bringSession = getBibernateSessionFactory().openSession()) {
                 var entityClass  = (Class<?>) repositoryDetails.entityType();
                 return bringSession.findByWhere(entityClass, null, parameters);
             }

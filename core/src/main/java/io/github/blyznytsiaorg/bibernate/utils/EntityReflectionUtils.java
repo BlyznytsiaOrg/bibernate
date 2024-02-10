@@ -31,6 +31,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
@@ -38,6 +39,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 
@@ -543,6 +546,10 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
         var columnName = columnName(field);
         return new SequenceConf(SequenceConf.DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName));
+    }
+
+    public static boolean isBidirectionalOwnerSide(Field field) {
+        return !field.getAnnotation(OneToOne.class).mappedBy().isBlank();
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {

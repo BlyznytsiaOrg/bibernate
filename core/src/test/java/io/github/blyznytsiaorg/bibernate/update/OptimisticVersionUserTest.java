@@ -6,7 +6,7 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import testdata.update.EmployeeEntity;
+import testdata.update.optimistic.EmployeeEntity;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_EMPLOYEE_TABLE, CREATE_EMPLOYEE_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.optimistic");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -58,7 +58,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_EMPLOYEE_TABLE, CREATE_EMPLOYEE_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.optimistic");
 
         Executable executable = () -> {
             try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
@@ -82,7 +82,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
 
         var entityStateWasChangeException = assertThrows(BibernateGeneralException.class, executable);
         assertThat(entityStateWasChangeException.getCause().getMessage())
-                .isEqualTo("Entity class testdata.update.EmployeeEntity was change need to get new data findByid[10]");
+                .isEqualTo("Entity class testdata.update.optimistic.EmployeeEntity was change need to get new data findByid[10]");
 
     }
 }

@@ -29,7 +29,7 @@ class BibernateRepositoryByGreaterThenEqualFieldTest extends AbstractPostgresInf
         );
 
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

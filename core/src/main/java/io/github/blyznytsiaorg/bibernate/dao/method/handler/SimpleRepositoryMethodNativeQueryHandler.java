@@ -3,10 +3,11 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.annotation.Query;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling methods annotated with {@link Query}.
@@ -37,8 +38,7 @@ public class SimpleRepositoryMethodNativeQueryHandler implements SimpleRepositor
         log.trace(HANDLE_METHOD, method.getName());
         String query = method.getAnnotation(Query.class).value();
 
-        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-        try (var session = sessionFactory.openSession()){
+        try (var session = getBibernateSessionFactory().openSession()){
             return session.find(query, parameters);
         }
     }

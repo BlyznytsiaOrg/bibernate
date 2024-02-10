@@ -22,7 +22,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
     void shouldDeletePersonById() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -47,7 +47,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
     void shouldDeletePersonByEntity() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -75,7 +75,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
     void shouldDeleteAllPersonById() {
         //given
         createTableWithData(3);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
@@ -106,7 +106,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
     void shouldDeleteAllPerson() {
         //given
         createTableWithData(3);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

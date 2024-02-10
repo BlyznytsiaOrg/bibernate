@@ -24,7 +24,9 @@ public interface Dao {
     <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues);
 
     <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues);
-    
+
+    <T> Optional<T> findOneByWhereJoin(Class<T> entityClass, Object... bindValues);
+
     <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues);
 
     int find(String query, Object[] bindValues);

@@ -18,6 +18,7 @@ import java.util.function.Function;
 public class EntityColumnDetails {
     private Field field;
     private String fieldName;
+    private String table;
     private Class<?> fieldType;
     private boolean isCollection;
     private ColumnMetadata column;

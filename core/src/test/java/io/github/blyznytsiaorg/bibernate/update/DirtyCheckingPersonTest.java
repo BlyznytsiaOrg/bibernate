@@ -5,7 +5,7 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.findbyid.Person;
-import testdata.update.PersonWithoutDynamicUpdate;
+import testdata.update.withoutdynamic.PersonWithoutDynamicUpdate;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +21,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.findbyid");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             String uuid = UUID.randomUUID().toString();
@@ -62,7 +62,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.findbyid");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             String uuid = UUID.randomUUID().toString();
@@ -105,7 +105,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.withoutdynamic");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             String uuid = UUID.randomUUID().toString();

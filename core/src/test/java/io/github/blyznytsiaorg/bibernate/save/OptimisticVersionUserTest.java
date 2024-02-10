@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.update.EmployeeEntity;
+import testdata.update.optimistic.EmployeeEntity;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_EMPLOYEE_TABLE, CREATE_EMPLOYEE_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.optimistic");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

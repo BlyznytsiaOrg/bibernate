@@ -13,6 +13,8 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.blyznytsiaorg.bibernate.Persistent.*;
+
 @Slf4j
 public abstract class AbstractPostgresInfrastructurePrep implements AbstractPostgresTableCreationPrep {
 
@@ -26,12 +28,8 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
     private static final String REDIS_LATEST = "redis:latest";
     private static final int REDIS_DEFAULT_PORT = 6379;
     public static final String PACKAGE_NAME = "testdata";
-    public static final String PACKAGE_NAME_FOR_DDL = "testdata.entity";
-    public static final String PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH = "testdata.mismatchcolumnlistindex";
-    public static final String PACKAGE_NAME_FOR_NO_RELATION_FOUND= "testdata.notexistedrelation";
-    public static final String PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE= "testdata.jointablewithoutmanytomany";
-    public static final String PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION = "testdata.joincolumnmappingexception";
     public static final String CREATE = "create";
+    public static final String BIBERNATE_PROPERTIES = "bibernate.properties";
 
     @Container
     private final PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>(POSTGRES_LATEST)
@@ -93,43 +91,33 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         jedis = new Jedis(redisHost, redisPort);
     }
 
+    public Persistent createPersistent(String packageName) {
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+    }
+
     public Persistent createPersistent() {
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     public Persistent createPersistentWithFlayWayEnabled() {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
-    public Persistent createPersistentWithBb2ddlCreate() {
+    public Persistent createPersistentWithFlayWayEnabled(String packageName) {
+        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+    }
+
+    public Persistent createPersistentWithBb2ddlCreate(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_DDL);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
-    public Persistent createPersistentIndexColumnListMismatch() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_INDEX_COLUMN_LIST_MISMATCH);
-    }
 
-    public Persistent createPersistentNoRelationFound() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_RELATION_FOUND);
-    }
-
-    public Persistent createPersistentNoManyToManyOnJoinTable() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_NO_MANY_TO_MANY_ON_JOIN_TABLE);
-    }
-
-    public Persistent createPersistentJoinColumnMappingException() {
-        bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return new Persistent(bibernateSettings, PACKAGE_NAME_FOR_JOIN_COLUMN_MAPPING_EXCEPTION);
-    }
-
-    public Persistent createPersistentWithSecondLevelCache() {
+    public Persistent createPersistentWithSecondLevelCache(String packageName) {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return new Persistent(bibernateSettings, PACKAGE_NAME);
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
     @AfterEach

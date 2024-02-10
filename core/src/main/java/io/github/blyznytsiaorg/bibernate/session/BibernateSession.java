@@ -70,6 +70,9 @@ public interface BibernateSession extends Closeable {
      */
     <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues);
 
+    <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues);
+
+
     /**
      * Finds entities of a given class based on a custom query.
      *

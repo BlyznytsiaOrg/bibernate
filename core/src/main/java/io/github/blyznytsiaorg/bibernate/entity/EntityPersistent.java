@@ -17,7 +17,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setF
  */
 public class EntityPersistent {
     private final TypeResolverFactory typeResolverFactory = new TypeResolverFactory();
-    
+
     private final List<String> ignoredRelationFields = new ArrayList<>();
 
     public <T> T toEntity(ResultSet resultSet, Class<T> entityClass) throws ReflectiveOperationException  {
@@ -26,10 +26,10 @@ public class EntityPersistent {
 
         for (var field : entityClass.getDeclaredFields()) {
             typeResolverFactory.getTypeFieldResolvers().stream()
-                    .filter(valueType -> valueType.isAppropriate(field) 
+                    .filter(valueType -> valueType.isAppropriate(field)
                             && !ignoredRelationFields.contains(field.getName()))
-                    .findAny()
-                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet));
+                    .findFirst()
+                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet, entityClass));
         }
 
         return entity;
@@ -38,15 +38,16 @@ public class EntityPersistent {
     private <T> void setFieldDependency(TypeFieldResolver valueType,
                                         Field field,
                                         T entity,
-                                        ResultSet resultSet) {
-        Object value = valueType.prepareValueForFieldInjection(field, resultSet);
+                                        ResultSet resultSet,
+                                        Class<T> entityClass) {
+        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entityClass);
         Optional.ofNullable(value).ifPresent(v -> setField(field, entity, v));
     }
-    
+
     public void addIgnoredRelationFields(List<String> fieldNames) {
         ignoredRelationFields.addAll(fieldNames);
     }
-    
+
     public void clearIgnoredRelationFields() {
         ignoredRelationFields.clear();
     }

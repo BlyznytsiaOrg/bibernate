@@ -2,10 +2,8 @@ package testdata.onetomany.unidirectional.notannotated;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
 import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +19,7 @@ public class Person {
     
     private String lastName;
 
-    @JoinColumn(name = "person_id") // This column is in the Notes table
+    // This column is in the Notes table
     private List<Note> notes = new ArrayList<>();
     
 }

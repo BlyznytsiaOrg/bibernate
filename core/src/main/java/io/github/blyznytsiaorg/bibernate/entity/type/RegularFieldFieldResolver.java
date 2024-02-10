@@ -5,8 +5,7 @@ import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromResultSet;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 public class RegularFieldFieldResolver implements TypeFieldResolver {
     @Override
@@ -15,8 +14,11 @@ public class RegularFieldFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
         var fieldName = columnName(field);
+        if (EntityRelationsUtils.hasOneToOneRelation(entityClass)) {
+            fieldName = table(entityClass).concat("_").concat(fieldName);
+        }
         return getValueFromResultSet(field, resultSet, fieldName);
     }
 

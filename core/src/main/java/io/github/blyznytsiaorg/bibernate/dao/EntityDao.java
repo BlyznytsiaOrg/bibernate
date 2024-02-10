@@ -3,21 +3,20 @@ package io.github.blyznytsiaorg.bibernate.dao;
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
+import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
-import io.github.blyznytsiaorg.bibernate.entity.DeprecatedEntityMetadataHolder;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.transaction.Transaction;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
-
-import java.sql.Connection;
-
-import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.internal.util.Pair;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.*;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
@@ -129,6 +129,63 @@ public class EntityDao implements Dao {
         entityPersistent.clearIgnoredRelationFields();
 
         return entities;
+    }
+
+    public <T> Optional<T> findOneByWhereJoin(Class<T> entityClass,
+                                              Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
+        String tableName = searchedEntityMetadata.getTableName();
+        String columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                .map(EntityColumnDetails::getColumn)
+                .map(ColumnMetadata::getName)
+                .findFirst()
+                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
+
+        String whereConditionId = tableName.concat(".").concat(columnIdName);
+        List<JoinInfo> joinInfos = searchedEntityMetadata.getEntityColumns().stream()
+                .map(EntityColumnDetails::getOneToOne)
+                .filter(Objects::nonNull)
+                .map(oneToOneMetadata -> JoinInfo.builder()
+                        .joinedTable(oneToOneMetadata.getJoinedTable())
+                        .childEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getChildClass()))
+                        .parentEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getParentClass()))
+                        .build())
+                .toList();
+
+        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
+        oneToOneEntities.add(searchedEntityMetadata);
+        searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getOneToOne()))
+                .map(entityColumnDetails -> bibernateEntityMetadata.get(entityColumnDetails.getFieldType()))
+                .forEach(oneToOneEntities::add);
+
+        var query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
+
+        addToExecutedQueries(query);
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+
+            showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
+
+            populatePreparedStatement(bindValues, statement);
+
+            var resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                return Optional.of(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+            }
+        } catch (Exception exe) {
+            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
+        }
+
+        return Optional.empty();
     }
 
     @Override
@@ -282,10 +339,11 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        var entityMetadata = DeprecatedEntityMetadataHolder.getEntityMetadata(entityClass);
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var entityMetadata = bibernateEntityMetadata.get(entityClass);
         var tableName = entityMetadata.getTableName();
 
-        var session = BibernateSessionContextHolder.getBibernateSession();
+        var session = BibernateContextHolder.getBibernateSession();
         var relationsForRemoval = entityMetadata.getCascadeRemoveRelations();
 
         List<T> deletedEntities = Collections.emptyList();

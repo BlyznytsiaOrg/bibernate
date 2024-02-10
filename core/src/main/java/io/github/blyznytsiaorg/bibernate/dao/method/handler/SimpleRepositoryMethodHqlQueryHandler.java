@@ -4,10 +4,11 @@ import io.github.blyznytsiaorg.bibernate.annotation.Query;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.dao.utils.HqlQueryInfo;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling methods annotated with {@link Query}.
@@ -43,8 +44,7 @@ public class SimpleRepositoryMethodHqlQueryHandler implements SimpleRepositoryMe
         var hqlQueryInfo = new HqlQueryInfo(hqlQuery, entityType);
         String query = hqlQueryInfo.toNativeSql();
 
-        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-        try (var session = sessionFactory.openSession()){
+        try (var session = getBibernateSessionFactory().openSession()){
             return session.findByQuery(entityType, query, parameters);
         }
     }

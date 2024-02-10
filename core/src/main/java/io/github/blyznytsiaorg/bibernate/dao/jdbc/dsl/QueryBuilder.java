@@ -75,6 +75,11 @@ abstract class QueryBuilder {
     public static final String DOT = ".";
 
     /**
+     * The underscore is used to sepa
+     */
+    public static final String UNDERSCORE = "_";
+
+    /**
      * The semicolon used to terminate SQL statements.
      */
     public static final String SEMICOLON = ";";
@@ -88,6 +93,11 @@ abstract class QueryBuilder {
      * The logical AND operator for combining conditions in WHERE clauses.
      */
     public static final String AND = "AND ";
+
+    /**
+     * The AS for aliases
+     */
+    public static final String AS = "AS";
 
     /**
      * The logical OR operator for combining conditions in WHERE clauses.

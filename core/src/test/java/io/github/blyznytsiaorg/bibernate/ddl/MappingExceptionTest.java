@@ -14,9 +14,6 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     private static final String TABLE_NAME = "notes";
     private static final String COLUMN_LIST = "desc";
     private static final String RELATION_CLASS = "NotEntityClass";
-    private static final String THIS_CLASS = "EntityClass";
-    private static final String CLASS_WITH_NO_MANY_TO_MANY = "TestOne";
-    private static final String FIELD_WITH_NO_MANY_TO_MANY = "testTwos";
     private static final String FIELD_WITH_NO_MANY_TO_ONE_OR_ONE_TO_ONE = "testTwo";
 
     @Test
@@ -28,13 +25,13 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
                 .formatted(TABLE_NAME, COLUMN_LIST);
 
         // when
-        RuntimeException exception = catchRuntimeException(this::createPersistentIndexColumnListMismatch);
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.mismatchcolumnlistindex"));
         String actualMessage = exception.getMessage();
 
         // then
         assertThat(exception).isExactlyInstanceOf(MappingException.class);
         assertThat(actualMessage).isEqualTo(expectedErrorMessage);
-
     }
 
     @Test
@@ -45,7 +42,8 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
                 .formatted(RELATION_CLASS);
 
         // when
-        RuntimeException exception = catchRuntimeException(this::createPersistentNoRelationFound);
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.notexistedrelation"));
         String actualMessage = exception.getMessage();
 
         // then
@@ -54,15 +52,15 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     }
 
     @Test
-    @DisplayName("should throw exception on no @ManyToMany on field annotated with @JoinTable")
+    @DisplayName("should throw exception on no @Id annotation on entity class")
     @SneakyThrows
     void shouldThrowExceptionOnNoManyToMany() {
-        String expectedErrorMessage = ("No @ManyToMany annotation in class '%s' on field '%s' "
-                + "annotated with annotated @JoinTable")
-                .formatted(CLASS_WITH_NO_MANY_TO_MANY, FIELD_WITH_NO_MANY_TO_MANY);
+        String expectedErrorMessage = ("Can't find @Id annotation in class '%s'")
+                .formatted(RELATION_CLASS);
 
         // when
-        RuntimeException exception = catchRuntimeException(this::createPersistentNoManyToManyOnJoinTable);
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.notexistedrelation"));
         String actualMessage = exception.getMessage();
 
         // then
@@ -79,7 +77,8 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
                 .formatted(FIELD_WITH_NO_MANY_TO_ONE_OR_ONE_TO_ONE);
 
         // when
-        RuntimeException exception = catchRuntimeException(this::createPersistentJoinColumnMappingException);
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.joincolumnmappingexception"));
         String actualMessage = exception.getMessage();
 
         // then

@@ -27,7 +27,7 @@ class BibernateRepositoryByLessThenEqualsFieldTest extends AbstractPostgresInfra
                 createUser("Michael5", true, 12)
         );
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.simplerespository");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 

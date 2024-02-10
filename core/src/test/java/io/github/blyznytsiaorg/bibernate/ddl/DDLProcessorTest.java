@@ -21,7 +21,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Bibernate should create tables")
     @SneakyThrows
     void shouldCreateTables() {
-        createPersistentWithBb2ddlCreate();
+        createPersistentWithBb2ddlCreate("testdata.entity");
 
         //when
         List<String> tableNames = new ArrayList<>();

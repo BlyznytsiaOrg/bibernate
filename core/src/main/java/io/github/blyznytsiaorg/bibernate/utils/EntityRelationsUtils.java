@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
@@ -99,7 +98,7 @@ public class EntityRelationsUtils {
           })
           .orElse(joinColumnName(field));
     }
-    
+
     private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
         return Arrays.stream(collectionGenericType.getDeclaredFields())
           .filter(f -> Objects.equals(f.getName(), mappedByName))
@@ -125,7 +124,7 @@ public class EntityRelationsUtils {
             return Collections.emptyList();
         }
     }
-    
+
     public boolean isOneToMany(Field field) {
         return field.isAnnotationPresent(OneToMany.class);
     }
@@ -133,5 +132,10 @@ public class EntityRelationsUtils {
     public boolean isManyToMany(Field field) {
         return field.isAnnotationPresent(ManyToMany.class);
     }
-    
+
+    public boolean hasOneToOneRelation(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .anyMatch(field -> field.isAnnotationPresent(OneToOne.class));
+    }
+
 }

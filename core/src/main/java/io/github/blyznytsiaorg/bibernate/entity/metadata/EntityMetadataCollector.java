@@ -31,6 +31,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.GeneratedValueMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IdMetadata;
@@ -42,12 +43,14 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToManyMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToOneMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
+import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Getter
@@ -58,9 +61,8 @@ public class EntityMetadataCollector {
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
 
-    @Deprecated(forRemoval = true)
-    public EntityMetadataCollector(Class<?> clazz) {
-        this.reflections = new Reflections(clazz);
+    public EntityMetadataCollector(String packageName) {
+        this.reflections = new Reflections(packageName);
         this.inMemoryEntityMetadata = new HashMap<>();
         this.tableNames = new HashMap<>();
     }
@@ -77,7 +79,7 @@ public class EntityMetadataCollector {
                 boolean immutable = isImmutable(entityClass);
                 boolean dynamicUpdate = isDynamicUpdate(entityClass);
 
-                var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate);
+                var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate, entityClass);
 
                 for (Field field : entityClass.getDeclaredFields()) {
                     entityMetadata.addEntityColumn(createEntityColumnDetails(field, entityClass));
@@ -169,22 +171,25 @@ public class EntityMetadataCollector {
 
     private JoinColumnMetadata getJoinColumn(Field field) {
 
-        if (field.isAnnotationPresent(JoinColumn.class)
-                && (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class))) {
+        if (field.isAnnotationPresent(JoinColumn.class)) {
+            if (field.isAnnotationPresent(OneToMany.class)) {
+                log.warn(("It is performance-efficient to map the relationship from the child side "
+                        + "[field: '%s', @OneToMany]").formatted(field.getName()));
+            } else if (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class)) {
             throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
                     + "annotated with @JoinColumn").formatted(field.getName()));
+            }
         }
+
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-            String foreignKeyName = null;
+            String foreignKeyName = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                    .map(JoinColumn::foreignKey)
+                    .map(ForeignKey::name)
+                    .orElseGet(DDLUtils::getForeignKeyConstraintName);
 
-            if (joinColumn != null && (joinColumn.foreignKey() != null)) {
-                foreignKeyName = joinColumn.foreignKey().name();
-
-            }
             return JoinColumnMetadata.builder()
                     .name(joinColumnName)
                     .databaseType(databaseTypeForJoinColumn)
@@ -229,9 +234,23 @@ public class EntityMetadataCollector {
     private OneToOneMetadata getOneToOne(Field field) {
         if (isAnnotationPresent(field, OneToOne.class)) {
             OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+            Class<?> parentClass;
+            Class<?> childClass;
+
+            if (field.isAnnotationPresent(JoinColumn.class)) {
+                parentClass = field.getType();
+                childClass = field.getDeclaringClass();
+            } else {
+                parentClass = field.getDeclaringClass();
+                childClass = field.getType();
+            }
             return OneToOneMetadata.builder()
+                    .joinedTable(table(field.getType()))
+                    .fetchType(oneToOne.fetch())
+                    .parentClass(parentClass)
+                    .childClass(childClass)
                     .mappedBy(oneToOne.mappedBy())
-                    .cascadeTypes(getCascadeTypesFromAnnotation(oneToOne))
+                    .cascadeTypes(getCascadeTypesFromAnnotation(field.getAnnotation(OneToOne.class)))
                     .build();
         }
         return null;

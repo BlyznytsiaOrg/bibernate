@@ -24,7 +24,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.cascade.remove.onetomany.bidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
@@ -67,7 +67,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.cascade.remove.onetomany.bidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
@@ -111,7 +111,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTE_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.cascade.remove.manytoone.bidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
@@ -151,7 +151,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.cascade.remove.manytoone.unidirectional");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {

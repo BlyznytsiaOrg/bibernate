@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import testdata.findbyid.Person;
-import testdata.update.PersonImmutable;
+import testdata.update.immutable.PersonImmutable;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +23,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             String uuid = UUID.randomUUID().toString();
@@ -32,7 +32,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                PersonImmutable person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
                 firstName = person.getFirstName();
                 lastName = person.getLastName();
                 person.setFirstName(person.getFirstName() + uuid);
@@ -43,7 +43,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                Person person = bibernateSession.findById(Person.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
 
                 //then
                 assertThat(person.getFirstName()).isEqualTo(firstName);
@@ -61,7 +61,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
 
@@ -82,7 +82,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             var entityStateWasChangeException = assertThrows(ImmutableEntityException.class, executable);
             assertThat(entityStateWasChangeException.getMessage())
-                    .isEqualTo("Immutable entity class testdata.update.PersonImmutable not allowed to change");
+                    .isEqualTo("Immutable entity class testdata.update.immutable.PersonImmutable not allowed to change");
         }
     }
 
@@ -92,7 +92,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -105,7 +105,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                Person person = bibernateSession.findById(Person.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
             }
 
             //then

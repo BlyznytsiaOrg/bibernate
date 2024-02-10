@@ -31,7 +31,7 @@ public class DDLProcessor {
             try (var statement = connection.createStatement()) {
                 for (String query : queries) {
                     statement.addBatch(query);
-                    log.info("Bibernate: {}", query);
+                    log.debug("Bibernate: {}", query);
                 }
                 statement.executeBatch();
             }

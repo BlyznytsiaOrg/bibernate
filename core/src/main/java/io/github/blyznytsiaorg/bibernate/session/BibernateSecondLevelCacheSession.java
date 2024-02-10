@@ -123,10 +123,14 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * Retrieves entities based on a custom query and bind values.
      *
      * @param entityClass The class of the entity
-     * @param query       The custom query string
      * @param bindValues  The bind values for parameters in the query
      * @return A list of entities matching the criteria
      */
+    @Override
+    public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
+        return Optional.empty();
+    }
+
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
         return bibernateSession.findByQuery(entityClass, query, bindValues);

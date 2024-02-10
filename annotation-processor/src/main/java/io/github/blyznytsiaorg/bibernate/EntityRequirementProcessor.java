@@ -5,11 +5,16 @@ import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.IgnoreEntity;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
+import java.lang.annotation.Annotation;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,6 +41,8 @@ public class EntityRequirementProcessor extends AbstractProcessor {
      * or the development environment.
      */
     private Messager messager;
+    private Set<TypeMirror> entities = new HashSet<>();
+    private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class, OneToMany.class);
 
     /**
      * Initializes the annotation processor by obtaining the Messager from the processing environment.
@@ -58,6 +65,8 @@ public class EntityRequirementProcessor extends AbstractProcessor {
      */
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        roundEnv.getElementsAnnotatedWith(Entity.class)
+                .forEach(element -> entities.add(element.asType()));
         Set<? extends Element> ignoreEntities = roundEnv.getElementsAnnotatedWith(IgnoreEntity.class);
 
         // Get class names of entities to be ignored
@@ -99,8 +108,12 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         }
 
         if (!hasNoArgsConstructor(typeElement)) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+            messager.printMessage(Diagnostic.Kind.ERROR,
                     "Class annotated with @Entity must have constructor without params", typeElement);
+        }
+
+        if (!hasRelationAnnotationOnEntityField(typeElement)) {
+            messager.printMessage(Diagnostic.Kind.ERROR, "Entity field should have relation annotation @OneToOne or @ManyToOne", typeElement);
         }
 
         if (hasMismatchInGeneratorName) {
@@ -158,5 +171,23 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         }
 
         return false;
+    }
+
+    private boolean hasRelationAnnotationOnEntityField(TypeElement typeElement) {
+        for (Element enclosedElement : typeElement.getEnclosedElements()) {
+            if (enclosedElement.getKind() == ElementKind.FIELD) {
+                VariableElement variableElement = (VariableElement) enclosedElement;
+
+                if (entities.contains(variableElement.asType())) {
+                    if (entityAnnotations.stream()
+                            .noneMatch(relationAnnotation ->
+                                    Objects.nonNull(variableElement.getAnnotation(relationAnnotation)))) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
