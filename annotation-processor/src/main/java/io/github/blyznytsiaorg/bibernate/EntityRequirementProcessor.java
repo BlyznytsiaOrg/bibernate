@@ -41,7 +41,7 @@ public class EntityRequirementProcessor extends AbstractProcessor {
      * or the development environment.
      */
     private Messager messager;
-    private Set<TypeMirror> entities = new HashSet<>();
+    private final Set<TypeMirror> entities = new HashSet<>();
     private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class, OneToMany.class);
 
     /**
