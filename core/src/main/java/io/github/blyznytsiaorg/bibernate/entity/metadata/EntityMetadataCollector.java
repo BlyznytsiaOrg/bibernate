@@ -58,7 +58,7 @@ import java.util.Set;
 @Slf4j
 public class EntityMetadataCollector {
     public static final String ERROR_MESSAGE_ON_DUPLICATE_TABLE_NAME = "Detected duplicates for table name '%s' in classes '%s', '%s'";
-    public static final String CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE = "Cannot find any entities on classpath with this package ";
+    public static final String CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE = "Cannot find any entities on classpath with this package %s";
     private final Reflections reflections;
     private final Map<Class<?>, EntityMetadata> inMemoryEntityMetadata;
     private final HashMap<String, Class<?>> tableNames;
@@ -77,7 +77,7 @@ public class EntityMetadataCollector {
         log.trace("Found entities size {}", entities.size());
 
         if (entities.isEmpty()) {
-            throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE + packageName);
+            throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE .formatted(packageName));
         }
 
         for (Class<?> entityClass : entities) {
