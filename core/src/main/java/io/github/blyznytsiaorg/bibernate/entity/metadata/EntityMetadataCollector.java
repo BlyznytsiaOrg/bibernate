@@ -45,10 +45,12 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGenerator
 import io.github.blyznytsiaorg.bibernate.exception.EntitiesNotFoundException;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
+import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -124,10 +126,10 @@ public class EntityMetadataCollector {
                 .id(getId(field))
                 .generatedValue(getGeneratedValue(field))
                 .sequenceGenerator(getSequenceGenerator(field))
-                .oneToOne(getOneToOne(field))
+                .oneToOne(getOneToOne(field, entityClass))
                 .oneToMany(getOneToMany(field))
                 .manyToOne(getManyToOne(field))
-                .manyToMany(getManyToMany(field))
+                .manyToMany(getManyToMany(field, entityClass))
                 .joinColumn(getJoinColumn(field))
                 .joinTable(getJoinTable(field, entityClass));
 
@@ -177,7 +179,7 @@ public class EntityMetadataCollector {
                     .build();
         }
         return null;
-}
+    }
 
     private JoinColumnMetadata getJoinColumn(Field field) {
 
@@ -186,8 +188,8 @@ public class EntityMetadataCollector {
                 log.warn(("It is performance-efficient to map the relationship from the child side "
                         + "[field: '%s', @OneToMany]").formatted(field.getName()));
             } else if (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class)) {
-            throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
-                    + "annotated with @JoinColumn").formatted(field.getName()));
+                throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
+                        + "annotated with @JoinColumn").formatted(field.getName()));
             }
         }
 
@@ -209,16 +211,38 @@ public class EntityMetadataCollector {
         return null;
     }
 
-    private ManyToManyMetadata getManyToMany(Field field) {
+    private ManyToManyMetadata getManyToMany(Field field, Class<?> entityClass) {
         if (isAnnotationPresent(field, ManyToMany.class)) {
             ManyToMany annotation = field.getAnnotation(ManyToMany.class);
             return ManyToManyMetadata
                     .builder()
-                    .mappedBy(annotation.mappedBy())
+                    .mappedBy(getMappedByForManyToMany(field, entityClass, annotation))
                     .cascadeTypes(getCascadeTypesFromAnnotation(annotation))
                     .build();
         }
         return null;
+    }
+
+    private String getMappedByForManyToMany(Field field, Class<?> entityClass, ManyToMany manyToMany) {
+        if (!manyToMany.mappedBy().isEmpty()) {
+            String entityClassSimpleName = entityClass.getSimpleName();
+            Class<?> collectionGenericType = getCollectionGenericType(field);
+            if (collectionGenericType.isAnnotationPresent(Entity.class)) {
+                Field[] declaredFields = collectionGenericType.getDeclaredFields();
+                boolean ifFieldHasParentEntity = Arrays.stream(declaredFields)
+                        .filter(f -> f.isAnnotationPresent(ManyToMany.class))
+                        .map(EntityReflectionUtils::getCollectionGenericType)
+                        .anyMatch(f -> f.equals(entityClass));
+                if (ifFieldHasParentEntity) {
+                    return manyToMany.mappedBy();
+                }
+                throw new MappingException(("Can't find in entity '%s' @ManyToMany annotation "
+                        +"as entity '%s' is annotated with @ManyToMany mappedBy='%s'")
+                        .formatted(collectionGenericType.getSimpleName(), entityClassSimpleName,
+                                manyToMany.mappedBy()));
+            }
+        }
+        return manyToMany.mappedBy();
     }
 
     private ManyToOneMetadata getManyToOne(Field field) {
@@ -241,7 +265,7 @@ public class EntityMetadataCollector {
         return null;
     }
 
-    private OneToOneMetadata getOneToOne(Field field) {
+    private OneToOneMetadata getOneToOne(Field field, Class<?> entityClass) {
         if (isAnnotationPresent(field, OneToOne.class)) {
             OneToOne oneToOne = field.getAnnotation(OneToOne.class);
             Class<?> parentClass;
@@ -259,11 +283,32 @@ public class EntityMetadataCollector {
                     .fetchType(oneToOne.fetch())
                     .parentClass(parentClass)
                     .childClass(childClass)
-                    .mappedBy(oneToOne.mappedBy())
+                    .mappedBy(getMappedByForOneToOne(field, entityClass, oneToOne))
                     .cascadeTypes(getCascadeTypesFromAnnotation(field.getAnnotation(OneToOne.class)))
                     .build();
         }
         return null;
+    }
+
+    private String getMappedByForOneToOne(Field field, Class<?> entityClass, OneToOne oneToOne) {
+        if (!oneToOne.mappedBy().isEmpty()) {
+            String entityClassSimpleName = entityClass.getSimpleName();
+            Class<?> fieldType = field.getType();
+            if (fieldType.isAnnotationPresent(Entity.class)) {
+                Field[] declaredFields = fieldType.getDeclaredFields();
+                boolean ifFieldHasParentEntity = Arrays.stream(declaredFields)
+                        .filter(f -> f.isAnnotationPresent(OneToOne.class))
+                        .anyMatch(f -> f.getType().equals(entityClass));
+                if (ifFieldHasParentEntity) {
+                    return oneToOne.mappedBy();
+                }
+                throw new MappingException(("Can't find in entity '%s' @OneToOne annotation "
+                        +"as entity '%s' is annotated with @OneToOne mappedBy='%s'")
+                        .formatted(fieldType.getSimpleName(), entityClassSimpleName,
+                                oneToOne.mappedBy()));
+            }
+        }
+        return oneToOne.mappedBy();
     }
 
     private IdMetadata getId(Field field) {

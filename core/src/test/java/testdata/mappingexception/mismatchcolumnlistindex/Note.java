@@ -1,4 +1,4 @@
-package testdata.mismatchcolumnlistindex;
+package testdata.mappingexception.mismatchcolumnlistindex;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;

@@ -1,4 +1,4 @@
-package testdata.jointablewithoutmanytomany;
+package testdata.mappingexception.onetoonemappedbywithoutrelation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;

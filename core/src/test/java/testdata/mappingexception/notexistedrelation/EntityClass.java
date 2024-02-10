@@ -1,4 +1,4 @@
-package testdata.notexistedrelation;
+package testdata.mappingexception.notexistedrelation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
