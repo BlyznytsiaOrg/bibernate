@@ -19,7 +19,7 @@ import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.s
 import static java.util.Objects.requireNonNull;
 
 /**
- * The `Persistent` class provides methods for configuring and creating Bibernate entity managers, stateless sessions, and enabling Flyway migrations and Redis caching.
+ * The Persistent class provides methods for configuring and creating Bibernate entity managers, stateless sessions, and enabling Flyway migrations and Redis caching.
  * It allows for both default and external configurations, enabling flexibility in setting up the persistence layer.
  *
  * @author Blyzhnytsia Team
@@ -32,10 +32,10 @@ public class Persistent {
     private final String entitiesPackageName;
 
     /**
-     * Constructs a `Persistent` instance with default configuration.
+     * Constructs a Persistent instance with default configuration.
      *
      * @param entitiesPackageName   the package name where entities are located
-     * @return                      a `Persistent` instance with default configuration
+     * @return                      a Persistent instance with default configuration
      */
     public static Persistent withDefaultConfiguration(String entitiesPackageName) {
         var bibernateConfiguration = new BibernateConfiguration();
@@ -45,12 +45,12 @@ public class Persistent {
     }
 
     /**
-     * Constructs a `Persistent` instance with external configuration.
+     * Constructs a Persistent instance with external configuration.
      *
      * @param entitiesPackageName       the package name where entities are located
      * @param externalBibernateSettings the external Hibernate settings
      * @param configFileName            the configuration file name
-     * @return                          a `Persistent` instance with external configuration
+     * @return                          a Persistent instance with external configuration
      */
     public static Persistent withExternalConfiguration(String entitiesPackageName,
                                                 Map<String, String> externalBibernateSettings, String configFileName) {
@@ -58,13 +58,13 @@ public class Persistent {
     }
 
     /**
-     * Constructs a `Persistent` instance with external configuration and a custom data source.
+     * Constructs a Persistent instance with external configuration and a custom data source.
      *
      * @param entitiesPackageName       the package name where entities are located
      * @param externalBibernateSettings the external Hibernate settings
      * @param configFileName            the configuration file name
      * @param dataSource                the custom data source
-     * @return                          a `Persistent` instance with external configuration and a custom data source
+     * @return                          a Persistent instance with external configuration and a custom data source
      */
     public static Persistent withExternalConfigurationAndDataSource(
             String entitiesPackageName, Map<String, String> externalBibernateSettings,
@@ -73,7 +73,7 @@ public class Persistent {
     }
 
     /**
-     * Constructs a `Persistent` instance with external Hibernate settings and the entities package name.
+     * Constructs a Persistent instance with external Hibernate settings and the entities package name.
      *
      * @param externalBibernateSettings the external Hibernate settings
      * @param entitiesPackageName       the package name where entities are located
@@ -98,7 +98,7 @@ public class Persistent {
     }
 
     /**
-     * Constructs a `Persistent` instance with external Hibernate settings, the entities package name, and a custom data source.
+     * Constructs a Persistent instance with external Hibernate settings, the entities package name, and a custom data source.
      *
      * @param entitiesPackageName       the package name where entities are located
      * @param externalBibernateSettings the external Hibernate settings
