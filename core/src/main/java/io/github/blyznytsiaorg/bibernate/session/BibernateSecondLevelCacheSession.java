@@ -123,7 +123,6 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * Retrieves entities based on a custom query and bind values.
      *
      * @param entityClass The class of the entity
-     * @param query       The custom query string
      * @param bindValues  The bind values for parameters in the query
      * @return A list of entities matching the criteria
      */

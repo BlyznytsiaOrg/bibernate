@@ -21,12 +21,13 @@ import java.util.function.Supplier;
 public class ProxyUtils {
 
     /**
-     * Creates a proxy instance for the given class using a specified constructor and arguments.
+     * Creates a dynamic proxy for the specified class using the provided supplier.
+     * This method generates a proxy instance that extends the specified class and delegates method invocations
+     * to the provided supplier.
      *
-     * @param clazz       The class to create a proxy for
-     * @param constructor The constructor to be used for proxy creation
-     * @param args        The arguments to pass to the constructor
-     * @return The proxy object for the specified class
+     * @param clazz    the class for which a proxy should be created
+     * @param supplier the supplier to delegate method invocations to
+     * @return a dynamic proxy instance for the specified class
      */
     @SneakyThrows
     public Object createProxy(Class<?> clazz, Supplier<?> supplier) {
