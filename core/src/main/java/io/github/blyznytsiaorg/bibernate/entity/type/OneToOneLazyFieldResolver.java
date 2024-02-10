@@ -18,7 +18,7 @@ public class OneToOneLazyFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
         var session = BibernateContextHolder.getBibernateSession();
 
         var joinColumnName = joinColumnName(field);

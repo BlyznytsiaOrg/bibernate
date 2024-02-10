@@ -29,7 +29,7 @@ public class EntityPersistent {
                     .filter(valueType -> valueType.isAppropriate(field)
                             && !ignoredRelationFields.contains(field.getName()))
                     .findFirst()
-                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet, entityClass));
+                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet));
         }
 
         return entity;
@@ -38,9 +38,8 @@ public class EntityPersistent {
     private <T> void setFieldDependency(TypeFieldResolver valueType,
                                         Field field,
                                         T entity,
-                                        ResultSet resultSet,
-                                        Class<T> entityClass) {
-        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entityClass);
+                                        ResultSet resultSet) {
+        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity);
         Optional.ofNullable(value).ifPresent(v -> setField(field, entity, v));
     }
 

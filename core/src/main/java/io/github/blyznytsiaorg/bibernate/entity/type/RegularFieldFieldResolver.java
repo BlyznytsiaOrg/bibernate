@@ -14,10 +14,10 @@ public class RegularFieldFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entityClass) {
         var fieldName = columnName(field);
-        if (EntityRelationsUtils.hasOneToOneRelation(entityClass)) {
-            fieldName = table(entityClass).concat("_").concat(fieldName);
+        if (EntityRelationsUtils.hasOneToOneRelation(entityClass.getClass())) {
+            fieldName = table(entityClass.getClass()).concat("_").concat(fieldName);
         }
         return getValueFromResultSet(field, resultSet, fieldName);
     }
