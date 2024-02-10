@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.resetBibernateSession;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
@@ -39,7 +40,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private final DefaultActionQueue defaultActionQueue;
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
-    private final Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
+    private final Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
 
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
@@ -236,7 +237,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         log.trace(SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING);
         performDirtyChecking();
         defaultActionQueue.executeEntityAction();
-        BibernateSessionContextHolder.resetBibernateSession();
+        resetBibernateSession();
 
         clearCacheAndSnapshots();
 

@@ -21,7 +21,7 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
     void shouldFindUserByIdWithOneToOneLazyRelations() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetoone.unidirectional.lazy");
 
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();

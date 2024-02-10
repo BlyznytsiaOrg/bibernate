@@ -32,7 +32,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                PersonImmutable person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
                 firstName = person.getFirstName();
                 lastName = person.getLastName();
                 person.setFirstName(person.getFirstName() + uuid);
@@ -43,7 +43,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                Person person = bibernateSession.findById(Person.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
 
                 //then
                 assertThat(person.getFirstName()).isEqualTo(firstName);
@@ -92,7 +92,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         //given
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
 
-        var persistent = createPersistent("testdata.findbyid");
+        var persistent = createPersistent("testdata.update.immutable");
         try (var bibernateEntityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory();
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -105,7 +105,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
-                Person person = bibernateSession.findById(Person.class, 1L).orElseThrow();
+                var person = bibernateSession.findById(PersonImmutable.class, 1L).orElseThrow();
             }
 
             //then

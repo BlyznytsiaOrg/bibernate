@@ -22,7 +22,7 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
     public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
-        var persistent = createPersistent();
+        var persistent = createPersistent("testdata.onetoone.bidirectional.eager");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {

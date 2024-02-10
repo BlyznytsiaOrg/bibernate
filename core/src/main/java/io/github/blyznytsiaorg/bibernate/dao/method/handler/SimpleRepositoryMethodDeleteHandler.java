@@ -2,10 +2,11 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Handler for executing the delete method in a simple repository.
@@ -47,8 +48,7 @@ public class SimpleRepositoryMethodDeleteHandler implements SimpleRepositoryMeth
         var methodName = method.getName();
         log.trace(HANDLE_METHOD, methodName);
         if (parameters.length > 0) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-            try (var bringSession = sessionFactory.openSession()) {
+            try (var bringSession = getBibernateSessionFactory().openSession()) {
                 var entityClass  = (Class<?>) repositoryDetails.entityType();
                 bringSession.deleteById(entityClass, parameters[0]);
                 return Void.TYPE;

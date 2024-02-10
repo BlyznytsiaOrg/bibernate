@@ -4,8 +4,7 @@ import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.exception.EntityNotFoundException;
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
-import lombok.RequiredArgsConstructor;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -59,7 +58,7 @@ public class SimpleRepositoryMethodFindByHandler implements SimpleRepositoryMeth
         log.trace(HANDLE_METHOD, methodName);
         var whereQuery = buildQueryByMethodName(methodName);
         var returnType = methodMetadata.getReturnType();
-        var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
+        var sessionFactory = BibernateContextHolder.getBibernateSessionFactory();
 
         if (nonNull(returnType.getGenericEntityClass()) &&
                 List.class.isAssignableFrom((Class<?>)returnType.getGenericEntityClass().getRawType())) {

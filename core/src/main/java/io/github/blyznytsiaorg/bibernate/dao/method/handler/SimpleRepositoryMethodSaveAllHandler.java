@@ -3,11 +3,12 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactoryContextHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
 
 /**
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling the "saveAll" method.
@@ -45,8 +46,7 @@ public class SimpleRepositoryMethodSaveAllHandler implements SimpleRepositoryMet
         var methodName = method.getName();
         log.trace(HANDLE_METHOD, methodName);
         if (parameters.length > 0) {
-            var sessionFactory = BibernateSessionFactoryContextHolder.getBibernateSessionFactory();
-            try (var bibernateSession = sessionFactory.openSession()) {
+            try (var bibernateSession = getBibernateSessionFactory().openSession()) {
                 var entityClass = (Class<?>) repositoryDetails.entityType();
                 var parameter = parameters[0];
                 if (parameter instanceof Collection<?> entities) {

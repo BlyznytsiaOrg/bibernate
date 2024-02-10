@@ -5,7 +5,6 @@ import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.Identity;
-import io.github.blyznytsiaorg.bibernate.entity.BibernateEntityMetadataHolder;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
@@ -14,13 +13,10 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import io.github.blyznytsiaorg.bibernate.transaction.Transaction;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionHolder;
-
-import java.sql.Connection;
-
-import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
-import io.github.blyznytsiaorg.bibernate.session.BibernateSessionContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +24,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.internal.util.Pair;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.*;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
@@ -140,7 +137,7 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
         EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
 
         String tableName = searchedEntityMetadata.getTableName();
@@ -342,11 +339,11 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateEntityMetadataHolder.getBibernateEntityMetadata();
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
         var entityMetadata = bibernateEntityMetadata.get(entityClass);
         var tableName = entityMetadata.getTableName();
 
-        var session = BibernateSessionContextHolder.getBibernateSession();
+        var session = BibernateContextHolder.getBibernateSession();
         var relationsForRemoval = entityMetadata.getCascadeRemoveRelations();
 
         List<T> deletedEntities = Collections.emptyList();

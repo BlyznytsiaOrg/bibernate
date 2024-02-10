@@ -1,9 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.entity;
 
-import io.github.blyznytsiaorg.bibernate.ddl.EntityMetadataCollector;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 
+import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

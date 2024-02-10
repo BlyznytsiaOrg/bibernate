@@ -4,7 +4,7 @@ import io.github.blyznytsiaorg.bibernate.dao.BibernateRepository;
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
 import io.github.blyznytsiaorg.bibernate.dao.method.ReturnType;
-import io.github.blyznytsiaorg.bibernate.session.BibernateReflectionHolder;
+import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 
@@ -74,7 +74,7 @@ public class SimpleRepositoryFactory {
      * Constructs a SimpleRepositoryFactory and initializes the list of method handlers.
      */
     public SimpleRepositoryFactory() {
-        var reflections = BibernateReflectionHolder.getReflections();
+        var reflections = BibernateContextHolder.getReflections();
 
         simpleRepositoryMethodHandlers = reflections.getSubTypesOf(SimpleRepositoryMethodHandler.class)
                 .stream()
