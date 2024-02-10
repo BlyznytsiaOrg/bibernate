@@ -15,8 +15,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructurePrep {
-    @DisplayName("Should find exising person by ID with all one to one relations")
-    @Disabled
+    @DisplayName("Should find exising user by ID with all one to one lazy relations")
     @Test
     void shouldFindUserByIdWithOneToOneLazyRelations() {
         //given
@@ -45,7 +44,6 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                         "SELECT * FROM users WHERE id = ?;",
                         "SELECT * FROM addresses WHERE id = ?;"));
             }
-
         }
     }
 }
