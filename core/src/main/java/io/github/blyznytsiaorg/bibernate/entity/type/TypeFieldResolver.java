@@ -6,5 +6,5 @@ import java.sql.ResultSet;
 public interface TypeFieldResolver {
    boolean isAppropriate(Field field);
 
-   Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass);
+   Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity);
 }

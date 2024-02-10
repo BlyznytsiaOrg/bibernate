@@ -1,11 +1,12 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
+import java.util.Objects;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
@@ -16,16 +17,33 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Class<?> entityClass) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
         Class<?> type = field.getType();
-        try {
-            Object obj = field.getType().getDeclaredConstructor().newInstance();
-            for (Field declaredField : field.getType().getDeclaredFields()) {
-                Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
-                setField(declaredField, obj, object);
-            }
 
-            return obj;
+        try {
+            if (isBidirectional(field)) {
+                Object obj = field.getType().getDeclaredConstructor().newInstance();
+                for (Field declaredField : field.getType().getDeclaredFields()) {
+                    if (Objects.nonNull(declaredField.getAnnotation(OneToOne.class))
+                        && (field.getAnnotation(OneToOne.class).mappedBy().equals(declaredField.getName())
+                            || Objects.equals(field.getName(), declaredField.getAnnotation(OneToOne.class).mappedBy()))) {
+                        setField(declaredField, obj, entity);
+                    } else {
+                        Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
+                        setField(declaredField, obj, object);
+                    }
+                }
+
+                return obj;
+            } else {
+                Object obj = field.getType().getDeclaredConstructor().newInstance();
+                for (Field declaredField : field.getType().getDeclaredFields()) {
+                    Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
+                    setField(declaredField, obj, object);
+                }
+
+                return obj;
+            }
         } catch (Exception exe) {
             throw new BibernateGeneralException(
                     "Cannot populate type " + field.getType() + "due to message " + exe.getMessage(), exe
