@@ -115,7 +115,7 @@ public class SelectQueryBuilder extends QueryBuilder {
 
     @NotNull
     private String getAliasField(String table, EntityColumnDetails entityColumn) {
-        return table.concat(DOT).concat(entityColumn.getColumn().getName()).concat(SPACE).concat(AS).concat(SPACE).concat(tableName).concat(UNDERSCORE).concat(entityColumn.getColumn().getName());
+        return table.concat(DOT).concat(entityColumn.getColumn().getName()).concat(SPACE).concat(AS).concat(SPACE).concat(table).concat(UNDERSCORE).concat(entityColumn.getColumn().getName());
     }
 
     /**

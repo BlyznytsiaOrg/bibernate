@@ -28,7 +28,7 @@ public class EntityPersistent {
             typeResolverFactory.getTypeFieldResolvers().stream()
                     .filter(valueType -> valueType.isAppropriate(field)
                             && !ignoredRelationFields.contains(field.getName()))
-                    .findAny()
+                    .findFirst()
                     .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet, entityClass));
         }
 

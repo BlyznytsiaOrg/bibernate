@@ -18,7 +18,7 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
     @DisplayName("Should find exising person by ID with all one to one relations")
     @Disabled
     @Test
-    void shouldFindExistingPersonByIdWithRelations() {
+    void shouldFindUserByIdWithOneToOneLazyRelations() {
         //given
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
         var persistent = createPersistent();
@@ -34,7 +34,6 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 //then
                 assertThat(user).isPresent();
 
-
                 Address address = user.get().getAddress();
                 assertThat(address).isNotNull();
                 assertThat(address.getId()).isEqualTo(1L);
@@ -45,15 +44,8 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM users WHERE id = ?;",
                         "SELECT * FROM addresses WHERE id = ?;"));
-//                House house = address.getHouse();
-//                assertThat(house).isNotNull();
-//                assertThat(house.getId()).isEqualTo(1L);
-//                assertThat(house.getName()).isEqualTo("big");
             }
 
-            //then
-//            assertQueries(bibernateSessionFactory, List.of(
-//                    "SELECT users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name, addresses.id AS addresses_id, addresses.name AS addresses_name FROM users LEFT JOIN addresses ON users.id=addresses.id WHERE users.id = ?;"));
         }
     }
 }

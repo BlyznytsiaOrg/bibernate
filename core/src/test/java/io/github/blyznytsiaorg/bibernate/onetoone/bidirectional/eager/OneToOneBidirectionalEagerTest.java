@@ -19,15 +19,15 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
     @Disabled
     @DisplayName("Should retrieve person and address")
     @Test
-    public void testOneToOneBidirectional() {
-        QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_HOUSES_TABLES, CREATE_INSERT_USERS_ADRESSES_STATEMENT);
+    public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
+        QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
         var persistent = createPersistent();
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
 
-                Optional<Address> address = session.findById(Address.class, 1L);
+                Optional<Address> address = session.findById(Address.class, 2L);
 
                 assertThat(address).isPresent();
                 assertThat(address.get())

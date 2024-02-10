@@ -2,7 +2,6 @@ package testdata.onetoone.bidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
-import testdata.onetoone.unidirectional.House;
 
 @Entity
 @Table(name = "addresses")
@@ -21,8 +20,4 @@ public class Address {
 
     @OneToOne(mappedBy = "address")
     private User user;
-
-//    @OneToOne
-//    @JoinColumn(name = "house_id")
-//    private House house;
 }

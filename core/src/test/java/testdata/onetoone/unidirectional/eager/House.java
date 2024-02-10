@@ -1,4 +1,4 @@
-package testdata.onetoone.unidirectional;
+package testdata.onetoone.unidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;

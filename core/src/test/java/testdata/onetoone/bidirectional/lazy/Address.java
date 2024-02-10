@@ -2,7 +2,7 @@ package testdata.onetoone.bidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
-import testdata.onetoone.unidirectional.House;
+import testdata.onetoone.unidirectional.eager.House;
 
 @Entity
 @Table(name = "addresses")
