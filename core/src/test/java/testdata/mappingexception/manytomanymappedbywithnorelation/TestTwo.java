@@ -1,4 +1,4 @@
-package testdata.joincolumnmappingexception;
+package testdata.mappingexception.manytomanymappedbywithnorelation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;

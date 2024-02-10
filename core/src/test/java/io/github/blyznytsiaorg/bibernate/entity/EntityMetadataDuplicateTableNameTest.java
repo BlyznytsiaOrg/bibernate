@@ -20,7 +20,7 @@ class EntityMetadataDuplicateTableNameTest {
                 .formatted(TABLE_NAME, FIRST_CLASS, SECOND_CLASS);
 
          // when
-        EntityMetadataCollector collector = new EntityMetadataCollector("testdata.duplicatetablename");
+        EntityMetadataCollector collector = new EntityMetadataCollector("testdata.mappingexception.duplicatetablename");
         RuntimeException exception = catchRuntimeException(collector::collectMetadata);
 
         String actualMessage = exception.getMessage();

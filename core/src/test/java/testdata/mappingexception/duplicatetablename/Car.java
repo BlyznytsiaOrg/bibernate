@@ -1,4 +1,4 @@
-package testdata.duplicatetablename;
+package testdata.mappingexception.duplicatetablename;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
