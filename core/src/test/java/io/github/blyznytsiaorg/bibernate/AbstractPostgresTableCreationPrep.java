@@ -19,6 +19,42 @@ public interface AbstractPostgresTableCreationPrep {
             );
             """;
 
+    String ONE_TO_ONE_MULTIRELATION_TABLES = """
+            CREATE TABLE house (
+                id BIGINT PRIMARY KEY,
+                name VARCHAR(255)
+            );
+            
+            CREATE TABLE addresses (
+                id BIGINT PRIMARY KEY,
+                name VARCHAR(255),
+                house_id BIGINT,
+                FOREIGN KEY (house_id) REFERENCES house(id)
+            );
+            
+            CREATE TABLE users (
+                id BIGINT PRIMARY KEY,
+                first_name VARCHAR(255),
+                last_name VARCHAR(255),
+                address_id BIGINT,
+                FOREIGN KEY (address_id) REFERENCES addresses(id)
+            );
+            """;
+
+    String ONE_TO_ONE_MULTIRELATION_INSERT = """
+            INSERT INTO house (id, name) VALUES
+            (1, 'House A'),
+            (2, 'House B');
+                        
+            INSERT INTO addresses (id, name, house_id) VALUES
+            (1, 'Address 1', 1),
+            (2, 'Address 2', 2);
+                        
+            INSERT INTO users (id, first_name, last_name, address_id) VALUES
+            (1, 'John', 'Doe', 1),
+            (2, 'Jane', 'Smith', 2);
+            """;
+
     String CREATE_USERS_ADDRESSES_HOUSES_TABLES = """
             CREATE TABLE IF NOT EXISTS houses
             (

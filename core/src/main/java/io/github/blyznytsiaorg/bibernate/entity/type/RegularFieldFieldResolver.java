@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 
 import java.lang.reflect.Field;
@@ -14,11 +15,9 @@ public class RegularFieldFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entityClass) {
-        var fieldName = columnName(field);
-        if (EntityRelationsUtils.hasOneToOneRelation(entityClass.getClass())) {
-            fieldName = table(entityClass.getClass()).concat("_").concat(fieldName);
-        }
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entityClass,
+                                                EntityPersistent entityPersistent) {
+        var fieldName = table(entityClass.getClass()).concat("_").concat(columnName(field));
         return getValueFromResultSet(field, resultSet, fieldName);
     }
 

@@ -34,7 +34,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -56,7 +56,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -79,7 +79,7 @@ class FindPersonTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 }

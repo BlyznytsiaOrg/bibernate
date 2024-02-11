@@ -1,6 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
@@ -9,7 +11,6 @@ import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityColumnDetails;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
-import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.exception.EntityStateWasChangeException;
 import io.github.blyznytsiaorg.bibernate.exception.NonUniqueResultException;
@@ -43,6 +44,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 @RequiredArgsConstructor
 @Slf4j
 public class EntityDao implements Dao {
+
+    private static final String DOT = ".";
 
     private final SqlBuilder sqlBuilder;
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
@@ -107,8 +110,44 @@ public class EntityDao implements Dao {
     public <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
-        var tableName = table(entityClass);
-        var query = sqlBuilder.selectBy(tableName, whereCondition);
+        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
+        String tableName = searchedEntityMetadata.getTableName();
+        String columnIdName = searchedEntityMetadata.columnIdName(entityClass);
+        String whereConditionId = tableName.concat(DOT).concat(columnIdName);
+
+        List<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+
+        Set<EntityMetadata> oneToOneEntities = searchedEntityMetadata.getOneToOneEntities(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+
+        String query;
+
+        if (searchedEntityMetadata.hasAnyOneToOneEagerFetchType()) {
+           query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
+        } else {
+            List<String> fieldNames = new ArrayList<>();
+            for (EntityColumnDetails column : searchedEntityMetadata.getEntityColumns()) {
+                if (!column.isCollection() && Objects.isNull(column.getOneToOne())) {
+                    String s = tableName + DOT + column.getColumn().getName()  + " as " + tableName + "_" + column.getColumn().getName();
+                    fieldNames.add(s);
+                } else if (Objects.nonNull(column.getOneToOne())) {
+                    FetchType fetchType = column.getOneToOne().getFetchType();
+                    if (fetchType == FetchType.LAZY) {
+                        //TODO
+                        String joinColumnName = column.getField().getAnnotation(JoinColumn.class).name();
+                        String s = tableName + DOT + joinColumnName + " as " + tableName + "_" + joinColumnName;
+                        fieldNames.add(s);
+                    }
+                }
+            }
+
+            query = sqlBuilder.selectBy(fieldNames, tableName, whereCondition);
+        }
 
         return findByQuery(entityClass, query, bindValues);
     }
@@ -141,30 +180,15 @@ public class EntityDao implements Dao {
         EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
 
         String tableName = searchedEntityMetadata.getTableName();
-        String columnIdName = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
-                .map(EntityColumnDetails::getColumn)
-                .map(ColumnMetadata::getName)
-                .findFirst()
-                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
+        String columnIdName = searchedEntityMetadata.columnIdName(entityClass);
+        String whereConditionId = tableName.concat(DOT).concat(columnIdName);
 
-        String whereConditionId = tableName.concat(".").concat(columnIdName);
-        List<JoinInfo> joinInfos = searchedEntityMetadata.getEntityColumns().stream()
-                .map(EntityColumnDetails::getOneToOne)
-                .filter(Objects::nonNull)
-                .map(oneToOneMetadata -> JoinInfo.builder()
-                        .joinedTable(oneToOneMetadata.getJoinedTable())
-                        .childEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getChildClass()))
-                        .parentEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getParentClass()))
-                        .build())
-                .toList();
-
-        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
-        oneToOneEntities.add(searchedEntityMetadata);
-        searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getOneToOne()))
-                .map(entityColumnDetails -> bibernateEntityMetadata.get(entityColumnDetails.getFieldType()))
-                .forEach(oneToOneEntities::add);
+        List<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+        Set<EntityMetadata> oneToOneEntities = searchedEntityMetadata.getOneToOneEntities(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
 
         var query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
 
@@ -177,7 +201,7 @@ public class EntityDao implements Dao {
             populatePreparedStatement(bindValues, statement);
 
             var resultSet = statement.executeQuery();
-            while (resultSet.next()) {
+            if (resultSet.next()) {
                 return Optional.of(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {

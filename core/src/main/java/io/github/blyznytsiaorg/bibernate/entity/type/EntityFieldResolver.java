@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +20,8 @@ public class EntityFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity,
+                                                EntityPersistent entityPersistent) {
         var session = getBibernateSession();
         var joinColumnName = joinColumnName(field);
         var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);

@@ -13,12 +13,12 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class OneToOneBidirectionalLazyTest extends AbstractPostgresInfrastructurePrep {
+class OneToOneBidirectionalLazyTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should retrieve person and address")
     @Disabled
     @Test
-    public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
+    void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
         var persistent = createPersistent("testdata.onetoone.bidirectional.eager");

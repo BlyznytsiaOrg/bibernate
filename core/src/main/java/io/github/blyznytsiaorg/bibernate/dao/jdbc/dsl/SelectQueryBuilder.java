@@ -71,7 +71,7 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
-    public SelectQueryBuilder selectFields(List<String> fieldNames) {
+    public  SelectQueryBuilder selectFields(List<String> fieldNames) {
         selectedFields.addAll(fieldNames);
         return this;
     }

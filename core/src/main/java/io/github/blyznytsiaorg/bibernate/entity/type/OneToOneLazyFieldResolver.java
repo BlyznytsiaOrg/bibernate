@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
 
@@ -18,10 +19,11 @@ public class OneToOneLazyFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity,
+                                                EntityPersistent entityPersistent) {
         var session = BibernateContextHolder.getBibernateSession();
 
-        var joinColumnName = joinColumnName(field);
+        var joinColumnName = table(entity.getClass()) + "_" +joinColumnName(field);
         var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
         Class<?> type = field.getType();
         Supplier<?> entitySupplier = () -> session.findById(type, joinColumnValue).orElse(null);

@@ -308,7 +308,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
     ) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(annotationClass))
-                .map(EntityReflectionUtils::columnName)
+                .map(field -> table(entityClass) + "." + EntityReflectionUtils.columnName(field))
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
                         errorMessage.formatted(entityClass.getSimpleName())));

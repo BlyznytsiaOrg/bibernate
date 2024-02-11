@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.collection.PersistentList;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
@@ -23,7 +24,8 @@ public class CollectionFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity,
+                                                EntityPersistent entityPersistent) {
         Object entityId = getEntityId(field, resultSet);
 
         if (Objects.isNull(entityId)) {

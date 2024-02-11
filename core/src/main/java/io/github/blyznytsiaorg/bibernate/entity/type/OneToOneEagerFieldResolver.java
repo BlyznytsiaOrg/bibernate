@@ -1,7 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 
 import java.lang.reflect.Field;
@@ -17,7 +19,8 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity,
+                                                EntityPersistent entityPersistent) {
         Class<?> type = field.getType();
 
         try {
@@ -29,7 +32,8 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
                             || Objects.equals(field.getName(), declaredField.getAnnotation(OneToOne.class).mappedBy()))) {
                         setField(declaredField, obj, entity);
                     } else {
-                        Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
+                        String columNameWithTablePrefix = getColumnName(declaredField, type);
+                        Object object = resultSet.getObject(columNameWithTablePrefix);
                         setField(declaredField, obj, object);
                     }
                 }
@@ -38,16 +42,35 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
             } else {
                 Object obj = field.getType().getDeclaredConstructor().newInstance();
                 for (Field declaredField : field.getType().getDeclaredFields()) {
-                    Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
-                    setField(declaredField, obj, object);
+                    String columNameWithTablePrefix = getColumnName(declaredField, type);
+                    Object object = resultSet.getObject(columNameWithTablePrefix);
+
+                    if (Objects.nonNull(declaredField.getAnnotation(OneToOne.class))) {
+                        Class<?> currentFieldType = declaredField.getType();
+                        Object oneOnOneRelation = entityPersistent.toEntity(resultSet, currentFieldType);
+                        setField(declaredField, obj, oneOnOneRelation);
+                    } else {
+                        setField(declaredField, obj, object);
+                    }
                 }
 
                 return obj;
             }
         } catch (Exception exe) {
             throw new BibernateGeneralException(
-                    "Cannot populate type " + field.getType() + "due to message " + exe.getMessage(), exe
+                    "Cannot populate type " + field.getType() + " due to message " + exe.getMessage(), exe
             );
         }
+    }
+
+    private static String getColumnName(Field declaredField, Class<?> type) {
+        String columnName;
+
+        if (declaredField.isAnnotationPresent(OneToOne.class) && declaredField.isAnnotationPresent(JoinColumn.class)) {
+            columnName = declaredField.getAnnotation(JoinColumn.class).name();
+        } else {
+            columnName = table(type).concat("_").concat(columnName(declaredField));
+        }
+        return columnName;
     }
 }

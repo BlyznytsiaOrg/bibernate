@@ -40,8 +40,9 @@ public class SqlBuilder {
      * @param whereCondition The WHERE condition for filtering records.
      * @return The generated SELECT SQL statement as a string.
      */
-    public String selectBy(String tableName, String whereCondition) {
-        return from(tableName)
+    public String selectBy(List<String> fieldNames, String tableName, String whereCondition) {
+        return new SelectQueryBuilder(tableName)
+                .selectFields(fieldNames)
                 .whereCondition(whereCondition)
                 .buildSelectStatement();
     }

@@ -25,11 +25,12 @@ public class EntityPersistent {
         T entity = entityClass.getDeclaredConstructor().newInstance();
 
         for (var field : entityClass.getDeclaredFields()) {
-            typeResolverFactory.getTypeFieldResolvers().stream()
+            typeResolverFactory.getTypeFieldResolvers()
+                    .stream()
                     .filter(valueType -> valueType.isAppropriate(field)
                             && !ignoredRelationFields.contains(field.getName()))
                     .findFirst()
-                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet));
+                    .ifPresent(fieldResolver -> setFieldDependency(fieldResolver, field, entity, resultSet, this));
         }
 
         return entity;
@@ -38,8 +39,8 @@ public class EntityPersistent {
     private <T> void setFieldDependency(TypeFieldResolver valueType,
                                         Field field,
                                         T entity,
-                                        ResultSet resultSet) {
-        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity);
+                                        ResultSet resultSet, EntityPersistent entityPersistent) {
+        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity, entityPersistent);
         Optional.ofNullable(value).ifPresent(v -> setField(field, entity, v));
     }
 
