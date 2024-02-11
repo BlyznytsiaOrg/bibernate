@@ -40,7 +40,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             assertThat(persons).isPresent();
             assertThat(persons).get().isNotNull();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -274,7 +274,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             //when
             personRepository.delete(1L);
             assertQueries(bibernateSessionFactory, List.of(
-                    "DELETE FROM persons WHERE id = ?;"));
+                    "DELETE FROM persons WHERE persons.id = ?;"));
 
             //then
             assertThat(personRepository.findAll()).hasSize(3);

@@ -38,7 +38,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id = ?;",
+                    "SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;",
                     "UPDATE persons SET first_name = ? WHERE id = ?;")
             );
 
@@ -80,7 +80,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id = ?;",
+                    "SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;",
                     "UPDATE persons SET first_name = ?, last_name = ? WHERE id = ?;")
             );
 
@@ -122,7 +122,7 @@ class DirtyCheckingPersonTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertQueries(bibernateSessionFactory, List.of(
-                    "SELECT * FROM persons WHERE id = ?;",
+                    "SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;",
                     "UPDATE persons SET first_name = ?, last_name = ? WHERE id = ?;")
             );
 

@@ -40,7 +40,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username is null;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT users.id AS users_id, users.username AS users_username, users.enabled AS users_enabled, users.age AS users_age FROM users WHERE username is null;"));
         }
     }
 
@@ -66,7 +66,7 @@ class BibernateRepositoryByIsNullFieldTest extends AbstractPostgresInfrastructur
             //then
             assertThat(user).isPresent();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE username = ? And age = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT users.id AS users_id, users.username AS users_username, users.enabled AS users_enabled, users.age AS users_age FROM users WHERE username = ? And age = ?;"));
         }
     }
 
