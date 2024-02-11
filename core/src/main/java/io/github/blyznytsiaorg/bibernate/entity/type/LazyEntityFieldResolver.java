@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
@@ -8,14 +9,19 @@ import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
-public class OneToOneLazyFieldResolver implements TypeFieldResolver {
+public class LazyEntityFieldResolver implements TypeFieldResolver {
     @Override
     public boolean isAppropriate(Field field) {
-        return field.isAnnotationPresent(OneToOne.class) && field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY;
+        return Optional.ofNullable(field.getAnnotation(ManyToOne.class))
+                .map(annotation -> annotation.fetch() == FetchType.LAZY)
+                .orElse(Optional.ofNullable(field.getAnnotation(OneToOne.class))
+                        .map(annotation -> annotation.fetch() == FetchType.LAZY)
+                        .orElse(false));
     }
 
     @Override

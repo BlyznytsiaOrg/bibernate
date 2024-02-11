@@ -3,10 +3,10 @@ package io.github.blyznytsiaorg.bibernate.manytoone;
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
-import org.junit.Ignore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.manytoone.unidirectional.positive.Note;
+import testdata.manytoone.eager.unidirectional.notannotated.Note;
+import testdata.manytoone.eager.unidirectional.notannotated.Person;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +24,12 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent("testdata.manytoone.unidirectional.positive");
+        var persistent = createPersistent("testdata.manytoone.eager.unidirectional.positive");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
                 // when
-                Optional<Note> noteOptional = session.findById(Note.class, 1L);
+                Optional<testdata.manytoone.eager.unidirectional.positive.Note> noteOptional = session.findById(testdata.manytoone.eager.unidirectional.positive.Note.class, 1L);
 
                 // then
                 assertThat(noteOptional).isPresent();
@@ -60,7 +60,7 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
         
-        assertThrows(MappingException.class, () -> createPersistent("testdata.manytoone.badannotation"));
+        assertThrows(MappingException.class, () -> createPersistent("testdata.manytoone.eager.badannotation"));
     }
 
     @DisplayName("Should treat as regular field if not annotated with @ManyToOne")
@@ -70,12 +70,12 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-        var persistent = createPersistent("testdata.manytoone.unidirectional.notannotated");
+        var persistent = createPersistent("testdata.manytoone.eager.unidirectional.notannotated");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
                 // when
-                var noteOptional = session.findById(testdata.manytoone.unidirectional.notannotated.Note.class, 1L);
+                var noteOptional = session.findById(Note.class, 1L);
 
                 // then
                 assertThat(noteOptional).isPresent();
@@ -100,12 +100,12 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
         QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
         QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_DELETE_NOTES_STATEMENT);
 
-        var persistent = createPersistent("testdata.manytoone.unidirectional.notannotated");
+        var persistent = createPersistent("testdata.manytoone.eager.unidirectional.notannotated");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var sessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = sessionFactory.openSession()) {
                 // when
-                var personOptional = session.findById(testdata.manytoone.unidirectional.notannotated.Person.class, 1L);
+                var personOptional = session.findById(Person.class, 1L);
 
                 // then
                 assertThat(personOptional).isPresent();
@@ -115,6 +115,41 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
                 assertQueries(sessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            }
+        }
+    }
+
+    @DisplayName("Should retrieve note and person lazily")
+    @Test
+    void shouldFindExistingNoteWithPersonLazy() {
+        // given
+        QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
+        QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
+
+        var persistent = createPersistent("testdata.manytoone.lazy.unidirectional");
+        try (var entityManager = persistent.createBibernateEntityManager()) {
+            var sessionFactory = entityManager.getBibernateSessionFactory();
+            try (var session = sessionFactory.openSession()) {
+                // when
+                var noteOptional = session.findById(testdata.manytoone.lazy.unidirectional.Note.class, 1L);
+
+                // then
+                assertThat(noteOptional).isPresent();
+                assertThat(noteOptional.get())
+                        .hasFieldOrPropertyWithValue("id", 1L)
+                        .hasFieldOrPropertyWithValue("text", "My First Note");
+
+                assertQueries(sessionFactory, List.of(
+                        "SELECT * FROM notes WHERE id = ?;"));
+
+                assertThat(noteOptional.get().getPerson())
+                        .hasFieldOrPropertyWithValue("id", 1L)
+                        .hasFieldOrPropertyWithValue("firstName", "FirstName")
+                        .hasFieldOrPropertyWithValue("lastName", "LastName");
+
+                assertQueries(sessionFactory, List.of(
+                        "SELECT * FROM notes WHERE id = ?;",
+                        "SELECT * FROM persons WHERE id = ?;"));
             }
         }
     }
