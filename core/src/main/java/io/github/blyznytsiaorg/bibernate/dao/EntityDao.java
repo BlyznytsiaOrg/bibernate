@@ -60,7 +60,7 @@ public class EntityDao implements Dao {
 
         var fieldIdName = columnIdName(entityClass);
 
-        List<T> resultList = findAllByColumnValue(entityClass, fieldIdName, primaryKey);
+        var resultList = findAllByColumnValue(entityClass, fieldIdName, primaryKey);
 
         if (resultList.size() > 1) {
             throw new NonUniqueResultException(NON_UNIQUE_RESULT_FOR_FIND_BY_ID.formatted(entityClass.getSimpleName()));
@@ -75,23 +75,64 @@ public class EntityDao implements Dao {
 
         var tableName = table(entityClass);
         var query = sqlBuilder.selectAll(tableName);
-
         var dataSource = bibernateDatabaseSettings.getDataSource();
+        var items = new ArrayList<T>();
+
         addToExecutedQueries(query);
+        showSql(() -> log.debug(QUERY, query));
 
-        List<T> items = new ArrayList<>();
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
-            showSql(() -> log.debug(QUERY, query));
-
-            var resultSet = statement.executeQuery();
+            var resultSet = ps.executeQuery();
             while (resultSet.next()) {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            var errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
+        }
+
+        return items;
+    }
+
+    @Override
+    public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        CollectionUtils.requireNonEmpty(primaryKeys, COLLECTION_MUST_BE_NOT_EMPTY);
+
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        var query = sqlBuilder.selectAllById(tableName, fieldIdName, primaryKeys.size());
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+        var ids = primaryKeys.toArray();
+        var items = new ArrayList<T>();
+
+        addToExecutedQueries(query);
+        showSql(() -> log.debug(QUERY_BIND_VALUES, query, primaryKeys));
+
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
+
+            populatePreparedStatement(ids, ps);
+
+            var resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+            }
+        } catch (Exception exe) {
+            var errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
 
         return items;
@@ -136,46 +177,53 @@ public class EntityDao implements Dao {
         return entities;
     }
 
+    @Override
     public <T> List<T> findOneByWhereJoin(Class<T> entityClass,
-                                              Object... bindValues) {
+                                          Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
-        EntityMetadata searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
 
-        String tableName = searchedEntityMetadata.getTableName();
-        String columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+        var tableName = searchedEntityMetadata.getTableName();
+        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
                 .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
                 .map(EntityColumnDetails::getColumn)
                 .map(ColumnMetadata::getName)
                 .findFirst()
                 .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
 
-        String whereConditionId = tableName.concat(".").concat(columnIdName);
-        Set<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+        var whereConditionId = tableName.concat(".").concat(columnIdName);
+        var joinInfos = searchedEntityMetadata.joinInfos(
                 entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
         );
 
         var query = sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
 
         addToExecutedQueries(query);
-        List<T> items = new ArrayList<>();
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        var items = new ArrayList<T>();
+
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             showSql(() -> log.debug(QUERY_BIND_VALUES, query, Arrays.toString(bindValues)));
 
-            populatePreparedStatement(bindValues, statement);
+            populatePreparedStatement(bindValues, ps);
 
-            var resultSet = statement.executeQuery();
-            while (resultSet.next()) {
+            var resultSet = ps.executeQuery();
+            if (resultSet.next()) {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            var errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
 
         return items;
@@ -188,7 +236,7 @@ public class EntityDao implements Dao {
         var dataSource = bibernateDatabaseSettings.getDataSource();
         addToExecutedQueries(query);
 
-        List<T> items = new ArrayList<>();
+        var items = new ArrayList<T>();
         Connection connection = null;
         PreparedStatement ps = null;
         try {
@@ -204,7 +252,7 @@ public class EntityDao implements Dao {
                 items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            var errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         } finally {
             close(connection, ps);
@@ -232,7 +280,7 @@ public class EntityDao implements Dao {
                 return resultSet.getInt(1);
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_QUERY.formatted(query, exe.getMessage());
+            var errorMessage = CANNOT_EXECUTE_QUERY.formatted(query, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         } finally {
             close(connection, ps);
@@ -251,14 +299,14 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
         var fieldIdValue = columnIdValue(entityClass, entity);
-        boolean isVersionFound = isColumnVersionFound(entityClass);
+        var isVersionFound = isColumnVersionFound(entityClass);
         Number fieldVersionValue = null;
 
         if (isVersionFound) {
             fieldVersionValue = (Number) columnVersionValue(entityClass, entity);
         }
 
-        String query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
+        var query = sqlBuilder.update(entity, tableName, fieldIdName, diff);
         addToExecutedQueries(query);
 
         Connection connection = null;
@@ -280,7 +328,7 @@ public class EntityDao implements Dao {
                 );
             }
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
+            var errorMessage = CANNOT_EXECUTE_UPDATE_ENTITY_CLASS
                     .formatted(entityClass, fieldIdValue, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         } finally {
@@ -293,9 +341,8 @@ public class EntityDao implements Dao {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
-        if (isColumnVersionFound(entityClass)) {
-            setVersionValueIfNull(entityClass, entity);
-        }
+        setVersionValueIfNull(entityClass, entity);
+
         identity.saveWithIdentity(entityClass, Collections.singletonList(entity));
         log.trace(SAVE, entityClass.getSimpleName());
         return entityClass.cast(entity);
@@ -304,11 +351,10 @@ public class EntityDao implements Dao {
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
-        validateCollection(entities);
+        CollectionUtils.requireNonEmpty(entities, COLLECTION_MUST_BE_NOT_EMPTY);
 
-        if (isColumnVersionFound(entityClass)) {
-            setVersionValueIfNull(entityClass, entities);
-        }
+        setVersionValueIfNull(entityClass, entities);
+
         identity.saveWithIdentity(entityClass, entities);
         log.trace(SAVE_ALL, entityClass.getSimpleName());
     }
@@ -325,56 +371,10 @@ public class EntityDao implements Dao {
         return deleteByColumnValue(entityClass, columnName, value, true);
     }
 
-    public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value,
-                                           boolean returnDeletedEntities) {
-        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
-        Objects.requireNonNull(columnName, FIELD_MUST_BE_NOT_NULL);
-
-        var dataSource = bibernateDatabaseSettings.getDataSource();
-
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
-        var entityMetadata = bibernateEntityMetadata.get(entityClass);
-        var tableName = entityMetadata.getTableName();
-
-        var session = BibernateContextHolder.getBibernateSession();
-        var relationsForRemoval = entityMetadata.getCascadeRemoveRelations();
-
-        List<T> deletedEntities = Collections.emptyList();
-        if (returnDeletedEntities || CollectionUtils.isNotEmpty(relationsForRemoval)) {
-            deletedEntities = findAllByColumnValue(entityClass, columnName, value);
-        }
-
-        removeToManyRelations(entityClass, value, session, relationsForRemoval);
-
-        var query = sqlBuilder.delete(tableName, columnName);
-        addToExecutedQueries(query);
-        Connection connection = null;
-        PreparedStatement ps = null;
-        try {
-            connection = dataSource.getConnection();
-            ps = connection.prepareStatement(query);
-
-            showSql(() -> log.debug(QUERY_BIND_VALUE, query, columnName, value));
-
-            ps.setObject(1, value);
-
-            ps.execute();
-        } catch (Exception exe) {
-            log.error(CANNOT_EXECUTE_DELETE_ENTITY_CLASS.formatted(entityClass, value, exe.getMessage()));
-            return Collections.emptyList();
-        } finally {
-            close(connection, ps);
-        }
-
-        removeToOneRelations(deletedEntities, session, relationsForRemoval);
-
-        return deletedEntities;
-    }
-
     @Override
     public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
-        validateCollection(primaryKeys);
+        CollectionUtils.requireNonEmpty(primaryKeys, COLLECTION_MUST_BE_NOT_EMPTY);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
         var tableName = table(entityClass);
@@ -382,25 +382,30 @@ public class EntityDao implements Dao {
         var query = sqlBuilder.delete(tableName, fieldIdName);
         showSql(() -> log.debug(QUERY_BIND_VALUES, query, primaryKeys));
 
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
 
             var ids = primaryKeys.toArray();
             for (int i = 0; i < ids.length; i++) {
                 if (i % bibernateDatabaseSettings.getBatchSize() == 0) {
-                    statement.executeBatch();
+                    ps.executeBatch();
                 }
-                statement.setObject(1, ids[i]);
-                statement.addBatch();
+                ps.setObject(1, ids[i]);
+                ps.addBatch();
                 addToExecutedQueries(query);
             }
-            statement.executeBatch();
+            ps.executeBatch();
 
             log.trace(DELETE_ALL, entityClass.getSimpleName(), primaryKeys, bibernateDatabaseSettings.getBatchSize());
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS_ALL_BY_ID
+            var errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS_ALL_BY_ID
                     .formatted(entityClass, primaryKeys, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
         }
     }
 
@@ -450,8 +455,50 @@ public class EntityDao implements Dao {
             ps.execute();
             log.trace(DELETE, entityClass.getSimpleName(), fieldIdName, primaryKey);
         } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
+            var errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
                     .formatted(entityClass, primaryKey, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
+        }
+    }
+
+    @Override
+    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        CollectionUtils.requireNonEmpty(entities, COLLECTION_MUST_BE_NOT_EMPTY);
+
+        var isVersionFound = isColumnVersionFound(entityClass);
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+        var tableName = table(entityClass);
+        var fieldIdName = columnIdName(entityClass);
+        var primaryKeyToVersionValues = preparePrimaryKeyToVersionValues(entityClass, entities, isVersionFound);
+        var primaryKeys = primaryKeyToVersionValues.stream().map(Pair::getLeft).toList();
+        var query = prepareQuery(entityClass, isVersionFound, tableName, fieldIdName, primaryKeyToVersionValues, primaryKeys);
+
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
+
+            for (int i = 0; i < primaryKeyToVersionValues.size(); i++) {
+                if (i % bibernateDatabaseSettings.getBatchSize() == 0) {
+                    ps.executeBatch();
+                }
+                ps.setObject(1, primaryKeyToVersionValues.get(i).getLeft());
+                if (isVersionFound) {
+                    ps.setObject(2, primaryKeyToVersionValues.get(i).getRight());
+                }
+                ps.addBatch();
+                addToExecutedQueries(query);
+            }
+            ps.executeBatch();
+
+            log.trace(DELETE_ALL, entityClass.getSimpleName(), primaryKeys, bibernateDatabaseSettings.getBatchSize());
+        } catch (Exception exe) {
+            var errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
+                    .formatted(entityClass, primaryKeys, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         } finally {
             close(connection, ps);
@@ -481,41 +528,50 @@ public class EntityDao implements Dao {
         }
     }
 
-    @Override
-    public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+    private <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value,
+                                            boolean returnDeletedEntities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
-        validateCollection(entities);
+        Objects.requireNonNull(columnName, FIELD_MUST_BE_NOT_NULL);
 
-        var isVersionFound = isColumnVersionFound(entityClass);
         var dataSource = bibernateDatabaseSettings.getDataSource();
-        var tableName = table(entityClass);
-        var fieldIdName = columnIdName(entityClass);
-        var primaryKeyToVersionValues = preparePrimaryKeyToVersionValues(entityClass, entities, isVersionFound);
-        var primaryKeys = primaryKeyToVersionValues.stream().map(Pair::getLeft).toList();
-        var query = prepareQuery(entityClass, isVersionFound, tableName, fieldIdName, primaryKeyToVersionValues, primaryKeys);
 
-        try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var entityMetadata = bibernateEntityMetadata.get(entityClass);
+        var tableName = entityMetadata.getTableName();
 
-            for (int i = 0; i < primaryKeyToVersionValues.size(); i++) {
-                if (i % bibernateDatabaseSettings.getBatchSize() == 0) {
-                    statement.executeBatch();
-                }
-                statement.setObject(1, primaryKeyToVersionValues.get(i).getLeft());
-                if (isVersionFound) {
-                    statement.setObject(2, primaryKeyToVersionValues.get(i).getRight());
-                }
-                statement.addBatch();
-                addToExecutedQueries(query);
-            }
-            statement.executeBatch();
+        var session = BibernateContextHolder.getBibernateSession();
+        var relationsForRemoval = entityMetadata.getCascadeRemoveRelations();
 
-            log.trace(DELETE_ALL, entityClass.getSimpleName(), primaryKeys, bibernateDatabaseSettings.getBatchSize());
-        } catch (Exception exe) {
-            String errorMessage = CANNOT_EXECUTE_DELETE_ENTITY_CLASS
-                    .formatted(entityClass, primaryKeys, exe.getMessage());
-            throwErrorMessage(errorMessage, exe);
+        List<T> deletedEntities = Collections.emptyList();
+        if (returnDeletedEntities || CollectionUtils.isNotEmpty(relationsForRemoval)) {
+            deletedEntities = findAllByColumnValue(entityClass, columnName, value);
         }
+
+        removeToManyRelations(entityClass, value, session, relationsForRemoval);
+
+        var query = sqlBuilder.delete(tableName, columnName);
+        addToExecutedQueries(query);
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(query);
+
+            showSql(() -> log.debug(QUERY_BIND_VALUE, query, columnName, value));
+
+            ps.setObject(1, value);
+
+            ps.execute();
+        } catch (Exception exe) {
+            log.error(CANNOT_EXECUTE_DELETE_ENTITY_CLASS.formatted(entityClass, value, exe.getMessage()));
+            return Collections.emptyList();
+        } finally {
+            close(connection, ps);
+        }
+
+        removeToOneRelations(deletedEntities, session, relationsForRemoval);
+
+        return deletedEntities;
     }
 
     private Transaction getTransaction() throws SQLException {
@@ -638,12 +694,6 @@ public class EntityDao implements Dao {
     private void throwErrorMessage(String errorMessage, Exception exe) {
         log.error(errorMessage);
         throw new BibernateGeneralException(errorMessage, exe);
-    }
-
-    private void validateCollection(Collection<?> objects) {
-        if (CollectionUtils.isEmpty(objects)) {
-            throw new BibernateGeneralException(COLLECTION_MUST_BE_NOT_EMPTY);
-        }
     }
 
     private boolean hasAnyOneToOneEagerFetchType(EntityMetadata entityMetadata) {

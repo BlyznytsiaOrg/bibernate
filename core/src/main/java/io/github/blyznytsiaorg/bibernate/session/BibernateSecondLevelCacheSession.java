@@ -30,6 +30,10 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * Separator used in constructing cache keys.
      */
     private static final String DOT = ".";
+
+    /**
+     * A constant String representing the separator used for string concatenation or splitting.
+     */
     private static final String SEPARATOR = "_";
 
     /**
@@ -67,17 +71,29 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
         return bibernateSession.findById(entityClass, primaryKey);
     }
 
-
     /**
-     * Retrieves all records from the specified table and maps them to a list of entities of the given type.
+     * Retrieves all entities of a specified type from the data store.
      *
-     * @param entityClass The Class object representing the type of entities to be retrieved.
+     * @param entityClass The class of the entity.
      * @param <T>         The generic type representing the entity class.
-     * @return A list of entities of type T containing all records from the specified table.
+     * @return A list of all entities of the specified type in the data store.
      */
     @Override
     public <T> List<T> findAll(Class<T> entityClass) {
         return bibernateSession.findAll(entityClass);
+    }
+
+    /**
+     * Retrieves entities based on a collection of primary keys.
+     *
+     * @param entityClass The class of the entity.
+     * @param primaryKeys A collection of primary keys for identifying and retrieving specific records.
+     * @param <T>         The generic type representing the entity class.
+     * @return A list of entities matching the provided collection of primary keys.
+     */
+    @Override
+    public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        return bibernateSession.findAllById(entityClass, primaryKeys);
     }
 
     /**
@@ -203,7 +219,7 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object entity) {
+    public <T> void delete(Class<T> entityClass, T entity) {
         bibernateSession.delete(entityClass, entity);
     }
 

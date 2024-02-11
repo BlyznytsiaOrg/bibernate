@@ -20,7 +20,6 @@ public class EntityMetadata {
     private final List<IndexMetadata> indexMetadatas;
     private final List<EntityColumnDetails> entityColumns;
 
-
     public EntityMetadata(String tableName, boolean immutable, boolean dynamicUpdate, Class<?> type) {
         this.tableName = tableName;
         this.immutable = immutable;

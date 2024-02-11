@@ -29,13 +29,23 @@ public interface BibernateSession extends Closeable {
     <T> Optional<T> findById(Class<T> entityClass, Object primaryKey);
 
     /**
-     * Retrieves all records from the specified table and maps them to a list of entities of the given type.
+     * Retrieves all entities of a specified type from the data store.
      *
-     * @param entityClass The Class object representing the type of entities to be retrieved.
+     * @param entityClass The class of the entity.
      * @param <T>         The generic type representing the entity class.
-     * @return A list of entities of type T containing all records from the specified table.
+     * @return A list of all entities of the specified type in the data store.
      */
     <T> List<T> findAll(Class<T> entityClass);
+
+    /**
+     * Retrieves entities based on a collection of primary keys.
+     *
+     * @param entityClass The class of the entity.
+     * @param primaryKeys A collection of primary keys for identifying and retrieving specific records.
+     * @param <T>         The generic type representing the entity class.
+     * @return A list of entities matching the provided collection of primary keys.
+     */
+    <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys);
 
     /**
      * Finds all entities of a given class with a specified column value.
@@ -166,7 +176,7 @@ public interface BibernateSession extends Closeable {
      * @param entityClass the class of the entity
      * @param entity      the entity to delete
      */
-    <T> void delete(Class<T> entityClass, Object entity);
+    <T> void delete(Class<T> entityClass, T entity);
 
     /**
      * Deletes all records associated with the provided entities from the specified table.

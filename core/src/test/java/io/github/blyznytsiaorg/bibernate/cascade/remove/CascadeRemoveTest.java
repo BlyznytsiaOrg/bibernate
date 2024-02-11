@@ -40,6 +40,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM notes WHERE person_id = ?;"));
 
                 session.deleteById(Person.class, 1L);
+                session.flush();
 
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM persons WHERE id = ?;",
@@ -83,6 +84,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM notes WHERE person_id = ?;"));
 
                 session.deleteById(Person.class, 1L);
+                session.flush();
 
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM persons WHERE id = ?;",
@@ -127,6 +129,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM persons WHERE id = ?;"));
 
                 session.deleteById(testdata.cascade.remove.manytoone.bidirectional.Note.class, 1L);
+                session.flush();
 
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM notes WHERE id = ?;",
@@ -167,7 +170,7 @@ class CascadeRemoveTest extends AbstractPostgresInfrastructurePrep {
                         "SELECT * FROM persons WHERE id = ?;"));
 
                 session.deleteById(testdata.cascade.remove.manytoone.unidirectional.Note.class, 1L);
-                
+
                 noteOptional = session.findById(testdata.cascade.remove.manytoone.unidirectional.Note.class, 1L);
                 var personOptional = session.findById(testdata.cascade.remove.manytoone.unidirectional.Person.class, 1L);
 

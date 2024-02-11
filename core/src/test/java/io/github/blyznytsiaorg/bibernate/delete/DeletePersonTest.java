@@ -36,6 +36,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
 
                 assertThat(person).isEmpty();
                 assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * FROM persons WHERE id = ?;",
                         "DELETE FROM persons WHERE id = ?;",
                         "SELECT * FROM persons WHERE id = ?;"));
             }
@@ -93,6 +94,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
                 assertThat(removedPersons).isEmpty();
                 assertQueries(bibernateSessionFactory, List.of(
                         "SELECT * FROM persons;",
+                        "SELECT * FROM persons WHERE id IN ( ?, ?, ? );",
                         "DELETE FROM persons WHERE id = ?;",
                         "DELETE FROM persons WHERE id = ?;",
                         "DELETE FROM persons WHERE id = ?;",
