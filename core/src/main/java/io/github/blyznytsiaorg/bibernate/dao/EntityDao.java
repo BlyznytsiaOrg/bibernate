@@ -133,14 +133,14 @@ public class EntityDao implements Dao {
             List<String> fieldNames = new ArrayList<>();
             for (EntityColumnDetails column : searchedEntityMetadata.getEntityColumns()) {
                 if (!column.isCollection() && Objects.isNull(column.getOneToOne())) {
-                    String s = tableName + DOT + column.getColumn().getName()  + " as " + tableName + "_" + column.getColumn().getName();
+                    String s = tableName + DOT + column.getColumn().getName()  + " AS " + tableName + "_" + column.getColumn().getName();
                     fieldNames.add(s);
                 } else if (Objects.nonNull(column.getOneToOne())) {
                     FetchType fetchType = column.getOneToOne().getFetchType();
                     if (fetchType == FetchType.LAZY) {
                         //TODO
                         String joinColumnName = column.getField().getAnnotation(JoinColumn.class).name();
-                        String s = tableName + DOT + joinColumnName + " as " + tableName + "_" + joinColumnName;
+                        String s = tableName + DOT + joinColumnName + " AS " + tableName + "_" + joinColumnName;
                         fieldNames.add(s);
                     }
                 }

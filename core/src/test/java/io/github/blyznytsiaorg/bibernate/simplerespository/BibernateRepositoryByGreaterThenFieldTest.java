@@ -41,7 +41,7 @@ class BibernateRepositoryByGreaterThenFieldTest extends AbstractPostgresInfrastr
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM users WHERE age > ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT users.id AS users_id, users.username AS users_username, users.enabled AS users_enabled, users.age AS users_age FROM users WHERE age > ?;"));
         }
     }
 
