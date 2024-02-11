@@ -42,7 +42,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 bibernateSession.flush();
 
                 //then
-                assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE id = ? AND version = ?;"));
+                assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE employees.id = ? AND employees.version = ?;"));
             }
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -113,7 +113,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 bibernateSession.flush();
 
                 //then
-                assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE id = ? AND version = ?;"));
+                assertQueries(bibernateSessionFactory, List.of("DELETE FROM employees WHERE employees.id = ? AND employees.version = ?;"));
             }
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
