@@ -1,6 +1,28 @@
 package io.github.blyznytsiaorg.bibernate.utils;
 
-import io.github.blyznytsiaorg.bibernate.annotation.*;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
+import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
+import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
+
+import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.CreationTimestamp;
+import io.github.blyznytsiaorg.bibernate.annotation.DynamicUpdate;
+import io.github.blyznytsiaorg.bibernate.annotation.ForeignKey;
+import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
+import io.github.blyznytsiaorg.bibernate.annotation.Id;
+import io.github.blyznytsiaorg.bibernate.annotation.Immutable;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
+import io.github.blyznytsiaorg.bibernate.annotation.JoinTable;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
+import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
+import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.UpdateTimestamp;
+import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.SequenceConf;
 import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
@@ -11,7 +33,6 @@ import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -22,15 +43,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
-
-import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
-import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
-import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
-import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
 
 
 /**
@@ -476,6 +497,8 @@ public class EntityReflectionUtils {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
                         && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
+                .filter(Predicate.not(field -> field.isAnnotationPresent(CreationTimestamp.class)
+                || field.isAnnotationPresent(UpdateTimestamp.class)))
                 //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
                 //TODO: ADD utility jdbc class to insert all types or null
                 .toList();

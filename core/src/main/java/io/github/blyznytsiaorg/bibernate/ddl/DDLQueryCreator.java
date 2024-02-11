@@ -153,15 +153,11 @@ public class DDLQueryCreator {
         if (entityColumn.getColumn().isTimeZone()) {
             if (isCreationTimestamp(entityColumn)) {
                 nameData = TIMESTAMP_WITH_TIME_ZONE_DEFAULT_NOW.formatted(name, databaseType);
-            } else if (isUpdateTimestamp(entityColumn)) {
-                nameData = TIMESTAMP_WITH_TIME_ZONE_DEFAULT_NOW.formatted(name, databaseType);
             } else {
                nameData = NAME_DATA_PATTERN_WITH_TIME_ZONE.formatted(name, databaseType);
             }
         } else {
             if (isCreationTimestamp(entityColumn)) {
-               nameData = TIMESTAMP_DEFAULT_NOW.formatted(name, databaseType);
-            } else if (isUpdateTimestamp(entityColumn)) {
                nameData = TIMESTAMP_DEFAULT_NOW.formatted(name, databaseType);
             } else {
                nameData = NAME_DATA_PATTERN.formatted(name, databaseType);
@@ -198,9 +194,6 @@ public class DDLQueryCreator {
         return entityColumn.getCreationTimestampMetadata() != null;
     }
 
-    private boolean isUpdateTimestamp(EntityColumnDetails entityColumn) {
-        return entityColumn.getUpdateTimestampMetadata() != null;
-    }
 
     private void processToManyRelations(Set<String> foreignNameConstraints,
                                         String tableName, EntityColumnDetails entityColumn) {
@@ -361,7 +354,7 @@ public class DDLQueryCreator {
     private void checkForeignKeyName(String foreignKeyName,
                                      Set<String> foreignNameConstraints) {
         if (!foreignNameConstraints.add(foreignKeyName)) {
-            throw new MappingException("Duplicate in foreign key name '%s'".formatted(foreignNameConstraints));
+            throw new MappingException("Duplicate in foreign key name '%s'".formatted(foreignKeyName));
         }
     }
 

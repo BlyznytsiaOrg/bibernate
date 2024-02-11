@@ -28,6 +28,7 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     private static final String MAPPED_BY_ONE_TO_ONE= "testOne";
     private static final String MAPPED_BY_MANY_TO_MANY= "testOnes";
     public static final String CREATED_AT = "createdAt";
+    public static final String FOREIGN_KEY_CONSTRAINT = "test";
 
     @Test
     @DisplayName("should throw exception on mismatch of index columnList and column name")
@@ -165,6 +166,22 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
         // when
         RuntimeException exception = catchRuntimeException(
                 () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.notsufficienttypeontimestamp"));
+        String actualMessage = exception.getMessage();
+
+        // then
+        assertThat(exception).isExactlyInstanceOf(MappingException.class);
+        assertThat(actualMessage).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    @DisplayName("should throw exception on duplicate foreign key constraint name")
+    @SneakyThrows
+    void shouldThrowExceptionOnDuplicateForeignKeyConstraintName() {
+        String expectedErrorMessage = ("Duplicate in foreign key name '%s'".formatted(FOREIGN_KEY_CONSTRAINT));
+
+        // when
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.foreignkeyconstraintduplicate"));
         String actualMessage = exception.getMessage();
 
         // then
