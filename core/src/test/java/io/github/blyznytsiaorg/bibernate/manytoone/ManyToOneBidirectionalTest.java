@@ -10,7 +10,7 @@ import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.manytoone.bidirectional.Note;
+import testdata.manytoone.eager.bidirectional.Note;
 
 class ManyToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
 
@@ -21,7 +21,7 @@ class ManyToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
     QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
     QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
 
-    var persistent = createPersistent("testdata.manytoone.bidirectional");
+    var persistent = createPersistent("testdata.manytoone.eager.bidirectional");
     try (var entityManager = persistent.createBibernateEntityManager()) {
       var sessionFactory = entityManager.getBibernateSessionFactory();
       try (var session = sessionFactory.openSession()) {
@@ -46,6 +46,41 @@ class ManyToOneBidirectionalTest extends AbstractPostgresInfrastructurePrep {
         assertQueries(sessionFactory, List.of(
           "SELECT * FROM notes WHERE id = ?;",
           "SELECT * FROM persons WHERE id = ?;"));
+      }
+    }
+  }
+
+  @DisplayName("Should retrieve note and person lazily")
+  @Test
+  void shouldFindExistingNoteWithPersonLazy() {
+    // given
+    QueryUtils.setupTables(dataSource, CREATE_PERSONS_TABLE, CREATE_PERSONS_INSERT_STATEMENT);
+    QueryUtils.setupTables(dataSource, CREATE_NOTES_TABLE, CREATE_INSERT_NOTES_STATEMENT);
+
+    var persistent = createPersistent("testdata.manytoone.lazy.bidirectional");
+    try (var entityManager = persistent.createBibernateEntityManager()) {
+      var sessionFactory = entityManager.getBibernateSessionFactory();
+      try (var session = sessionFactory.openSession()) {
+        // when
+        var noteOptional = session.findById(testdata.manytoone.lazy.bidirectional.Note.class, 1L);
+
+        // then
+        assertThat(noteOptional).isPresent();
+        assertThat(noteOptional.get())
+                .hasFieldOrPropertyWithValue("id", 1L)
+                .hasFieldOrPropertyWithValue("text", "My First Note");
+
+        assertQueries(sessionFactory, List.of(
+                "SELECT * FROM notes WHERE id = ?;"));
+
+        assertThat(noteOptional.get().getPerson())
+                .hasFieldOrPropertyWithValue("id", 1L)
+                .hasFieldOrPropertyWithValue("firstName", "FirstName")
+                .hasFieldOrPropertyWithValue("lastName", "LastName");
+
+        assertQueries(sessionFactory, List.of(
+                "SELECT * FROM notes WHERE id = ?;",
+                "SELECT * FROM persons WHERE id = ?;"));
       }
     }
   }

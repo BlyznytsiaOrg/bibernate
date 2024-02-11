@@ -1,8 +1,8 @@
-package testdata.manytoone.badannotation;
+package testdata.manytoone.eager.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
-import testdata.manytoone.unidirectional.positive.Person;
+import testdata.manytoone.eager.unidirectional.positive.Person;
 
 import java.util.ArrayList;
 import java.util.List;
