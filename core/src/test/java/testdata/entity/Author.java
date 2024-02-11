@@ -1,6 +1,7 @@
 package testdata.entity;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.CreationTimestamp;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.GenerationType;
@@ -11,6 +12,7 @@ import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +26,11 @@ public class Author {
     @Column(name = "id")
     private int id;
 
+    @Column(nullable = false)
     private String name;
+
+    @CreationTimestamp
+    private OffsetDateTime createdAt;
 
     @OneToOne(mappedBy = "author")
     AuthorProfile authorProfile;

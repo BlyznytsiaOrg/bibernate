@@ -13,4 +13,6 @@ public class ColumnMetadata {
     private boolean unique;
     private boolean nullable;
     private String columnDefinition;
+    private boolean timestamp;
+    private boolean timeZone;
 }

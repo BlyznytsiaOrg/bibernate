@@ -1,7 +1,9 @@
 package io.github.blyznytsiaorg.bibernate.ddl;
 
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getSnakeString;
-import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.getPostgresIdType;
+import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.checkIdTypeForGeneration;
+import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.isInternalJavaTypeSuitableForCreation;
+import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.getPostgresIdTypeForGeneration;
 
 import io.github.blyznytsiaorg.bibernate.annotation.ManyToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
@@ -54,6 +56,9 @@ public class DDLQueryCreator {
     public static final String JAVA_TIME = "java.time";
     public static final String CREATE_TABLE = "create table %s (";
     public static final String BRACKET = ")";
+    public static final String NAME_DATA_PATTERN_WITH_TIME_ZONE = "%s %s with time zone";
+    public static final String TIMESTAMP_DEFAULT_NOW = "%s %s default now()";
+    public static final String TIMESTAMP_WITH_TIME_ZONE_DEFAULT_NOW = "%s %s with time zone default now()";
     private final List<String> dropSequences = new ArrayList<>();
     private final List<String> createSequences = new ArrayList<>();
     private final List<String> createTables = new ArrayList<>();
@@ -86,21 +91,18 @@ public class DDLQueryCreator {
 
             entityMetadata.getEntityColumns().forEach(entityColumn -> {
 
-                Class<?> fieldType = entityColumn.getFieldType();
-                Field field = entityColumn.getField();
+                if (hasNoRelation(entityColumn)) {
 
-                if (isInternalJavaType(fieldType)) {
+                    processInternalJavaType(tableName, columnNameAndDatabaseTypeList, entityColumn);
 
-                    processInternalJavaType(tableName, columnNameAndDatabaseTypeList,
-                            entityColumn, fieldType);
-
-                } else if (field.isAnnotationPresent(ManyToMany.class)) {
+                } else if (isManyToMany(entityColumn)) {
 
                     processToManyRelations(foreignNameConstraints, tableName, entityColumn);
-                } else if (ifIsToOneRelation(field)) {
+
+                } else if (isToOneRelation(entityColumn)) {
 
                     processToOneRelations(entityClass, foreignNameConstraints, tableName,
-                            columnNameAndDatabaseTypeList, entityColumn, fieldType);
+                            columnNameAndDatabaseTypeList, entityColumn);
                 }
             });
             String collectNameDatabaseTypes = String.join(DELIMITER, columnNameAndDatabaseTypeList);
@@ -110,7 +112,18 @@ public class DDLQueryCreator {
         });
     }
 
-    private static boolean ifIsToOneRelation(Field field) {
+    private boolean isManyToMany(EntityColumnDetails entityColumn) {
+        Field field = entityColumn.getField();
+        return field.isAnnotationPresent(ManyToMany.class);
+    }
+
+    private boolean hasNoRelation(EntityColumnDetails entityColumn) {
+        return entityColumn.getManyToMany() == null && entityColumn.getOneToOne() == null
+                && entityColumn.getManyToOne() == null && entityColumn.getOneToMany() == null;
+    }
+
+    private boolean isToOneRelation(EntityColumnDetails entityColumn) {
+        Field field = entityColumn.getField();
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
             OneToOne oneToOne = field.getAnnotation(OneToOne.class);
             return oneToOne == null || oneToOne.mappedBy().isEmpty();
@@ -120,33 +133,73 @@ public class DDLQueryCreator {
 
     private void processInternalJavaType(String tableName,
                                          List<String> columnNameAndDatabaseTypeList,
-                                         EntityColumnDetails entityColumn, Class<?> fieldType) {
-        ColumnMetadata column = entityColumn.getColumn();
-        String columnName = column.getName();
-        String databaseType = column.getDatabaseType();
-
-        String nameDatabaseType;
+                                         EntityColumnDetails entityColumn) {
+        isInternalJavaTypeSuitableForCreation(entityColumn, tableName);
+        String nameDatabaseTypePair;
         if (entityColumn.getId() != null) {
-            if (entityColumn.getGeneratedValue() == null) {
-                nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
+            nameDatabaseTypePair = processIdField(tableName, entityColumn);
+        } else if (entityColumn.getColumn().isTimestamp()) {
+            nameDatabaseTypePair = processTimestamp(entityColumn);
+        } else {
+            nameDatabaseTypePair = getColumnNameDatabaseType(entityColumn);
+        }
+        columnNameAndDatabaseTypeList.add(nameDatabaseTypePair);
+    }
+
+    private String processTimestamp(EntityColumnDetails entityColumn) {
+        String name = entityColumn.getColumn().getName();
+        String databaseType = entityColumn.getColumn().getDatabaseType();
+        String nameData;
+        if (entityColumn.getColumn().isTimeZone()) {
+            if (isCreationTimestamp(entityColumn)) {
+                nameData = TIMESTAMP_WITH_TIME_ZONE_DEFAULT_NOW.formatted(name, databaseType);
+            } else if (isUpdateTimestamp(entityColumn)) {
+                nameData = TIMESTAMP_WITH_TIME_ZONE_DEFAULT_NOW.formatted(name, databaseType);
             } else {
-                GeneratedValueMetadata generatedValue = entityColumn.getGeneratedValue();
-                if (generatedValue.getStrategy().equals(IDENTITY)) {
-                    String postgresIdType = getPostgresIdType(fieldType, tableName);
-                    nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, postgresIdType);
-                } else if (generatedValue.getStrategy().equals(SEQUENCE)) {
-                    checkTypeForSequence(tableName, entityColumn.getFieldType());
-                    SequenceGeneratorMetadata sequenceGenerator = entityColumn.getSequenceGenerator();
-                    generateSequence(generatedValue, sequenceGenerator, tableName, columnName);
-                    nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
-                } else {
-                    nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
-                }
+               nameData = NAME_DATA_PATTERN_WITH_TIME_ZONE.formatted(name, databaseType);
             }
         } else {
-            nameDatabaseType = getColumnNameDatabaseType(column, columnName, databaseType);
+            if (isCreationTimestamp(entityColumn)) {
+               nameData = TIMESTAMP_DEFAULT_NOW.formatted(name, databaseType);
+            } else if (isUpdateTimestamp(entityColumn)) {
+               nameData = TIMESTAMP_DEFAULT_NOW.formatted(name, databaseType);
+            } else {
+               nameData = NAME_DATA_PATTERN.formatted(name, databaseType);
+            }
         }
-        columnNameAndDatabaseTypeList.add(nameDatabaseType);
+        return nameData;
+    }
+
+    private String processIdField(String tableName, EntityColumnDetails entityColumn) {
+        Class<?> fieldType = entityColumn.getFieldType();
+        String columnName = entityColumn.getColumn().getName();
+        String databaseType = entityColumn.getColumn().getDatabaseType();
+        String nameDatabaseTypePair;
+        if (entityColumn.getGeneratedValue() == null) {
+            nameDatabaseTypePair = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
+        } else {
+            GeneratedValueMetadata generatedValue = entityColumn.getGeneratedValue();
+            if (generatedValue.getStrategy().equals(IDENTITY)) {
+                String postgresIdType = getPostgresIdTypeForGeneration(fieldType, tableName);
+                nameDatabaseTypePair = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, postgresIdType);
+            } else if (generatedValue.getStrategy().equals(SEQUENCE)) {
+                checkIdTypeForGeneration(entityColumn.getFieldType(), tableName);
+                SequenceGeneratorMetadata sequenceGenerator = entityColumn.getSequenceGenerator();
+                generateSequence(generatedValue, sequenceGenerator, tableName, columnName);
+                nameDatabaseTypePair = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
+            } else {
+                nameDatabaseTypePair = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
+            }
+        }
+        return nameDatabaseTypePair;
+    }
+
+    private boolean isCreationTimestamp(EntityColumnDetails entityColumn) {
+        return entityColumn.getCreationTimestampMetadata() != null;
+    }
+
+    private boolean isUpdateTimestamp(EntityColumnDetails entityColumn) {
+        return entityColumn.getUpdateTimestampMetadata() != null;
     }
 
     private void processToManyRelations(Set<String> foreignNameConstraints,
@@ -184,7 +237,8 @@ public class DDLQueryCreator {
 
     private void processToOneRelations(Class<?> entityClass, Set<String> foreignNameConstraints,
                                        String tableName, List<String> nameDatabaseTypes,
-                                       EntityColumnDetails entityColumn, Class<?> fieldType) {
+                                       EntityColumnDetails entityColumn) {
+        Class<?> fieldType = entityColumn.getFieldType();
         EntityMetadata metadataOfRelation = bibernateEntityMetadata.get(fieldType);
         checkIfRelationExists(entityClass, fieldType, metadataOfRelation);
         JoinColumnMetadata joinColumn = entityColumn.getJoinColumn();
@@ -252,8 +306,10 @@ public class DDLQueryCreator {
         createConstraints.add(joinColumnCreateConstraint);
     }
 
-    private String getColumnNameDatabaseType(ColumnMetadata column, String columnName,
-                                             String databaseType) {
+    private String getColumnNameDatabaseType(EntityColumnDetails entityColumn) {
+        ColumnMetadata column = entityColumn.getColumn();
+        String columnName = column.getName();
+        String databaseType = column.getDatabaseType();
         StringBuilder nameDatabaseType = new StringBuilder(NAME_DATA_PATTERN.formatted(columnName, databaseType));
 
         boolean isUnique = column.isUnique();
@@ -302,15 +358,6 @@ public class DDLQueryCreator {
         }
     }
 
-    private void checkTypeForSequence(String tableName, Class<?> type) {
-        if (!type.equals(Long.class) && !type.equals(long.class)
-                && !type.equals(Integer.class) && !type.equals(int.class)) {
-            throw new MappingException("Error creating SQL commands for "
-                    + "table '%s' [illegal identity column type '%s'] for sequence"
-                    .formatted(tableName, type.getSimpleName()));
-        }
-    }
-
     private void checkForeignKeyName(String foreignKeyName,
                                      Set<String> foreignNameConstraints) {
         if (!foreignNameConstraints.add(foreignKeyName)) {
@@ -346,11 +393,5 @@ public class DDLQueryCreator {
                 createSequences.add(SEQUENCE_CREATION.formatted(sequenceName, initialValue, allocationSize));
             }
         }
-    }
-
-    private boolean isInternalJavaType(Class<?> fieldType) {
-        String packageName = fieldType.getPackageName();
-        return packageName.equals(JAVA_LANG) || packageName.equals(JAVA_MATH)
-                || packageName.equals(JAVA_SQL) || packageName.equals(JAVA_TIME);
     }
 }

@@ -75,7 +75,7 @@ class EntityMetadataCollectorTest {
         assertThat(entityMetadata).isNotNull();
         assertThat(entityMetadata.getTableName()).isEqualTo("authors");
 
-        assertThat(entityMetadata.getEntityColumns()).hasSize(4);
+        assertThat(entityMetadata.getEntityColumns()).hasSize(5);
 
         for (EntityColumnDetails entityColumnDetails : entityMetadata.getEntityColumns()) {
              if (entityColumnDetails.getFieldName().equals("books")) {

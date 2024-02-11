@@ -5,7 +5,9 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.getCascadeTypesFromAnnotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
+import io.github.blyznytsiaorg.bibernate.annotation.CreationTimestamp;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
+import io.github.blyznytsiaorg.bibernate.annotation.ForeignKey;
 import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.JoinColumn;
@@ -15,8 +17,9 @@ import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToMany;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
-import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.annotation.UpdateTimestamp;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.CreationTimestampMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.GeneratedValueMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IdMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.JoinColumnMetadata;
@@ -26,14 +29,19 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ManyToOneMetadata
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToManyMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.OneToOneMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.SequenceGeneratorMetadata;
+import io.github.blyznytsiaorg.bibernate.entity.metadata.model.UpdateTimestampMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.EntitiesNotFoundException;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
-import io.github.blyznytsiaorg.bibernate.utils.DDLUtils;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,9 +123,52 @@ public class EntityMetadataCollector {
                 .manyToOne(getManyToOne(field))
                 .manyToMany(getManyToMany(field, entityClass))
                 .joinColumn(getJoinColumn(field))
-                .joinTable(getJoinTable(field, entityClass));
+                .joinTable(getJoinTable(field, entityClass))
+                .creationTimestampMetadata(getCreationTimestampMetadata(field, entityClass))
+                .updateTimestampMetadata(getUpdateTimestampMetadata(field, entityClass));
 
         return entityColumnDetails.build();
+    }
+
+    private UpdateTimestampMetadata getUpdateTimestampMetadata(Field field, Class<?> entityClass) {
+        checkOnSufficientField(field, entityClass);
+        if (field.isAnnotationPresent(UpdateTimestamp.class)) {
+            return new UpdateTimestampMetadata();
+        }
+        return null;
+    }
+
+
+    private CreationTimestampMetadata getCreationTimestampMetadata(Field field,
+                                                                   Class<?> entityClass) {
+        checkOnSufficientField(field, entityClass);
+        if (field.isAnnotationPresent(CreationTimestamp.class)) {
+            return new CreationTimestampMetadata();
+        }
+        return null;
+    }
+
+    private void checkOnSufficientField(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(CreationTimestamp.class) && field.isAnnotationPresent(UpdateTimestamp.class)) {
+            throw new MappingException(("In class '%s' on field '%s' can't be @CreationTimestamp "
+                    + "and @UpdateTimestamp annotations simultaneously")
+                    .formatted(entityClass.getSimpleName(), field.getName()));
+        }
+
+        if (field.isAnnotationPresent(CreationTimestamp.class) || field.isAnnotationPresent(UpdateTimestamp.class)) {
+            if (!isJavaTypeSufficientForTimestamps(field)) {
+                throw new MappingException(("In class '%s' field '%s' with type '%s' is not supported "
+                        + "for @CreationTimestamp or @UpdateTimestamp annotations")
+                        .formatted(entityClass.getSimpleName(), field.getName(), field.getType().getSimpleName()));
+            }
+        }
+    }
+
+    private boolean isJavaTypeSufficientForTimestamps(Field field) {
+        Class<?> fieldType = field.getType();
+        return fieldType.equals(LocalDate.class)
+                || fieldType.equals(OffsetTime.class) || fieldType.equals(LocalTime.class)
+                || fieldType.equals(OffsetDateTime.class) || fieldType.equals(LocalDateTime.class);
     }
 
     private SequenceGeneratorMetadata getSequenceGenerator(Field field) {
@@ -311,9 +362,13 @@ public class EntityMetadataCollector {
     private ColumnMetadata getColumn(Field field) {
         String columnName = columnName(field);
         String databaseType = databaseTypeForInternalJavaType(field);
+        boolean isTimeZone = isTimeZone(field);
+        boolean isTimestamp = isTimestamp(field);
         ColumnMetadata.ColumnMetadataBuilder builder = ColumnMetadata.builder()
                 .name(columnName)
                 .databaseType(databaseType)
+                .timeZone(isTimeZone)
+                .timestamp(isTimestamp)
                 .unique(false)
                 .nullable(true)
                 .columnDefinition("");

@@ -21,8 +21,13 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     private static final String CLASS_WITH_NO_MANY_TO_MANY_ON_RELATION = "TestTwo";
     private static final String CLASS_WITH_ONE_TO_ONE_MAPPED_BY= "TestOne";
     private static final String CLASS_WITH_MANY_TO_MANY_MAPPED_BY= "TestOne";
+    private static final String CLASS_WITH_CREATION_TIMESTAMP_AND_UPDATE_TIMESTAMP =  "Test";
+    private static final String CLASS_WITH_INSUFFICIENT_TYPE =  "Test";
+    private static final String FIELD_WITH_INSUFFICIENT_TYPE =  "time";
+    private static final String INSUFFICIENT_TYPE =  "String";
     private static final String MAPPED_BY_ONE_TO_ONE= "testOne";
     private static final String MAPPED_BY_MANY_TO_MANY= "testOnes";
+    public static final String CREATED_AT = "createdAt";
 
     @Test
     @DisplayName("should throw exception on mismatch of index columnList and column name")
@@ -124,6 +129,42 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
         // when
         RuntimeException exception = catchRuntimeException(
                 () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.manytomanymappedbywithnorelation"));
+        String actualMessage = exception.getMessage();
+
+        // then
+        assertThat(exception).isExactlyInstanceOf(MappingException.class);
+        assertThat(actualMessage).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    @DisplayName("should throw exception on @CreationTimestamp and @UpdateTimestamp annotations on one field")
+    @SneakyThrows
+    void shouldThrowExceptionOnCreationAndUpdateTimestamp() {
+        String expectedErrorMessage = ("In class '%s' on field '%s' can't be @CreationTimestamp "
+                + "and @UpdateTimestamp annotations simultaneously")
+                .formatted(CLASS_WITH_CREATION_TIMESTAMP_AND_UPDATE_TIMESTAMP, CREATED_AT);
+
+        // when
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.createupdatetimestamp"));
+        String actualMessage = exception.getMessage();
+
+        // then
+        assertThat(exception).isExactlyInstanceOf(MappingException.class);
+        assertThat(actualMessage).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    @DisplayName("should throw exception on type that is not sufficient for @CreationTimestamp of @UpdateTimestamp annotations")
+    @SneakyThrows
+    void shouldThrowExceptionOnInsufficientTypeOnTimestamp() {
+        String expectedErrorMessage = ("In class '%s' field '%s' with type '%s' is not supported "
+                + "for @CreationTimestamp or @UpdateTimestamp annotations")
+                .formatted(CLASS_WITH_INSUFFICIENT_TYPE, FIELD_WITH_INSUFFICIENT_TYPE, INSUFFICIENT_TYPE);
+
+        // when
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.notsufficienttypeontimestamp"));
         String actualMessage = exception.getMessage();
 
         // then
