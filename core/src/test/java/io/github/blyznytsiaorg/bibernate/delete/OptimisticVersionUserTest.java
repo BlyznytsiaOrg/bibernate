@@ -32,7 +32,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
-                assertQueries(bibernateSessionFactory, List.of("SELECT * FROM employees WHERE id = ?;"));
+                assertQueries(bibernateSessionFactory, List.of("SELECT employees.id AS employees_id, employees.first_name AS employees_first_name, employees.last_name AS employees_last_name, employees.version AS employees_version FROM employees WHERE employees.id = ?;"));
             }
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
@@ -104,7 +104,7 @@ class OptimisticVersionUserTest extends AbstractPostgresInfrastructurePrep {
                 employeeEntity = bibernateSession.findById(EmployeeEntity.class, 10L).orElseThrow();
 
                 //then
-                assertQueries(bibernateSessionFactory, List.of("SELECT * FROM employees WHERE id = ?;"));
+                assertQueries(bibernateSessionFactory, List.of("SELECT employees.id AS employees_id, employees.first_name AS employees_first_name, employees.last_name AS employees_last_name, employees.version AS employees_version FROM employees WHERE employees.id = ?;"));
             }
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {

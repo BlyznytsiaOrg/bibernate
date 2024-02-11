@@ -38,9 +38,9 @@ class OneToOneMultirelationLazyTest extends AbstractPostgresInfrastructurePrep {
                 assertThat(user.getAddress().getHouse().getName()).isEqualTo("House A");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT users.id as users_id, users.first_name as users_first_name, users.last_name as users_last_name, users.address_id as users_address_id FROM users WHERE users.id = ?;",
-                        "SELECT addresses.id as addresses_id, addresses.name as addresses_name, addresses.house_id as addresses_house_id FROM addresses WHERE addresses.id = ?;",
-                        "SELECT house.id as house_id, house.name as house_name FROM house WHERE house.id = ?;"));
+                        "SELECT users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name, users.address_id AS users_address_id FROM users WHERE users.id = ?;",
+                        "SELECT addresses.id AS addresses_id, addresses.name AS addresses_name, addresses.house_id AS addresses_house_id FROM addresses WHERE addresses.id = ?;",
+                        "SELECT house.id AS house_id, house.name AS house_name FROM house WHERE house.id = ?;"));
             }
         }
     }

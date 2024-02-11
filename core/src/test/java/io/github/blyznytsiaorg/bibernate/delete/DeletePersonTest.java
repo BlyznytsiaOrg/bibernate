@@ -63,7 +63,7 @@ class DeletePersonTest extends AbstractPostgresInfrastructurePrep {
 
                 assertThat(deletedPerson).isEmpty();
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT * FROM persons WHERE id = ?;",
+                        "SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;",
                         "DELETE FROM persons WHERE id = ?;",
                         "SELECT * FROM persons WHERE id = ?;"));
             }

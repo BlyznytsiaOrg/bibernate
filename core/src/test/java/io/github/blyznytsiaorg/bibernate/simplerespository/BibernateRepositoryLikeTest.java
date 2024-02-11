@@ -45,7 +45,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE first_name like ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name like ?;"));
         }
     }
 
@@ -67,7 +67,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertThat(person).isNotNull();
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE first_name = ? And last_name = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name = ? And last_name = ?;"));
         }
     }
 
@@ -90,7 +90,7 @@ class BibernateRepositoryLikeTest extends AbstractPostgresInfrastructurePrep {
             var entityNotFoundException = assertThrows(EntityNotFoundException.class, executable);
             assertThat(entityNotFoundException.getMessage())
                     .isEqualTo("Cannot find result for Person in method findByFirstNameAndLastName parameters [John1, Doe1]");
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE first_name = ? And last_name = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name = ? And last_name = ?;"));
         }
     }
 

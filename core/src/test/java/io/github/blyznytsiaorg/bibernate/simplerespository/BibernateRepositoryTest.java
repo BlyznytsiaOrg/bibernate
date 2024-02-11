@@ -40,7 +40,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             assertThat(persons).isPresent();
             assertThat(persons).get().isNotNull();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -62,7 +62,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             //then
             assertThat(persons).isEmpty();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name = ?;"));
         }
     }
 
@@ -92,7 +92,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name = ?;"));
         }
     }
 
@@ -123,7 +123,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedPersons);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE first_name = ? Or last_name = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE first_name = ? Or last_name = ?;"));
         }
     }
 
@@ -181,7 +181,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertThat(personRepository.findAll()).hasSize(6);
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons;"));
         }
     }
 
@@ -202,7 +202,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
 
             assertThat(person).isNotNull();
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -226,7 +226,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             var entityStateWasChangeException = assertThrows(EntityNotFoundException.class, executable);
             assertThat(entityStateWasChangeException.getMessage())
                     .isEqualTo("Entity Person not found by ID 5");
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 
@@ -278,7 +278,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertThat(personRepository.findAll()).hasSize(3);
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons;"));
         }
     }
 
@@ -299,8 +299,8 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
             List<Long> ids = Arrays.asList(1L, 2L);
             personRepository.deleteAll(ids);
             assertQueries(bibernateSessionFactory, List.of(
-                    "DELETE FROM persons WHERE id = ?;",
-                    "DELETE FROM persons WHERE id = ?;"
+                    "DELETE FROM persons WHERE persons.id = ?;",
+                    "DELETE FROM persons WHERE persons.id = ?;"
             ));
 
             //then

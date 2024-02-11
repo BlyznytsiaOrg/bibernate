@@ -142,7 +142,7 @@ public class EntityDao implements Dao {
                         //TODO
                         if (field.isAnnotationPresent(JoinColumn.class)) {
                             String joinColumnName = column.getField().getAnnotation(JoinColumn.class).name();
-                            String s = tableName + DOT + joinColumnName + " as " + tableName + "_" + joinColumnName;
+                            String s = tableName + DOT + joinColumnName + " AS " + tableName + "_" + joinColumnName;
                             fieldNames.add(s);
                         }
                     }

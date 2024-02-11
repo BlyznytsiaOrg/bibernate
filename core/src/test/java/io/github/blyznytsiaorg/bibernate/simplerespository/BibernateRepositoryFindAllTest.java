@@ -44,7 +44,7 @@ class BibernateRepositoryFindAllTest extends AbstractPostgresInfrastructurePrep 
                     .usingElementComparatorIgnoringFields("id")
                     .containsExactlyInAnyOrderElementsOf(expectedUsers);
 
-            assertQueries(bibernateSessionFactory, List.of("SELECT users.id as users_id, users.username as users_username, users.enabled as users_enabled, users.age as users_age FROM users;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT users.id AS users_id, users.username AS users_username, users.enabled AS users_enabled, users.age AS users_age FROM users;"));
         }
     }
 
