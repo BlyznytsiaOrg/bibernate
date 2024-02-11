@@ -305,7 +305,7 @@ class BibernateRepositoryTest extends AbstractPostgresInfrastructurePrep {
 
             //then
             assertThat(personRepository.findAll()).hasSize(2);
-            assertQueries(bibernateSessionFactory, List.of("SELECT * FROM persons;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons;"));
         }
     }
 

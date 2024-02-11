@@ -29,7 +29,7 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 Optional<User> user = bibernateSession.findById(User.class, 1L);
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT users.id as users_id, users.first_name as users_first_name, users.last_name as users_last_name, users.address_id as users_address_id FROM users WHERE users.id = ?;"));
+                        "SELECT users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name, users.address_id AS users_address_id FROM users WHERE users.id = ?;"));
                 //then
                 assertThat(user).isPresent();
 
@@ -41,8 +41,8 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 bibernateSession.findById(Address.class, 1L);
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT users.id as users_id, users.first_name as users_first_name, users.last_name as users_last_name, users.address_id as users_address_id FROM users WHERE users.id = ?;",
-                        "SELECT addresses.id as addresses_id, addresses.name as addresses_name FROM addresses WHERE addresses.id = ?;"));
+                        "SELECT users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name, users.address_id AS users_address_id FROM users WHERE users.id = ?;",
+                        "SELECT addresses.id AS addresses_id, addresses.name AS addresses_name FROM addresses WHERE addresses.id = ?;"));
             }
         }
     }

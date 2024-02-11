@@ -74,7 +74,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
                         .hasFieldOrPropertyWithValue("id", 1L)
                         .hasFieldOrPropertyWithValue("text", "My First Note");
 
-                assertQueries(sessionFactory, List.of("SELECT * FROM notes WHERE id = ?;"));
+                assertQueries(sessionFactory, List.of("SELECT notes.id AS notes_id, notes.text AS notes_text FROM notes WHERE notes.id = ?;"));
             }
         }
     }
@@ -151,7 +151,7 @@ class OneToManyUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
                         .hasFieldOrPropertyWithValue("firstName", "FirstName")
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
-                assertQueries(sessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+                assertQueries(sessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
 
                 var notes = personOptional.get().getNotes();
 

@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
-    @DisplayName("Should not update entity that marked as Immutable")
+    @DisplayName("Should not update entity that marked AS Immutable")
     @Test
     void shouldNotUpdateEntityThatMarkedAsImmutable() {
         //given
@@ -39,7 +39,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
 
             try (var bibernateSession = bibernateSessionFactory.openSession()) {
                 //when
@@ -55,7 +55,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         }
     }
 
-    @DisplayName("Should not save entity that marked as Immutable")
+    @DisplayName("Should not save entity that marked AS Immutable")
     @Test
     void shouldNotSaveEntityThatMarkedAsImmutable() {
         //given
@@ -86,7 +86,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
         }
     }
 
-    @DisplayName("Should not delete entity that marked as Immutable")
+    @DisplayName("Should not delete entity that marked AS Immutable")
     @Test
     void shouldNotDeleteEntityThatMarkedAsImmutable() {
         //given
@@ -109,7 +109,7 @@ class ImmutableEntityTest extends AbstractPostgresInfrastructurePrep {
             }
 
             //then
-            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id as persons_id, persons.first_name as persons_first_name, persons.last_name as persons_last_name FROM persons WHERE persons.id = ?;"));
+            assertQueries(bibernateSessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
         }
     }
 

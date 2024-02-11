@@ -114,7 +114,7 @@ class ManyToOneUnidirectionalTest extends AbstractPostgresInfrastructurePrep {
                         .hasFieldOrPropertyWithValue("firstName", "FirstName")
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
-                assertQueries(sessionFactory, List.of("SELECT * FROM persons WHERE id = ?;"));
+                assertQueries(sessionFactory, List.of("SELECT persons.id AS persons_id, persons.first_name AS persons_first_name, persons.last_name AS persons_last_name FROM persons WHERE persons.id = ?;"));
             }
         }
     }
