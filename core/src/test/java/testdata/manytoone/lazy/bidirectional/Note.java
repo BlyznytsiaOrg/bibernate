@@ -1,6 +1,7 @@
-package testdata.manytoone.bidirectional;
+package testdata.manytoone.lazy.bidirectional;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import lombok.Getter;
 
 @Getter
@@ -13,7 +14,7 @@ public class Note {
 
     private String text;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id")
     private Person person;
 

@@ -1,4 +1,4 @@
-package testdata.manytoone.badannotation;
+package testdata.manytoone.eager.badannotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
