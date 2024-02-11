@@ -1,23 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.entity.metadata;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.databaseTypeForInternalJavaType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.databaseTypeForJoinColumn;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.foreignKeyForInverseJoinColumn;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.foreignKeyForJoinColumn;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getCollectionGenericType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getIndexMetadata;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.inverseJoinColumnJoinTableDatabaseType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.inverseTableJoinColumnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isAnnotationPresent;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDynamicUpdate;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isImmutable;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isSupportedCollection;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnJoinTableDatabaseType;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinTableNameCorrect;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.tableJoinColumnNameCorrect;
+import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.getCascadeTypesFromAnnotation;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
@@ -79,7 +63,7 @@ public class EntityMetadataCollector {
         log.trace("Found entities size {}", entities.size());
 
         if (entities.isEmpty()) {
-            throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE .formatted(packageName));
+            throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE.formatted(packageName));
         }
 
         for (Class<?> entityClass : entities) {
@@ -197,10 +181,15 @@ public class EntityMetadataCollector {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            String foreignKeyName = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
-                    .map(JoinColumn::foreignKey)
-                    .map(ForeignKey::name)
-                    .orElseGet(DDLUtils::getForeignKeyConstraintName);
+            Optional<String> key = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                    .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
+                    .map(ForeignKey::name);
+            String foreignKeyName;
+            if (key.isEmpty() || key.get().isEmpty()) {
+                foreignKeyName = getForeignKeyConstraintName();
+            } else {
+                foreignKeyName = key.get();
+            }
 
             return JoinColumnMetadata.builder()
                     .name(joinColumnName)
@@ -223,7 +212,8 @@ public class EntityMetadataCollector {
         return null;
     }
 
-    private String getMappedByForManyToMany(Field field, Class<?> entityClass, ManyToMany manyToMany) {
+    private String getMappedByForManyToMany(Field field, Class<?> entityClass,
+                                            ManyToMany manyToMany) {
         if (!manyToMany.mappedBy().isEmpty()) {
             String entityClassSimpleName = entityClass.getSimpleName();
             Class<?> collectionGenericType = getCollectionGenericType(field);
@@ -237,7 +227,7 @@ public class EntityMetadataCollector {
                     return manyToMany.mappedBy();
                 }
                 throw new MappingException(("Can't find in entity '%s' @ManyToMany annotation "
-                        +"as entity '%s' is annotated with @ManyToMany mappedBy='%s'")
+                        + "as entity '%s' is annotated with @ManyToMany mappedBy='%s'")
                         .formatted(collectionGenericType.getSimpleName(), entityClassSimpleName,
                                 manyToMany.mappedBy()));
             }
@@ -303,7 +293,7 @@ public class EntityMetadataCollector {
                     return oneToOne.mappedBy();
                 }
                 throw new MappingException(("Can't find in entity '%s' @OneToOne annotation "
-                        +"as entity '%s' is annotated with @OneToOne mappedBy='%s'")
+                        + "as entity '%s' is annotated with @OneToOne mappedBy='%s'")
                         .formatted(fieldType.getSimpleName(), entityClassSimpleName,
                                 oneToOne.mappedBy()));
             }

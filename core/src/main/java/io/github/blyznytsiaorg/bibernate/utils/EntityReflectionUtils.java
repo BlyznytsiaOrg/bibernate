@@ -23,6 +23,7 @@ import java.util.stream.IntStream;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
+import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
 
@@ -212,10 +213,16 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
-                        .map(JoinTable::foreignKey)
-                        .map(ForeignKey::name)
-                        .orElseGet(DDLUtils::getForeignKeyConstraintName);
+                Optional<String> optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
+                        .map(ForeignKey::name);
+                String foreignKeyName;
+                if (optionalKey.isEmpty() || optionalKey.get().isEmpty()) {
+                    foreignKeyName = getForeignKeyConstraintName();
+                } else {
+                    foreignKeyName = optionalKey.get();
+                }
+                return foreignKeyName;
             }
         }
         return null;
@@ -225,10 +232,16 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                return Optional.ofNullable(field.getAnnotation(JoinTable.class))
-                        .map(JoinTable::inverseForeignKey)
-                        .map(ForeignKey::name)
-                        .orElseGet(DDLUtils::getForeignKeyConstraintName);
+                Optional<String> optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                        .flatMap(annotation -> Optional.ofNullable(annotation.inverseForeignKey()))
+                        .map(ForeignKey::name);
+                String foreignKeyName;
+                if (optionalKey.isEmpty() || optionalKey.get().isEmpty()) {
+                    foreignKeyName = getForeignKeyConstraintName();
+                } else {
+                    foreignKeyName = optionalKey.get();
+                }
+                return foreignKeyName;
             }
         }
         return null;
