@@ -148,11 +148,16 @@ public class ValidatorBibernateSession implements BibernateSession {
 
     @Override
     public <T> void delete(Class<T> entityClass, T entity) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
+        verifyIsIdHasStrategyGeneratorOrNotNullValue(entity);
         bibernateSession.delete(entityClass, entity);
     }
 
     @Override
     public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        verifyIsIdHasStrategyGeneratorOrNotNullValue(entities);
         bibernateSession.deleteAll(entityClass, entities);
     }
 
