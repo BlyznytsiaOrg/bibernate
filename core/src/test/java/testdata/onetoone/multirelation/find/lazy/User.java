@@ -1,4 +1,4 @@
-package testdata.onetoone.multirelation.lazy;
+package testdata.onetoone.multirelation.find.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;

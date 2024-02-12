@@ -1,4 +1,4 @@
-package testdata.onetoone.multirelation.eager;
+package testdata.onetoone.multirelation.find.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.AllArgsConstructor;

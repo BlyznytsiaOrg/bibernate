@@ -1,7 +1,6 @@
-package testdata.onetoone.multirelation.lazy;
+package testdata.onetoone.multirelation.find.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,7 @@ public class Address {
     @Column(name = "addresses_name")
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "addresses_house_id")
     private House house;
 }

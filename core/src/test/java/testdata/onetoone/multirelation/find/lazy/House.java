@@ -1,9 +1,6 @@
-package testdata.onetoone.multirelation.eager;
+package testdata.onetoone.multirelation.find.lazy;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Column;
-import io.github.blyznytsiaorg.bibernate.annotation.Entity;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.Table;
+import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +15,7 @@ import lombok.Setter;
 public class House {
 
     @Id
+    @GeneratedValue
     @Column(name = "houses_id")
     private Long id;
 

@@ -1,29 +1,27 @@
-package io.github.blyznytsiaorg.bibernate.onetoone.multirelation.lazy;
+package io.github.blyznytsiaorg.bibernate.onetoone.multirelation.eager;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.onetoone.multirelation.lazy.User;
+import testdata.onetoone.multirelation.find.eager.User;
 
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
+class OneToOneMultirelationEagerFindByIdTest extends AbstractPostgresInfrastructurePrep {
 
-class OneToOneMultirelationLazyTest extends AbstractPostgresInfrastructurePrep {
-
-    @DisplayName("Should retrieve user with address and home lazy")
+    @DisplayName("Should retrieve user with address and home eager")
     @Test
-    void shouldRetrieveUserWithAddressAndHomeLazy() {
+    void shouldRetrieveUserWithAddressAndHomeEager() {
         QueryUtils.setupTables(dataSource, ONE_TO_ONE_MULTIRELATION_TABLES, ONE_TO_ONE_MULTIRELATION_INSERT);
 
-        var persistent = createPersistent("testdata.onetoone.multirelation.lazy");
+        var persistent = createPersistent("testdata.onetoone.multirelation.find.eager");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
-
                 User user = session.findById(User.class, 1L).orElseThrow();
 
                 assertThat(user).isNotNull();
@@ -38,9 +36,10 @@ class OneToOneMultirelationLazyTest extends AbstractPostgresInfrastructurePrep {
                 assertThat(user.getAddress().getHouse().getName()).isEqualTo("House A");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT * FROM users WHERE users_id = ?;",
-                        "SELECT * FROM addresses WHERE addresses_id = ?;",
-                        "SELECT * FROM houses WHERE houses_id = ?;"));
+                        "SELECT * "+
+                                "FROM users " +
+                                "LEFT JOIN addresses ON addresses.addresses_id = users.users_address_id " +
+                                "LEFT JOIN houses ON houses.houses_id = addresses.addresses_house_id WHERE users.users_id = ?;"));
             }
         }
     }
