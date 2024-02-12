@@ -1,12 +1,11 @@
 package io.github.blyznytsiaorg.bibernate.config;
 
-import com.zaxxer.hikari.HikariConfig;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
+import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDatasSourceConfig;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
 
 /**
@@ -102,11 +101,12 @@ public class BibernateDatabaseSettings {
         String password = bibernateSettingsProperties.getOrDefault(DB_PASSWORD, DEFAULT_DB_PASSWORD);
         String maxPoolSize = bibernateSettingsProperties.getOrDefault(DB_MAXIMUM_POOL_SIZE, DEFAULT_MAXIMUM_POOL_SIZE);
 
-        var config = new HikariConfig();
-        config.setJdbcUrl(url);
-        config.setUsername(user);
-        config.setPassword(password);
-        config.setMaximumPoolSize(Integer.parseInt(maxPoolSize));
+        var config = BibernateDatasSourceConfig.builder()
+                .jdbcUrl(url)
+                .username(user)
+                .password(password)
+                .maximumPoolSize(Integer.parseInt(maxPoolSize))
+                .build();
 
         return new TransactionalDatasource(config);
     }
