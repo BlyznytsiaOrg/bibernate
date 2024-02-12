@@ -1,6 +1,7 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder;
 import io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.join.JoinType;
@@ -106,7 +107,11 @@ public class EntityDao implements Dao {
     @Override
     public <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+        EntityMetadata entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
 
+        if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
+            return findOneByWhereJoin(entityClass, bindValues);
+        }
         var tableName = table(entityClass);
         var query = sqlBuilder.selectBy(tableName, whereCondition);
 
@@ -131,7 +136,7 @@ public class EntityDao implements Dao {
         return entities;
     }
 
-    public <T> Optional<T> findOneByWhereJoin(Class<T> entityClass,
+    public <T> List<T> findOneByWhereJoin(Class<T> entityClass,
                                               Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
@@ -149,26 +154,14 @@ public class EntityDao implements Dao {
                 .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
 
         String whereConditionId = tableName.concat(".").concat(columnIdName);
-        List<JoinInfo> joinInfos = searchedEntityMetadata.getEntityColumns().stream()
-                .map(EntityColumnDetails::getOneToOne)
-                .filter(Objects::nonNull)
-                .map(oneToOneMetadata -> JoinInfo.builder()
-                        .joinedTable(oneToOneMetadata.getJoinedTable())
-                        .childEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getChildClass()))
-                        .parentEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getParentClass()))
-                        .build())
-                .toList();
+        Set<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
 
-        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
-        oneToOneEntities.add(searchedEntityMetadata);
-        searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getOneToOne()))
-                .map(entityColumnDetails -> bibernateEntityMetadata.get(entityColumnDetails.getFieldType()))
-                .forEach(oneToOneEntities::add);
-
-        var query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
+        var query = sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
 
         addToExecutedQueries(query);
+        List<T> items = new ArrayList<>();
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
@@ -178,14 +171,14 @@ public class EntityDao implements Dao {
 
             var resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                return Optional.of(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
             }
         } catch (Exception exe) {
             String errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
             throwErrorMessage(errorMessage, exe);
         }
 
-        return Optional.empty();
+        return items;
     }
 
     @Override
@@ -651,5 +644,12 @@ public class EntityDao implements Dao {
         if (CollectionUtils.isEmpty(objects)) {
             throw new BibernateGeneralException(COLLECTION_MUST_BE_NOT_EMPTY);
         }
+    }
+
+    private boolean hasAnyOneToOneEagerFetchType(EntityMetadata entityMetadata) {
+        return entityMetadata.getEntityColumns().stream()
+                .map(EntityColumnDetails::getOneToOne)
+                .filter(Objects::nonNull)
+                .anyMatch(oneToOneMetadata -> oneToOneMetadata.getFetchType() == FetchType.EAGER);
     }
 }

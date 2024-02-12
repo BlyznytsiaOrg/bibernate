@@ -92,6 +92,17 @@ public class EntityReflectionUtils {
                 .filter(Predicate.not(String::isEmpty));
     }
 
+    public static String columnName(Field declaredField, Class<?> type) {
+        String columnName;
+
+        if (declaredField.isAnnotationPresent(OneToOne.class) && declaredField.isAnnotationPresent(JoinColumn.class)) {
+            columnName = declaredField.getAnnotation(JoinColumn.class).name();
+        } else {
+            columnName = columnName(declaredField);
+        }
+        return columnName;
+    }
+
     public static String databaseTypeForInternalJavaType(Field field) {
         if (isInternalJavaType(field)) {
             Column annotation = field.getAnnotation(Column.class);

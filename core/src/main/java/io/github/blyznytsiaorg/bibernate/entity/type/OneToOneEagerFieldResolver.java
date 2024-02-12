@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 
 import java.lang.reflect.Field;
@@ -17,7 +18,10 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field,
+                                                ResultSet resultSet,
+                                                Object entity,
+                                                EntityPersistent entityPersistent) {
         Class<?> type = field.getType();
 
         try {
@@ -29,7 +33,7 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
                             || Objects.equals(field.getName(), declaredField.getAnnotation(OneToOne.class).mappedBy()))) {
                         setField(declaredField, obj, entity);
                     } else {
-                        Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
+                        Object object = resultSet.getObject(columnName(declaredField));
                         setField(declaredField, obj, object);
                     }
                 }
@@ -38,8 +42,15 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
             } else {
                 Object obj = field.getType().getDeclaredConstructor().newInstance();
                 for (Field declaredField : field.getType().getDeclaredFields()) {
-                    Object object = resultSet.getObject(table(type).concat("_").concat(columnName(declaredField)));
-                    setField(declaredField, obj, object);
+                    Object object = resultSet.getObject(columnName(declaredField, type));
+
+                    if (Objects.nonNull(declaredField.getAnnotation(OneToOne.class))) {
+                        Class<?> currentFieldType = declaredField.getType();
+                        Object oneOnOneRelation = entityPersistent.toEntity(resultSet, currentFieldType);
+                        setField(declaredField, obj, oneOnOneRelation);
+                    } else {
+                        setField(declaredField, obj, object);
+                    }
                 }
 
                 return obj;

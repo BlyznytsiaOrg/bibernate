@@ -1,19 +1,22 @@
-package testdata.onetoone.unidirectional.eager;
+package testdata.onetoone.multirelation.find.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Column;
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
 import io.github.blyznytsiaorg.bibernate.annotation.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "houses")
-@ToString
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class House {
+
     @Id
     @Column(name = "houses_id")
     private Long id;

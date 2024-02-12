@@ -1,11 +1,13 @@
-package testdata.onetoone.unidirectional.lazy;
+package testdata.onetoone.multirelation.find.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "addresses")
-@ToString
 @Setter
 @Getter
 @NoArgsConstructor
@@ -17,4 +19,8 @@ public class Address {
 
     @Column(name = "addresses_name")
     private String name;
+
+    @OneToOne
+    @JoinColumn(name = "addresses_house_id")
+    private House house;
 }

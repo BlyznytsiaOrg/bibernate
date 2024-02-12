@@ -39,7 +39,7 @@ public class EntityPersistent {
                                         Field field,
                                         T entity,
                                         ResultSet resultSet) {
-        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity);
+        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity, this);
         Optional.ofNullable(value).ifPresent(v -> setField(field, entity, v));
     }
 
