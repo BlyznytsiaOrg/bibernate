@@ -73,11 +73,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Blyzhnytsia Team
@@ -209,6 +209,11 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
         var query = sqlBuilder.selectWithJoin(tableName, fieldIdName, field);
+        
+        EntityMetadata entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
+        if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
+            return findAllByWhereJoin(entityClass, query, bindValues);
+        }
 
         Optional.of(bidirectionalRelations(entityClass, field)).ifPresent(entityPersistent::addIgnoredRelationFields);
 
@@ -226,23 +231,7 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
-        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
-
-        var tableName = searchedEntityMetadata.getTableName();
-        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
-                .map(EntityColumnDetails::getColumn)
-                .map(ColumnMetadata::getName)
-                .findFirst()
-                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
-
-        var whereConditionId = tableName.concat(".").concat(columnIdName);
-        var joinInfos = searchedEntityMetadata.joinInfos(
-                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
-        );
-
-        var query = sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
+        String query = createLeftJoinQuery(entityClass);
 
         addToExecutedQueries(query);
         var items = new ArrayList<T>();
@@ -269,6 +258,62 @@ public class EntityDao implements Dao {
         }
 
         return items;
+    }
+
+    @Override
+    public <T> List<T> findAllByWhereJoin(Class<T> entityClass, String query, Object... bindValues) {
+        Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
+
+        var dataSource = bibernateDatabaseSettings.getDataSource();
+
+        String leftJoinQuery = createLeftJoinQuery(entityClass);
+        String mergedQuery = sqlBuilder.mergeQueries(leftJoinQuery, query);
+
+        addToExecutedQueries(mergedQuery);
+        var items = new ArrayList<T>();
+
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            connection = dataSource.getConnection();
+            ps = connection.prepareStatement(mergedQuery);
+
+            showSql(() -> log.debug(QUERY_BIND_VALUES, mergedQuery, Arrays.toString(bindValues)));
+
+            populatePreparedStatement(bindValues, ps);
+
+            var resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                items.add(entityClass.cast(this.entityPersistent.toEntity(resultSet, entityClass)));
+            }
+        } catch (Exception exe) {
+            var errorMessage = CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS.formatted(entityClass, exe.getMessage());
+            throwErrorMessage(errorMessage, exe);
+        } finally {
+            close(connection, ps);
+        }
+
+        return items;
+    }
+
+    private <T> String createLeftJoinQuery(Class<T> entityClass) {
+        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
+        var tableName = searchedEntityMetadata.getTableName();
+        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                .map(EntityColumnDetails::getColumn)
+                .map(ColumnMetadata::getName)
+                .findFirst()
+                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
+
+        var whereConditionId = tableName.concat(".").concat(columnIdName);
+        var joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+
+        return sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
     }
 
     @Override

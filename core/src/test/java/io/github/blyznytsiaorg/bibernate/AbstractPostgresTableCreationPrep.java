@@ -74,14 +74,14 @@ public interface AbstractPostgresTableCreationPrep {
                 houses_id BIGINT PRIMARY KEY,
                 houses_name VARCHAR(255)
             );
-            
+                        
             CREATE TABLE addresses (
                 addresses_id BIGINT PRIMARY KEY,
                 addresses_name VARCHAR(255),
                 addresses_house_id BIGINT,
                 FOREIGN KEY (addresses_house_id) REFERENCES houses(houses_id)
             );
-            
+                        
             CREATE TABLE users (
                 users_id BIGINT PRIMARY KEY,
                 users_first_name VARCHAR(255),
@@ -163,10 +163,24 @@ public interface AbstractPostgresTableCreationPrep {
             """;
 
     String CREATE_PERSONS_COURSES_TABLES = """
+            CREATE TABLE houses (
+                house_id bigserial PRIMARY KEY,
+                name VARCHAR(255)
+            );
+                        
+            CREATE TABLE addresses (
+                address_id bigserial PRIMARY KEY,
+                address VARCHAR(255),
+                address_house_id BIGINT,
+                CONSTRAINT address_house_FK FOREIGN KEY (address_house_id) REFERENCES houses
+            );
+                        
             CREATE TABLE IF NOT EXISTS persons (
                 id bigserial primary key,
                 first_name varchar(255),
-                last_name varchar(255)
+                last_name varchar(255),
+                person_address_id BIGINT,
+                CONSTRAINT person_address_FK FOREIGN KEY (person_address_id) REFERENCES addresses
             );
                         
             CREATE TABLE IF NOT EXISTS authors (
@@ -191,9 +205,15 @@ public interface AbstractPostgresTableCreationPrep {
             """;
 
     String CREATE_INSERT_PERSONS_COURSES_STATEMENTS = """
-            insert into persons(first_name, last_name) values ('John', 'Doe');
-            insert into persons(first_name, last_name) values ('Jordan', 'Rodriguez');
-            insert into persons(first_name, last_name) values ('Ava', 'Mitchell');
+            insert into houses(name) values ('house1');
+            insert into houses(name) values ('house2');
+            insert into houses(name) values ('house3');
+            insert into addresses(address, address_house_id) values ('street1', 1);
+            insert into addresses(address, address_house_id) values ('street2', 2);
+            insert into addresses(address, address_house_id) values ('street3', 3);
+            insert into persons(first_name, last_name, person_address_id) values ('John', 'Doe', 1);
+            insert into persons(first_name, last_name, person_address_id) values ('Jordan', 'Rodriguez', 2);
+            insert into persons(first_name, last_name, person_address_id) values ('Ava', 'Mitchell', 3);
             insert into authors(name) values ('Bobocode');
             insert into courses(author_id, name) values (1, 'Bobocode 2.0');
             insert into courses(author_id, name) values (1, 'Bobocode 3.0');

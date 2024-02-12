@@ -17,7 +17,7 @@ import java.util.List;
 public class Person {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
     
     private String firstName;
@@ -32,5 +32,9 @@ public class Person {
         joinColumn = @JoinColumn(name = "person_id"),
         inverseJoinColumn = @JoinColumn(name = "course_id"))
     private List<Course> courses = new ArrayList<>();
+
+    @OneToOne
+    @JoinColumn(name = "person_address_id")
+    private Address address;
     
 }
