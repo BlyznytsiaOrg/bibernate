@@ -15,6 +15,9 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_MUST_BE_NOT_NULL;
 
 /**
+ * Wrapper class that provides validation functionality for a Bibernate session.
+ * It delegates method calls to an underlying Bibernate session while performing validation checks.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -63,6 +66,16 @@ public class ValidatorBibernateSession implements BibernateSession {
         return bibernateSession.findByQuery(entityClass, query, bindValues);
     }
 
+    /**
+     * Updates the entity of the specified class in the database.
+     * This method ensures that both the entity class and the entity instance are not null before proceeding with the update operation.
+     * Additionally, it verifies that the entity has a strategy generator for its ID or that the ID value is not null.
+     *
+     * @param entityClass the class of the entity to be updated
+     * @param entity      the entity instance to be updated
+     * @throws NullPointerException if either {@code entityClass} or {@code entity} is {@code null}
+     * @throws IllegalArgumentException if the entity does not have a strategy generator for its ID and the ID value is null
+     */
     @Override
     public <T> void update(Class<T> entityClass, Object entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -76,6 +89,19 @@ public class ValidatorBibernateSession implements BibernateSession {
         return bibernateSession.find(query, bindValues);
     }
 
+    /**
+     * Saves the given entity to the database.
+     *
+     * <p>This method ensures that both the entity class and the entity instance are not null before proceeding with the save operation.
+     * Additionally, it verifies that the entity has a strategy generator for its ID or that the ID value is not null.
+     *
+     * @param <T>         the type of the entity
+     * @param entityClass the class of the entity to be saved
+     * @param entity      the entity instance to be saved
+     * @return the saved entity
+     * @throws NullPointerException     if either {@code entityClass} or {@code entity} is {@code null}
+     * @throws IllegalArgumentException if the entity does not have a strategy generator for its ID and the ID value is null
+     */
     @Override
     public <T> T save(Class<T> entityClass, T entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -84,6 +110,18 @@ public class ValidatorBibernateSession implements BibernateSession {
         return bibernateSession.save(entityClass, entity);
     }
 
+    /**
+     * Saves all entities in the provided collection to the database.
+     *
+     * <p>This method ensures that the entity class is not null before proceeding with the save operation.
+     * Additionally, it verifies that each entity in the collection has a strategy generator for its ID or that the ID value is not null.
+     *
+     * @param <T>         the type of the entities
+     * @param entityClass the class of the entities to be saved
+     * @param entities    the collection of entities to be saved
+     * @throws NullPointerException     if {@code entityClass} is {@code null}
+     * @throws IllegalArgumentException if any entity in the collection does not have a strategy generator for its ID and the ID value is null
+     */
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);

@@ -17,6 +17,8 @@ import io.github.blyznytsiaorg.bibernate.dao.jdbc.identity.PostgresIdentity;
 import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.*;
 
 /**
+ * Represents a session factory in the Bibernate framework, responsible for creating sessions to interact with the database.
+ * Extends {@link BibernateEntityManagerFactory} to inherit configuration settings.
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0
@@ -25,11 +27,22 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
 
     private EntityDao entityDao;
 
+    /**
+     * Constructs a new BibernateSessionFactory with the provided database settings and repository invocation handler.
+     *
+     * @param bibernateDatabaseSettings        the database settings for configuring the session factory
+     * @param simpleRepositoryInvocationHandler the repository invocation handler for handling repository methods
+     */
     public BibernateSessionFactory(BibernateDatabaseSettings bibernateDatabaseSettings,
                                    SimpleRepositoryInvocationHandler simpleRepositoryInvocationHandler) {
         super(bibernateDatabaseSettings, simpleRepositoryInvocationHandler);
     }
 
+    /**
+     * Opens a new session for interacting with the database.
+     *
+     * @return a new BibernateSession instance
+     */
     public BibernateSession openSession() {
         this.entityDao = entityDao();
         var jdbcBibernateSession = new DefaultBibernateSession(entityDao);
@@ -55,12 +68,22 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
         return bibernateSession;
     }
 
+    /**
+     * Creates a new EntityDao instance based on the configured database settings.
+     *
+     * @return a new EntityDao instance
+     */
     private EntityDao entityDao() {
         List<String> executedQueries = new ArrayList<>();
         Identity identity = new PostgresIdentity(getBibernateSettings(), executedQueries);
         return new EntityDao(new SqlBuilder(), getBibernateSettings(), identity, executedQueries);
     }
 
+    /**
+     * Retrieves the list of executed queries during the session, if available.
+     *
+     * @return the list of executed queries, or an empty list if no queries were executed
+     */
     public List<String> getExecutedQueries() {
         if (Objects.isNull(entityDao)) {
             return Collections.emptyList();
