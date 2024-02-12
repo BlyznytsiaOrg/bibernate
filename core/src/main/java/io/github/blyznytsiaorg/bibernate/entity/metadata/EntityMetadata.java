@@ -52,9 +52,9 @@ public class EntityMetadata {
                 .orElse(false);
     }
 
-    public List<JoinInfo> joinInfos(Class<?> entityClass, List<EntityColumnDetails> currentEntityColumns,
+    public Set<JoinInfo> joinInfos(Class<?> entityClass, List<EntityColumnDetails> currentEntityColumns,
                                     Map<Class<?>, EntityMetadata> bibernateEntityMetadata, Set<Class<?>> trackVisitedClasses) {
-        List<JoinInfo> joinInfos = new ArrayList<>();
+        Set<JoinInfo> joinInfos = new HashSet<>();
         trackVisitedClasses.add(entityClass);
 
         for (var entityColumn : currentEntityColumns) {

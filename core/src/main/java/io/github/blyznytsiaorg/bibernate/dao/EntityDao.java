@@ -149,7 +149,7 @@ public class EntityDao implements Dao {
                 .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
 
         String whereConditionId = tableName.concat(".").concat(columnIdName);
-        List<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+        Set<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
                 entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
         );
 

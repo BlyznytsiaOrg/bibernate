@@ -49,7 +49,7 @@ public class SqlBuilder {
     public String selectByWithJoin(String tableName,
                                    Set<EntityMetadata> oneToOneEntities,
                                    String whereCondition,
-                                   List<JoinInfo> joinInfos,
+                                   Set<JoinInfo> joinInfos,
                                    JoinType joinType) {
 
         Map<String, List<EntityColumnDetails>> tableNameColumnsDetails = oneToOneEntities.stream()

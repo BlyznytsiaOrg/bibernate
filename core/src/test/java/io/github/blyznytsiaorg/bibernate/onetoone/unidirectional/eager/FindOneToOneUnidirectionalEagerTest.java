@@ -42,17 +42,7 @@ class FindOneToOneUnidirectionalEagerTest extends AbstractPostgresInfrastructure
                 assertThat(house.getName()).isEqualTo("big");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT addresses.id AS addresses_id, " +
-                        "addresses.name AS addresses_name, " +
-                        "houses.id AS houses_id, " +
-                        "houses.name AS houses_name, " +
-                        "users.id AS users_id, " +
-                        "users.first_name AS users_first_name, " +
-                        "users.last_name AS users_last_name " +
-                        "FROM users " +
-                        "LEFT JOIN addresses ON addresses.id = users.address_id " +
-                        "LEFT JOIN houses ON houses.id = users.house_id " +
-                        "WHERE users.id = ?;"));
+                        "SELECT addresses.id AS addresses_id, addresses.name AS addresses_name, houses.id AS houses_id, houses.name AS houses_name, users.id AS users_id, users.first_name AS users_first_name, users.last_name AS users_last_name FROM users LEFT JOIN houses ON houses.id = users.house_id LEFT JOIN addresses ON addresses.id = users.address_id WHERE users.id = ?;"));
             }
         }
     }
