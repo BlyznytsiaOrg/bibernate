@@ -519,8 +519,8 @@ public class EntityReflectionUtils {
             .filter(Predicate.not(field ->
                     (field.isAnnotationPresent(GeneratedValue.class) && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy()))
                 || (field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(JoinColumn.class))
-                || (field.isAnnotationPresent(OneToMany.class))
-                    )
+                || (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(CreationTimestamp.class)
+                    || field.isAnnotationPresent(UpdateTimestamp.class)))
             )
             //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
             //TODO: ADD utility jdbc class to insert all types or null

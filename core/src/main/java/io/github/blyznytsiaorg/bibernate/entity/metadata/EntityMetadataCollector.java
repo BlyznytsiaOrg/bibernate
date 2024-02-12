@@ -232,10 +232,8 @@ public class EntityMetadataCollector {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
-
             Optional<String> key = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
-                    .map(annotation -> annotation.foreignKey())
+                    .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
                     .map(ForeignKey::name);
             String foreignKeyName;
             if (key.isEmpty() || key.get().isEmpty()) {
@@ -364,16 +362,14 @@ public class EntityMetadataCollector {
     private ColumnMetadata getColumn(Field field) {
         String columnName = columnName(field);
         String databaseType = databaseTypeForInternalJavaType(field);
-        boolean isTimeZone = isTimeZone(field);
-        boolean isTimestamp = isTimestamp(field);
         ColumnMetadata.ColumnMetadataBuilder builder = ColumnMetadata.builder()
                 .name(columnName)
                 .databaseType(databaseType)
-                .timeZone(isTimeZone)
-                .timestamp(isTimestamp)
                 .unique(false)
                 .nullable(true)
-                .columnDefinition("");
+                .columnDefinition("")
+                .timestamp(isTimestamp(field))
+                .timeZone(isTimeZone(field));
 
         Column annotation = field.getAnnotation(Column.class);
         if (annotation != null) {

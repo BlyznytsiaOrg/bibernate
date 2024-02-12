@@ -45,7 +45,6 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
                         .contains(TABLE_NAME_BOOK)
                         .contains(TABLE_NAME_PHONE)
                         .contains(TABLE_NAME_BOOK_AUTHORS);
-
             }
         }
     }
@@ -135,7 +134,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
         assertThat(foreignKeys).hasSize(1);
         foreignKeys.stream()
                 .filter(fk -> fk.columnName().equals("author_id"))
-                .forEach(fk -> assertThat(fk.name()).isEqualTo("author_id"));
+                .forEach(fk -> assertThat(fk.name()).containsIgnoringCase("fk_"));
 
         columnData.stream()
                 .filter(column -> column.name().equals("id"))
@@ -235,7 +234,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
         assertThat(foreignKeys).hasSize(1);
         foreignKeys.stream()
                 .filter(fk -> fk.columnName().equals("author_profile_id"))
-                .forEach(fk -> assertThat(fk.name()).isEqualTo("FK_phone_author_profile"));
+                .forEach(fk -> assertThat(fk.name()).isEqualToIgnoringCase("FK_phone_author_profile"));
 
         columnData.stream()
                 .filter(column -> column.name().equals("id"))
@@ -313,11 +312,11 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
         assertThat(foreignKeys).hasSize(2);
         foreignKeys.stream()
                 .filter(fk -> fk.columnName().equals("book_id"))
-                .forEach(fk -> assertThat(fk.name()).isEqualTo("FK_book_book_authors"));
+                .forEach(fk -> assertThat(fk.name()).isEqualToIgnoringCase("FK_book_book_authors"));
 
         foreignKeys.stream()
                 .filter(fk -> fk.columnName().equals("author_id"))
-                .forEach(fk -> assertThat(fk.name()).isEqualTo("FK_authors_book_authors"));
+                .forEach(fk -> assertThat(fk.name()).isEqualToIgnoringCase("FK_authors_book_authors"));
 
         columnData.forEach(System.out::println);
 

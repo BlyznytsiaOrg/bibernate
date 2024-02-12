@@ -52,7 +52,7 @@ public class TypeConverter {
                                                                 String tableName) {
         Class<?> fieldType = entityColumn.getFieldType();
         if (typeToDatabaseTypeString.get(fieldType) == null) {
-            throw new UnsupportedDataTypeException("Error creating SQL commands for DDL creation "
+            throw new UnsupportedDataTypeException("Error creating SQL commands on DDL creation "
                     + "for table '%s' [column type '%s' is not supported]"
                     .formatted(tableName, fieldType.getSimpleName()));
         }
@@ -72,9 +72,11 @@ public class TypeConverter {
     public static void checkIdTypeForGeneration(Class<?> idFieldType, String tableName) {
         if (!idFieldType.equals(Long.class) && !idFieldType.equals(long.class)
                 && !idFieldType.equals(Integer.class) && !idFieldType.equals(int.class)) {
-            throw new UnsupportedDataTypeException("Error creating SQL commands for DDL creation "
-                    + "for table '%s' [illegal identity column type '%s' for id generation]"
-                    .formatted(tableName, idFieldType.getSimpleName()));
+            throw new UnsupportedDataTypeException("Error creating SQL commands on DDL creation "
+                    + "for table '%s' [illegal identity column type '%s' for id generation]. Supported types: '%s', '%s', '%s', '%s'"
+                    .formatted(tableName, idFieldType.getSimpleName(),
+                            Integer.class.getName(), int.class.getName(),
+                            Long.class.getName(), long.class.getName()));
         }
     }
 }

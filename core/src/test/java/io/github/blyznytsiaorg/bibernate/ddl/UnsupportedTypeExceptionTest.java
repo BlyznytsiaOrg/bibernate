@@ -22,9 +22,11 @@ class UnsupportedTypeExceptionTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("should throw exception on unsupported type for @GeneratedValue strategy IDENTITY")
     @SneakyThrows
     void shouldThrowExceptionOnUnSupportedTypeForIdGeneration() {
-        String expectedErrorMessage = ("Error creating SQL commands for DDL creation for "
-                + "table '%s' [illegal identity column type '%s' for id generation]")
-                .formatted(TABLE_WITH_UNSUPPORTED_TYPE_FOR_ID_GENERATION, UNSUPPORTED_TYPE_FOR_ID);
+        String expectedErrorMessage = ("Error creating SQL commands on DDL creation for "
+                + "table '%s' [illegal identity column type '%s' for id generation]. Supported types: '%s', '%s', '%s', '%s'")
+                .formatted(TABLE_WITH_UNSUPPORTED_TYPE_FOR_ID_GENERATION, UNSUPPORTED_TYPE_FOR_ID,
+                        Integer.class.getName(), int.class.getName(),
+                        Long.class.getName(), long.class.getName());
 
         // when
         RuntimeException exception = catchRuntimeException(
@@ -40,9 +42,11 @@ class UnsupportedTypeExceptionTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("should throw exception on unsupported type for @GeneratedValue strategy SEQUENCE")
     @SneakyThrows
     void shouldThrowExceptionOnUnSupportedTypeForSequence() {
-        String expectedErrorMessage = ("Error creating SQL commands for DDL creation for "
-                + "table '%s' [illegal identity column type '%s' for id generation]")
-                .formatted(TABLE_WITH_UNSUPPORTED_TYPE_FOR_SEQUENCE, UNSUPPORTED_TYPE_FOR_SEQUENCE);
+        String expectedErrorMessage = ("Error creating SQL commands on DDL creation for "
+                + "table '%s' [illegal identity column type '%s' for id generation]. Supported types: '%s', '%s', '%s', '%s'")
+                .formatted(TABLE_WITH_UNSUPPORTED_TYPE_FOR_SEQUENCE, UNSUPPORTED_TYPE_FOR_SEQUENCE,
+                        Integer.class.getName(), int.class.getName(),
+                        Long.class.getName(), long.class.getName());
 
         // when
         RuntimeException exception = catchRuntimeException(
@@ -58,7 +62,7 @@ class UnsupportedTypeExceptionTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("should throw exception on unsupported type for DDL creation")
     @SneakyThrows
     void shouldThrowExceptionOnUnSupportedTypeForDDLCreation() {
-        String expectedErrorMessage = ("Error creating SQL commands for DDL creation "
+        String expectedErrorMessage = ("Error creating SQL commands on DDL creation "
                 + "for table '%s' [column type '%s' is not supported]")
                 .formatted(TABLE_WITH_UNSUPPORTED_TYPE_FOR_DDL, UNSUPPORTED_TYPE_RANDOM);
 
