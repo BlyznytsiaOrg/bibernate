@@ -82,7 +82,14 @@ public class EntityReflectionUtils {
         return Optional.ofNullable(field.getAnnotation(Column.class))
                 .map(Column::name)
                 .filter(Predicate.not(String::isEmpty))
+                .or(() -> getJoinColumnName(field))
                 .orElse(getSnakeString(field.getName()));
+    }
+
+    private static Optional<String> getJoinColumnName(Field field) {
+        return Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+                .map(JoinColumn::name)
+                .filter(Predicate.not(String::isEmpty));
     }
 
     public static String databaseTypeForInternalJavaType(Field field) {
@@ -394,7 +401,24 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
     @SneakyThrows
     public static Object getValueFromObject(Object entity, Field field) {
         field.setAccessible(true);
+        if (isToOneReference(field)) {
+            Object reference = field.get(entity);
+            if(!reference.getClass().getName().contains("$$")) {
+                return getIdValueFromField(reference);
+            }
+        }
         return field.get(entity);
+    }
+
+    private static boolean isToOneReference(Field field) {
+        return field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToOne.class);
+    }
+
+    @SneakyThrows
+    private static Object getIdValueFromField(Object reference) {
+        Field referenceIdField = getIdField(reference.getClass());
+        referenceIdField.setAccessible(true);
+        return referenceIdField.get(reference);
     }
 
     @SneakyThrows
@@ -469,12 +493,17 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
     public static List<Field> getInsertEntityFields(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
-            .filter(Predicate.not(field -> field.isAnnotationPresent(GeneratedValue.class)
-                && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy())))
+            .filter(Predicate.not(field ->
+                    (field.isAnnotationPresent(GeneratedValue.class) && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+                || (field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(JoinColumn.class))
+                || (field.isAnnotationPresent(OneToMany.class))
+                    )
+            )
             //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
             //TODO: ADD utility jdbc class to insert all types or null
             .toList();
     }
+
 
     public static List<EntityColumn> getEntityFields(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
