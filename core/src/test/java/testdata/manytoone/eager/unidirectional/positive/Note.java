@@ -1,20 +1,20 @@
-package testdata.manytoone.unidirectional.notannotated;
+package testdata.manytoone.eager.unidirectional.positive;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.Getter;
-import testdata.manytoone.unidirectional.positive.Person;
 
 @Getter
 @Entity
 @Table(name = "notes")
-@IgnoreEntity
 public class Note {
-    
+
     @Id
     private Long id;
-    
+
     private String text;
     
-
+    @ManyToOne
+    @JoinColumn(name = "person_id")
     private Person person;
+
 }

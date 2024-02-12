@@ -1,4 +1,4 @@
-package testdata.manytoone.unidirectional.notannotated;
+package testdata.manytoone.eager.unidirectional.positive;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.Id;
@@ -9,12 +9,12 @@ import lombok.Getter;
 @Entity
 @Table(name = "persons")
 public class Person {
-    
+
     @Id
     private Long id;
-    
+
     private String firstName;
-    
+
     private String lastName;
-    
+
 }
