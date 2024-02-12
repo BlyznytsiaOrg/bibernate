@@ -6,7 +6,6 @@ import java.util.Random;
 
 @Entity
 public class Test {
-
     @Id
     private Long id;
 

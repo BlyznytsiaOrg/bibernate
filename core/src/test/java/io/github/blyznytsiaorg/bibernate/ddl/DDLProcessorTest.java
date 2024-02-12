@@ -29,6 +29,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTables() {
         createPersistentWithBb2ddlCreate("testdata.entity");
 
+
         //when
         List<String> tableNames = new ArrayList<>();
         try (var connection = dataSource.getConnection()) {
@@ -134,7 +135,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
         assertThat(foreignKeys).hasSize(1);
         foreignKeys.stream()
                 .filter(fk -> fk.columnName().equals("author_id"))
-                .forEach(fk -> assertThat(fk.name()).containsIgnoringCase("fk_"));
+                .forEach(fk -> assertThat(fk.name()).startsWithIgnoringCase("FK_"));
 
         columnData.stream()
                 .filter(column -> column.name().equals("id"))

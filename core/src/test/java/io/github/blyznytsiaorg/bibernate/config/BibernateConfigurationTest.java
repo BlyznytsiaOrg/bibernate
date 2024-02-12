@@ -2,51 +2,27 @@ package io.github.blyznytsiaorg.bibernate.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
+import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-import java.util.Map;
 
-@ExtendWith(SystemStubsExtension.class)
-class BibernateConfigurationTest {
-    private static final String PROPERTIES_FILE_NAME = "test.properties";
-    private static final String DB_PASSWORD_PROPERTY_NAME = "db.password";
-    private static final String DB_USER_PROPERTY_NAME = "db.user";
-    private static final String DB_URL_PROPERTY_NAME = "db.url";
-    private static final String url = "jdbc:postgresql://localhost:5432/db";
-    private static final String user = "user";
-    private static final String password = "password";
-    private static BibernateConfiguration bibernateConfiguration;
-    @SystemStub
-    private static EnvironmentVariables environmentVariables;
 
-    @BeforeAll
-    static void beforeAll() {
-        environmentVariables.set("DB.PASSWORD", "password");
-        bibernateConfiguration = new BibernateConfiguration(PROPERTIES_FILE_NAME);
-
-    }
+class BibernateConfigurationTest extends AbstractPostgresInfrastructurePrep {
 
     @Test
-    @Disabled("Need to find way to read env variables during maven build")
-    @DisplayName("should read properties as env variables")
-    void shouldReadProperties() {
-        // given
+    @DisplayName("should throw exception on flyway enabled and ddl create")
+    void shouldThrowExceptionOnFlywayEnabledAndDDLCreate() {
+        String expectedMessage = "Configuration error: bibernate.flyway.enabled=true "
+                + "and bibernate.2ddl.auto=create. Choose one property for creating schema";
 
         // when
-        Map<String, String> loadedProperties = bibernateConfiguration.load();
-        String loadedPassword = loadedProperties.get(DB_PASSWORD_PROPERTY_NAME);
-        String loadedUser = loadedProperties.get(DB_USER_PROPERTY_NAME);
-        String loadedUrl = loadedProperties.get(DB_URL_PROPERTY_NAME);
+        RuntimeException exception = Assertions.catchRuntimeException(() -> createPersistentWithFlayWayEnabledAndBb2ddlCreate("testdata.entity"));
+        String message = exception.getMessage();
 
         //then
-        assertThat(loadedPassword).isEqualTo(password);
-        assertThat(loadedUser).isEqualTo(user);
-        assertThat(loadedUrl).isEqualTo(url);
+        assertThat(exception).isInstanceOf(BibernateGeneralException.class);
+        assertThat(message).isEqualTo(expectedMessage);
     }
 }

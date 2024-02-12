@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,10 +56,12 @@ public class BibernateDatabaseSettings {
      * @param bibernateSettingsProperties the Bibernate settings properties loaded from a configuration file
      * @param bibernateFileName           the name of the configuration file
      */
-    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties, String bibernateFileName) {
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
+                                     String bibernateFileName) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
         this.dataSource = createDataSource();
+        checkDatabaseSettings();
     }
 
     /**
@@ -75,6 +78,7 @@ public class BibernateDatabaseSettings {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
         this.bibernateFileName = bibernateFileName;
         this.dataSource = dataSource;
+        checkDatabaseSettings();
     }
 
     /**
@@ -201,5 +205,21 @@ public class BibernateDatabaseSettings {
      */
     private String getPropertyString(String key, String defaultValue) {
         return bibernateSettingsProperties.getOrDefault(key, defaultValue);
+    }
+
+    /**
+     * Checks database settings to ensure they are consistent.
+     * If Flyway is enabled and DDL auto is set to "create",
+     * it throws a BibernateGeneralException.
+     *
+     * @throws BibernateGeneralException
+     */
+    private void checkDatabaseSettings() {
+        boolean flywayEnabled = getPropertyBoolean(FLYWAY_ENABLED, DEFAULT_BOOLEAN_FALSE_VALUE);
+        String ddlCreateProperty = getPropertyString(BB2DDL_AUTO, NONE);
+        if (flywayEnabled && ddlCreateProperty.equals(CREATE)) {
+            throw new BibernateGeneralException("Configuration error: bibernate.flyway.enabled=true "
+                    + "and bibernate.2ddl.auto=create. Choose one property for creating schema");
+        }
     }
 }

@@ -114,6 +114,12 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
     }
 
+    public Persistent createPersistentWithFlayWayEnabledAndBb2ddlCreate(String packageName) {
+        bibernateSettings.put(BB2DDL_AUTO, CREATE);
+        bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
+        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+    }
+
 
     public Persistent createPersistentWithSecondLevelCache(String packageName) {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
