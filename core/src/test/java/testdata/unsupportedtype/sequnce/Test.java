@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Entity
 public class Test {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private LocalDateTime id;

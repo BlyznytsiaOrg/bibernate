@@ -32,7 +32,6 @@ class TimestampTest extends AbstractPostgresInfrastructurePrep {
             try (var bibernateSessionFactory = bibernateEntityManager.getBibernateSessionFactory()) {
                 try (var bibernateSession = bibernateSessionFactory.openSession()) {
 
-
                     Customer customer = new Customer();
                     customer.setName("First");
                     bibernateSession.save(Customer.class, customer);
