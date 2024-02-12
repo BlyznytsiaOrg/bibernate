@@ -42,13 +42,13 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
                     jdbcBibernateSession, redisConfiguration.getDistributedMap()
             );
 
-            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+            bibernateSession = new ValidatorBibernateSession(new CloseBibernateSession(new BibernateFirstLevelCacheSession(
                     bibernateSecondLevelCacheSession, new DefaultActionQueue())
-            );
+            ));
         } else {
-            bibernateSession = new CloseBibernateSession(new BibernateFirstLevelCacheSession(
+            bibernateSession = new ValidatorBibernateSession(new CloseBibernateSession(new BibernateFirstLevelCacheSession(
                     jdbcBibernateSession, new DefaultActionQueue())
-            );
+            ));
         }
 
         setBibernateSession(bibernateSession);

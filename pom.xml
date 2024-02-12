@@ -237,7 +237,11 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.1</version>
+          <version>3.0.0-M5</version>
+          <configuration>
+            <parallel>methods</parallel>
+            <threadCount>6</threadCount> <!-- Adjust the number of threads as per your requirement -->
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
