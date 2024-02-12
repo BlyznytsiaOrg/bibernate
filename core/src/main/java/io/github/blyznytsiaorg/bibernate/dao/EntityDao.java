@@ -149,22 +149,13 @@ public class EntityDao implements Dao {
                 .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
 
         String whereConditionId = tableName.concat(".").concat(columnIdName);
-        List<JoinInfo> joinInfos = searchedEntityMetadata.getEntityColumns().stream()
-                .map(EntityColumnDetails::getOneToOne)
-                .filter(Objects::nonNull)
-                .map(oneToOneMetadata -> JoinInfo.builder()
-                        .joinedTable(oneToOneMetadata.getJoinedTable())
-                        .childEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getChildClass()))
-                        .parentEntityMetadata(bibernateEntityMetadata.get(oneToOneMetadata.getParentClass()))
-                        .build())
-                .toList();
+        List<JoinInfo> joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
 
-        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
-        oneToOneEntities.add(searchedEntityMetadata);
-        searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getOneToOne()))
-                .map(entityColumnDetails -> bibernateEntityMetadata.get(entityColumnDetails.getFieldType()))
-                .forEach(oneToOneEntities::add);
+        Set<EntityMetadata> oneToOneEntities = searchedEntityMetadata.getOneToOneEntities(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
 
         var query = sqlBuilder.selectByWithJoin(tableName, oneToOneEntities, whereConditionId, joinInfos, JoinType.LEFT);
 
