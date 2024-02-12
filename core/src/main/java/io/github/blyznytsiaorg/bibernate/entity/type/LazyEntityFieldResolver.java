@@ -3,7 +3,6 @@ package io.github.blyznytsiaorg.bibernate.entity.type;
 import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
