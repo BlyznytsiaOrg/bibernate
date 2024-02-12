@@ -12,16 +12,16 @@ import lombok.*;
 @NoArgsConstructor
 public class User {
     @Id
-    @Column(name = "id")
+    @Column(name = "users_id")
     private Long id;
 
-    @Column(name = "first_name")
+    @Column(name = "users_first_name")
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "users_last_name")
     private String lastName;
 
     @OneToOne
-    @JoinColumn(name = "address_id")
+    @JoinColumn(name = "users_address_id")
     private Address address;
 }

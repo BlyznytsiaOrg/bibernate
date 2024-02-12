@@ -39,14 +39,10 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT addresses.id AS addresses_id, " +
-                        "addresses.name AS addresses_name, " +
-                        "users.id AS users_id, " +
-                        "users.first_name AS users_first_name, " +
-                        "users.last_name AS users_last_name " +
+                        "SELECT * " +
                         "FROM addresses " +
-                        "LEFT JOIN users ON addresses.id = users.address_id " +
-                        "WHERE addresses.id = ?;"));
+                        "LEFT JOIN users ON addresses.addresses_id = users.users_address_id " +
+                        "WHERE addresses.addresses_id = ?;"));
             }
         }
     }
@@ -75,14 +71,10 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
                         .hasFieldOrPropertyWithValue("name", "street");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT addresses.id AS addresses_id, " +
-                        "addresses.name AS addresses_name, " +
-                        "users.id AS users_id, " +
-                        "users.first_name AS users_first_name, " +
-                        "users.last_name AS users_last_name " +
+                        "SELECT * " +
                         "FROM users " +
-                        "LEFT JOIN addresses ON addresses.id = users.address_id " +
-                        "WHERE users.id = ?;"));
+                        "LEFT JOIN addresses ON addresses.addresses_id = users.users_address_id " +
+                        "WHERE users.users_id = ?;"));
             }
         }
     }

@@ -1,7 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
+import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
 
@@ -9,7 +10,8 @@ import java.lang.reflect.Field;
 import java.sql.ResultSet;
 import java.util.function.Supplier;
 
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromResultSetByColumn;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
 
 public class OneToOneLazyFieldResolver implements TypeFieldResolver {
     @Override
@@ -18,7 +20,10 @@ public class OneToOneLazyFieldResolver implements TypeFieldResolver {
     }
 
     @Override
-    public Object prepareValueForFieldInjection(Field field, ResultSet resultSet, Object entity) {
+    public Object prepareValueForFieldInjection(Field field,
+                                                ResultSet resultSet,
+                                                Object entity,
+                                                EntityPersistent entityPersistent) {
         var session = BibernateContextHolder.getBibernateSession();
 
         var joinColumnName = joinColumnName(field);

@@ -15,14 +15,9 @@ import lombok.*;
 @AllArgsConstructor
 public class Address {
     @Id
-    @Column(name = "id")
+    @Column(name = "addresses_id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "addresses_name")
     private String name;
-
-//    @OneToOne
-//    @JoinColumn(name = "house_id")
-//    private House house;
 }
-

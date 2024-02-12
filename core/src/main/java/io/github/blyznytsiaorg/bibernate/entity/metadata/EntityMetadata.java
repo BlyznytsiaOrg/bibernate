@@ -3,9 +3,7 @@ package io.github.blyznytsiaorg.bibernate.entity.metadata;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.dao.JoinInfo;
-import io.github.blyznytsiaorg.bibernate.entity.metadata.model.ColumnMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IndexMetadata;
-import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.Getter;
 
 import java.util.*;
@@ -54,7 +52,7 @@ public class EntityMetadata {
 
     public Set<JoinInfo> joinInfos(Class<?> entityClass, List<EntityColumnDetails> currentEntityColumns,
                                     Map<Class<?>, EntityMetadata> bibernateEntityMetadata, Set<Class<?>> trackVisitedClasses) {
-        Set<JoinInfo> joinInfos = new HashSet<>();
+        Set<JoinInfo> joinInfos = new LinkedHashSet<>();
         trackVisitedClasses.add(entityClass);
 
         for (var entityColumn : currentEntityColumns) {

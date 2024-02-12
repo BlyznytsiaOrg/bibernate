@@ -2,7 +2,6 @@ package io.github.blyznytsiaorg.bibernate.onetoone.unidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.onetoone.unidirectional.lazy.Address;
@@ -29,7 +28,7 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 Optional<User> user = bibernateSession.findById(User.class, 1L);
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT * FROM users WHERE id = ?;"));
+                        "SELECT * FROM users WHERE users_id = ?;"));
                 //then
                 assertThat(user).isPresent();
 
@@ -41,8 +40,8 @@ class FindOneToOneUnidirectionalLazyTest extends AbstractPostgresInfrastructureP
                 bibernateSession.findById(Address.class, 1L);
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT * FROM users WHERE id = ?;",
-                        "SELECT * FROM addresses WHERE id = ?;"));
+                        "SELECT * FROM users WHERE users_id = ?;",
+                        "SELECT * FROM addresses WHERE addresses_id = ?;"));
             }
         }
     }
