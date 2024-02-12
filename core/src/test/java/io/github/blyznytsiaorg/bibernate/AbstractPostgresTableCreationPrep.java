@@ -22,40 +22,40 @@ public interface AbstractPostgresTableCreationPrep {
     String CREATE_USERS_ADDRESSES_HOUSES_TABLES = """
             CREATE TABLE IF NOT EXISTS houses
             (
-                id      BIGINT primary key,
-                name    VARCHAR(255)
+                houses_id      BIGINT primary key,
+                houses_name    VARCHAR(255)
             );
                         
             CREATE TABLE IF NOT EXISTS addresses
             (
-                id      BIGINT primary key,
-                name    VARCHAR(255)
+                addresses_id      BIGINT primary key,
+                addresses_name    VARCHAR(255)
             );
                         
             CREATE TABLE IF NOT EXISTS users (
-                id bigserial primary key,
-                first_name varchar(255),
-                last_name varchar(255),
-                address_id bigint not null,
-                house_id bigint not null,
-                CONSTRAINT users_addresses_FK FOREIGN KEY (address_id) REFERENCES addresses,
-                CONSTRAINT users_houses_FK FOREIGN KEY (house_id) REFERENCES houses
+                users_id bigserial primary key,
+                users_first_name varchar(255),
+                users_last_name varchar(255),
+                users_address_id bigint not null,
+                users_house_id bigint not null,
+                CONSTRAINT users_addresses_FK FOREIGN KEY (users_address_id) REFERENCES addresses,
+                CONSTRAINT users_houses_FK FOREIGN KEY (users_house_id) REFERENCES houses
             );
             """;
 
     String CREATE_USERS_ADDRESSES_FOR_BI_TABLES = """                   
             CREATE TABLE IF NOT EXISTS addresses
             (
-                id      BIGINT primary key,
-                name    VARCHAR(255)
+                addresses_id      BIGINT primary key,
+                addresses_name    VARCHAR(255)
             );
                         
             CREATE TABLE IF NOT EXISTS users (
-                id bigserial primary key,
-                first_name varchar(255),
-                last_name varchar(255),
-                address_id bigint not null,
-                CONSTRAINT users_addresses_FK FOREIGN KEY (address_id) REFERENCES addresses
+                users_id bigserial primary key,
+                users_first_name varchar(255),
+                users_last_name varchar(255),
+                users_address_id bigint not null,
+                CONSTRAINT users_addresses_FK FOREIGN KEY (users_address_id) REFERENCES addresses
             );
             """;
 
@@ -67,6 +67,42 @@ public interface AbstractPostgresTableCreationPrep {
                 enabled bool,
                 age int
             );
+            """;
+
+    String ONE_TO_ONE_MULTIRELATION_TABLES = """
+            CREATE TABLE houses (
+                houses_id BIGINT PRIMARY KEY,
+                houses_name VARCHAR(255)
+            );
+            
+            CREATE TABLE addresses (
+                addresses_id BIGINT PRIMARY KEY,
+                addresses_name VARCHAR(255),
+                addresses_house_id BIGINT,
+                FOREIGN KEY (addresses_house_id) REFERENCES houses(houses_id)
+            );
+            
+            CREATE TABLE users (
+                users_id BIGINT PRIMARY KEY,
+                users_first_name VARCHAR(255),
+                users_last_name VARCHAR(255),
+                users_address_id BIGINT,
+                FOREIGN KEY (users_address_id) REFERENCES addresses(addresses_id)
+            );
+            """;
+
+    String ONE_TO_ONE_MULTIRELATION_INSERT = """
+            INSERT INTO houses (houses_id, houses_name) VALUES
+            (1, 'House A'),
+            (2, 'House B');
+                        
+            INSERT INTO addresses (addresses_id, addresses_name, addresses_house_id) VALUES
+            (1, 'Address 1', 1),
+            (2, 'Address 2', 2);
+                        
+            INSERT INTO users (users_id, users_first_name, users_last_name, users_address_id) VALUES
+            (1, 'John', 'Doe', 1),
+            (2, 'Jane', 'Smith', 2);
             """;
 
     String CREATE_EMPLOYEE_INSERT_STATEMENT = """
@@ -94,14 +130,14 @@ public interface AbstractPostgresTableCreationPrep {
             """;
 
     String CREATE_INSERT_USERS_ADRESSES_STATEMENT = """
-            insert into houses(id, name) values (2, 'big');
-            insert into addresses(id, name) values (1, 'street');
-            insert into users(first_name, last_name, address_id, house_id) values ('FirstName', 'LastName', 1, 2)
+            insert into houses(houses_id, houses_name) values (2, 'big');
+            insert into addresses(addresses_id, addresses_name) values (1, 'street');
+            insert into users(users_first_name, users_last_name, users_address_id, users_house_id) values ('FirstName', 'LastName', 1, 2)
             """;
 
     String CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT = """
-            insert into addresses(id, name) values (2, 'street');
-            insert into users(first_name, last_name, address_id) values ('FirstName', 'LastName', 2)
+            insert into addresses(addresses_id, addresses_name) values (2, 'street');
+            insert into users(users_first_name, users_last_name, users_address_id) values ('FirstName', 'LastName', 2)
             """;
 
     String CREATE_NOTES_TABLE = """

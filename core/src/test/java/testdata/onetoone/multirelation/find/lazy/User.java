@@ -1,18 +1,21 @@
-package testdata.onetoone.unidirectional.lazy;
+package testdata.onetoone.multirelation.find.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")
-@ToString
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
     @Id
+    @GeneratedValue
     @Column(name = "users_id")
     private Long id;
 
@@ -25,6 +28,4 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_address_id")
     private Address address;
-
-
 }

@@ -1,4 +1,4 @@
-package testdata.onetoone.unidirectional.lazy;
+package testdata.onetoone.multirelation.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
@@ -12,9 +12,15 @@ import lombok.*;
 @AllArgsConstructor
 public class Address {
     @Id
-    @Column(name = "addresses_id")
+    @GeneratedValue
+    @Column(name = "id")
     private Long id;
 
-    @Column(name = "addresses_name")
+    @Column(name = "name")
     private String name;
+
+    @OneToOne
+    @JoinColumn(name = "house_id")
+    private House house;
 }
+

@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.onetoone.bidirectional.eager;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testdata.onetoone.bidirectional.eager.Address;
@@ -14,11 +15,11 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructurePrep {
+class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should retrieve person and address")
     @Test
-    public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelationsOnOwnerSide() {
+    void shouldFindUserByIdWithOneToOneEagerBidirectionalRelationsOnOwnerSide() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
         var persistent = createPersistent("testdata.onetoone.bidirectional.eager");
@@ -39,21 +40,17 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT addresses.id AS addresses_id, " +
-                        "addresses.name AS addresses_name, " +
-                        "users.id AS users_id, " +
-                        "users.first_name AS users_first_name, " +
-                        "users.last_name AS users_last_name " +
+                        "SELECT * " +
                         "FROM addresses " +
-                        "LEFT JOIN users ON addresses.id = users.address_id " +
-                        "WHERE addresses.id = ?;"));
+                        "LEFT JOIN users ON addresses.addresses_id = users.users_address_id " +
+                        "WHERE addresses.addresses_id = ?;"));
             }
         }
     }
 
     @DisplayName("Should retrieve person and address")
     @Test
-    public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
+    void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
         var persistent = createPersistent("testdata.onetoone.bidirectional.eager");
@@ -75,14 +72,10 @@ public class OneToOneBidirectionalEagerTest extends AbstractPostgresInfrastructu
                         .hasFieldOrPropertyWithValue("name", "street");
 
                 assertQueries(bibernateSessionFactory, List.of(
-                        "SELECT addresses.id AS addresses_id, " +
-                        "addresses.name AS addresses_name, " +
-                        "users.id AS users_id, " +
-                        "users.first_name AS users_first_name, " +
-                        "users.last_name AS users_last_name " +
+                        "SELECT * " +
                         "FROM users " +
-                        "LEFT JOIN addresses ON addresses.id = users.address_id " +
-                        "WHERE users.id = ?;"));
+                        "LEFT JOIN addresses ON addresses.addresses_id = users.users_address_id " +
+                        "WHERE users.users_id = ?;"));
             }
         }
     }

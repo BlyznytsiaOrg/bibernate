@@ -16,9 +16,10 @@ import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
@@ -47,17 +48,9 @@ public class SqlBuilder {
     }
 
     public String selectByWithJoin(String tableName,
-                                   Set<EntityMetadata> oneToOneEntities,
                                    String whereCondition,
-                                   List<JoinInfo> joinInfos,
+                                   Set<JoinInfo> joinInfos,
                                    JoinType joinType) {
-
-        Map<String, List<EntityColumnDetails>> tableNameColumnsDetails = oneToOneEntities.stream()
-                .collect(Collectors.toMap(EntityMetadata::getTableName,
-                        entityMetadata -> entityMetadata.getEntityColumns().stream()
-                                .filter(entityColumnDetails -> Objects.isNull(entityColumnDetails.getOneToOne()))
-                                .toList()));
-
         List<JoinClause> joinClauses = joinInfos.stream()
                 .map(joinInfo -> {
 
@@ -87,7 +80,6 @@ public class SqlBuilder {
                 .toList();
 
         return from(tableName)
-                .selectFieldsFromTables(tableNameColumnsDetails)
                 .join(joinClauses)
                 .whereCondition(fieldEqualsParameterCondition(whereCondition))
                 .buildSelectStatement();

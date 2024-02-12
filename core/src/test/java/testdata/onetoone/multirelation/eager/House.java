@@ -1,20 +1,20 @@
-package testdata.onetoone.unidirectional.lazy;
+package testdata.onetoone.multirelation.eager;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
 
 @Entity
-@Table(name = "addresses")
+@Table(name = "houses")
 @ToString
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class House {
     @Id
-    @Column(name = "addresses_id")
+    @GeneratedValue
     private Long id;
 
-    @Column(name = "addresses_name")
+    @Column(name = "name")
     private String name;
 }
