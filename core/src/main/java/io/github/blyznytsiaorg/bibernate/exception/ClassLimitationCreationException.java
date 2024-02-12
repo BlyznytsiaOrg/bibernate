@@ -4,10 +4,10 @@ package io.github.blyznytsiaorg.bibernate.exception;
  * Exception thrown when there is an issue creating a class limitation.
  * Extends {@link BibernateGeneralException}.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
-public class ClassLimitationCreationException extends BibernateGeneralException{
+public class ClassLimitationCreationException extends BibernateGeneralException {
     /**
      * Constructs a new ClassLimitationCreationException with the specified detail message.
      *

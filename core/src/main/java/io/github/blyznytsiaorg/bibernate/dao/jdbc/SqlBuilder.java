@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.dsl.SelectQueryBuilder.*;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
@@ -90,6 +92,12 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
+    public String selectAllById(String tableName, String filedName, Integer countOfParameters) {
+        return from(tableName)
+                .whereCondition(fieldInParametersCondition(filedName, countOfParameters))
+                .buildSelectStatement();
+    }
+
     /**
      * Generates an UPDATE SQL statement for updating records in a specified table based on the provided entity,
      * fieldIdName, and list of ColumnSnapshots representing the differences.
@@ -140,6 +148,21 @@ public class SqlBuilder {
      */
     public String fieldEqualsParameterCondition(String fieldName) {
         return fieldName + EQ + PARAMETER;
+    }
+
+    /**
+     * Generates a SQL condition for a field, representing an "IN" clause with a specified number of parameters.
+     *
+     * @param fieldName         The name of the field for which the condition is generated.
+     * @param countOfParameters The count of parameters in the "IN" clause.
+     * @return A string representing the SQL condition for the "IN" clause with the specified field name and parameters.
+     */
+    public String fieldInParametersCondition(String fieldName, Integer countOfParameters) {
+        var parameters = IntStream.range(0, countOfParameters)
+                .mapToObj(i -> PARAMETER)
+                .collect(Collectors.joining(COMA));
+
+        return fieldName + IN + OPEN_BRACKET + parameters + CLOSE_BRACKET;
     }
 
     /**

@@ -35,6 +35,11 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        return dao.findAllById(entityClass, primaryKeys);
+    }
+
+    @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         return dao.findAllByColumnValue(entityClass, columnName, columnValue);
     }
@@ -95,7 +100,7 @@ public class DefaultBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object entity) {
+    public <T> void delete(Class<T> entityClass, T entity) {
         dao.delete(entityClass, entity);
     }
 

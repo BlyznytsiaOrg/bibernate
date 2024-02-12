@@ -13,9 +13,9 @@ import java.util.Collection;
 import static io.github.blyznytsiaorg.bibernate.actionqueue.ActionType.DELETE;
 
 /**
- * Represents an entity action for bulk deletion of entities by their primary keys.
+ * Represents an entity action for bulk deletion of entities of a specific class.
  * This action is associated with a Bibernate session and executes the deletion operation
- * for the provided collection of primary keys within the specified entity class.
+ * for the provided collection of entities within the specified entity class.
  *
  * @param <T> The generic type representing the entity class.
  * @author Blyzhnytsia Team
@@ -23,24 +23,20 @@ import static io.github.blyznytsiaorg.bibernate.actionqueue.ActionType.DELETE;
  */
 @Builder
 @RequiredArgsConstructor
-public class DeleteAllByIdEntityAction<T> implements EntityAction {
+public class DeleteAllEntityAction<T> implements EntityAction {
 
     /**
-     * The Bibernate session associated with the DeleteAllByIdEntityAction, providing access to the
-     * underlying data access operations and serving as the execution context for the bulk entity deletion by primary keys.
+     * The Bibernate session associated with the DeleteAllEntityAction, providing access to the
+     * underlying data access operations and serving as the execution context for the bulk entity deletion action.
      */
     private final BibernateSession bibernateSession;
     /**
-     * The class of entities targeted for deletion by primary keys within this action.
+     * The class of entities targeted for deletion by this action.
      */
     @Getter
     private final Class<T> entityClass;
     /**
-     * The collection of primary keys used to identify entities for deletion by this action.
-     */
-    private final Collection<Object> primaryKeys;
-    /**
-     * The collection of entities targeted for deletion by this action.
+     * The collection of entities to be deleted by this action.
      */
     private final Collection<T> entities;
     /**
@@ -49,13 +45,13 @@ public class DeleteAllByIdEntityAction<T> implements EntityAction {
     private final Runnable removeCacheAndSnapshot;
 
     /**
-     * Executes the bulk entity deletion by primary keys action by invoking the corresponding method
-     * in the associated Bibernate session. This method checks for a non-empty collection of entities before performing the deletion operation.
+     * Executes the bulk entity deletion action by invoking the corresponding method in the associated Bibernate session.
+     * This method checks for a non-empty collection of entities before performing the deletion operation.
      */
     @Override
     public void execute() {
         if (CollectionUtils.isNotEmpty(entities)) {
-            bibernateSession.deleteAllById(entityClass, primaryKeys);
+            bibernateSession.deleteAll(entityClass, entities);
         }
         removeCacheAndSnapshot.run();
     }

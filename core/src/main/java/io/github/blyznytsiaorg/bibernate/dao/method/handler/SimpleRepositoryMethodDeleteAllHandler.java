@@ -2,9 +2,11 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 
 import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.getBibernateSessionFactory;
@@ -58,7 +60,7 @@ public class SimpleRepositoryMethodDeleteAllHandler implements SimpleRepositoryM
                 var entityClass  = (Class<?>) repositoryDetails.entityType();
                 var parameter = parameters[0];
                 if (parameter instanceof List<?> ids) {
-                    ids.forEach(id -> bringSession.deleteById(entityClass, id));
+                    executeHelper(entityClass, ids, bringSession);
                     return Void.TYPE;
                 }
             }
@@ -66,5 +68,9 @@ public class SimpleRepositoryMethodDeleteAllHandler implements SimpleRepositoryM
 
         log.warn(DELETE_METHOD_SHOULD_HAVE_ONE_PARAMETER_ID);
         return null;
+    }
+
+    private <T> void executeHelper(Class<T> entityClass, Collection entities, BibernateSession bringSession) {
+        bringSession.deleteAllById(entityClass, entities);
     }
 }

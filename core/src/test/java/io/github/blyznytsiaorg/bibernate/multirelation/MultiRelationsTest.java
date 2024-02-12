@@ -55,9 +55,8 @@ class MultiRelationsTest extends AbstractPostgresInfrastructurePrep {
                 assertQueries(sessionFactory, List.of(
                         "SELECT * FROM persons WHERE id = ?;",
                         "SELECT courses.* FROM persons_courses " +
-                                "INNER JOIN courses " +
-                                "ON courses.id = persons_courses.course_id " +
-                                "WHERE person_id = ?;",
+                            "INNER JOIN courses ON courses.id = persons_courses.course_id " +
+                            "WHERE person_id = ?;",
                         "SELECT * FROM authors WHERE id = ?;",
                         "SELECT * FROM notes WHERE person_id = ?;"));
             }

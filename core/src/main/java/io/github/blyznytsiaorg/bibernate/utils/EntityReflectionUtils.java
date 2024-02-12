@@ -35,6 +35,7 @@ import java.util.stream.IntStream;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnVersionFound;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
 
@@ -351,14 +352,16 @@ public class EntityReflectionUtils {
 
     public static void setVersionValueIfNull(Class<?> entityClass,
                                              Collection<?> entities) {
-        Arrays.stream(entityClass.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Version.class))
-                .forEach(field -> entities.forEach(entity -> {
-                    var value = getValueFromObject(entity, field);
-                    if (Objects.isNull(value)) {
-                        setValueForObject(entity, field, 1);
-                    }
-                }));
+        if (isColumnVersionFound(entityClass)) {
+            Arrays.stream(entityClass.getDeclaredFields())
+                    .filter(field -> field.isAnnotationPresent(Version.class))
+                    .forEach(field -> entities.forEach(entity -> {
+                        var value = getValueFromObject(entity, field);
+                        if (Objects.isNull(value)) {
+                            setValueForObject(entity, field, 1);
+                        }
+                    }));
+        }
     }
 
     public static Object columnVersionValue(Class<?> entityClass,

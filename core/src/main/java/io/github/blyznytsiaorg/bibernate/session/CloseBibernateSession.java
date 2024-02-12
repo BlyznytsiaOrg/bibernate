@@ -44,6 +44,11 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
+    public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        return bibernateSession.findAllById(entityClass, primaryKeys);
+    }
+
+    @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         verifySessionNotClosed();
         return bibernateSession.findAllByColumnValue(entityClass, columnName, columnValue);
@@ -131,7 +136,7 @@ public class CloseBibernateSession implements BibernateSession {
     }
 
     @Override
-    public <T> void delete(Class<T> entityClass, Object entity) {
+    public <T> void delete(Class<T> entityClass, T entity) {
         verifySessionNotClosed();
         if (isImmutable(entityClass)) {
             log.warn(IMMUTABLE_ENTITY_S_NOT_ALLOWED_TO_CHANGE.formatted(entityClass));

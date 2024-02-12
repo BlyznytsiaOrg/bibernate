@@ -46,8 +46,8 @@ class OneToManyBidirectionalTest extends AbstractPostgresInfrastructurePrep {
           .contains("My Second Note");
 
         assertQueries(sessionFactory, List.of(
-          "SELECT * FROM persons WHERE id = ?;",
-          "SELECT * FROM notes WHERE person_id = ?;"));
+                "SELECT * FROM persons WHERE id = ?;",
+                "SELECT * FROM notes WHERE person_id = ?;"));
       }
     }
   }

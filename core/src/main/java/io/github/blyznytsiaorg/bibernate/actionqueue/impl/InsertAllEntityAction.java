@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.actionqueue.impl;
 import io.github.blyznytsiaorg.bibernate.actionqueue.ActionType;
 import io.github.blyznytsiaorg.bibernate.actionqueue.EntityAction;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
+import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +11,10 @@ import lombok.RequiredArgsConstructor;
 import java.util.Collection;
 
 /**
- * Represents an entity action for inserting entities in the Bibernate framework. This action is associated with
- * a specific entity class and a collection of entities to be inserted.
+ * Represents an entity action for inserting a collection of entities in the Bibernate framework. This action is
+ * associated with a specific entity class and a collection of entities to be inserted.
  * <p>
- * Upon execution, the action inserts each entity in the collection into the data store.
+ * Upon execution, the action inserts all entities in the collection into the data store using a batch insert operation.
  *
  * @param <T> The generic type representing the entity class.
  * @author Blyzhnytsia Team
@@ -21,11 +22,11 @@ import java.util.Collection;
  */
 @Builder
 @RequiredArgsConstructor
-public class InsertEntityAction<T> implements EntityAction {
+public class InsertAllEntityAction<T> implements EntityAction {
 
     /**
-     * The Bibernate session associated with the InsertEntityAction, providing access to the underlying data access
-     * operations and the execution context for the insert action.
+     * The Bibernate session associated with the InsertAllEntityAction, providing access to the underlying data access
+     * operations and the execution context for the batch insert action.
      */
     private final BibernateSession bibernateSession;
     /**
@@ -39,11 +40,14 @@ public class InsertEntityAction<T> implements EntityAction {
     private final Collection<T> entities;
 
     /**
-     * Executes the entity action by inserting each entity in the collection into the data store.
+     * Executes the entity action by inserting all entities in the collection into the data store using a batch insert operation.
+     * If the collection is empty, no operation is performed.
      */
     @Override
     public void execute() {
-        entities.forEach(entity -> bibernateSession.save(entityClass, entity));
+        if (CollectionUtils.isNotEmpty(entities)) {
+            bibernateSession.saveAll(entityClass, entities);
+        }
     }
 
     /**

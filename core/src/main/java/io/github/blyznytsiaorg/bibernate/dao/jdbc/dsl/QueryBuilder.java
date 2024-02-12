@@ -105,6 +105,21 @@ abstract class QueryBuilder {
     public static final String OR = "OR ";
 
     /**
+     * The logical IN operator for combining conditions in WHERE clauses.
+     */
+    public static final String IN = " IN ";
+
+    /**
+     * Represents the open parenthesis "(" in SQL.
+     */
+    public static final String OPEN_BRACKET = "( ";
+
+    /**
+     * Represents the close parenthesis ")" in SQL.
+     */
+    public static final String CLOSE_BRACKET = " )";
+
+    /**
      * The equality operator used in WHERE clauses.
      */
     public static final String EQ = " = ";
