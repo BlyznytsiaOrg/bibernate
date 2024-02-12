@@ -17,7 +17,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -36,10 +47,6 @@ import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDat
 @Slf4j
 @UtilityClass
 public class EntityReflectionUtils {
-    public static final String JAVA_LANG = "java.lang";
-    public static final String JAVA_MATH = "java.math";
-    public static final String JAVA_SQL = "java.sql";
-    public static final String JAVA_TIME = "java.time";
     private static final String UNABLE_TO_GET_ID_NAME_FOR_ENTITY = "Unable to get id name for entity [%s]";
     private static final String UNABLE_TO_GET_VERSION_NAME_FOR_ENTITY = "Unable to get version name for entity [%s]";
     public static final String UNABLE_TO_GET_ID_FIELD_FOR_ENTITY = "Unable to get id field for entity [%s]";
@@ -104,19 +111,22 @@ public class EntityReflectionUtils {
     }
 
     public static String databaseTypeForInternalJavaType(Field field) {
-        if (isInternalJavaType(field)) {
-            Column annotation = field.getAnnotation(Column.class);
-            String columnDefinition = (annotation != null) ? annotation.columnDefinition() : "";
-            return columnDefinition.isEmpty() ? convertToDatabaseType(field.getType()) : columnDefinition;
-        }
-        return null;
+        Column annotation = field.getAnnotation(Column.class);
+        String columnDefinition = (annotation != null) ? annotation.columnDefinition() : "";
+        return columnDefinition.isEmpty() ? convertToDatabaseType(field.getType()) : columnDefinition;
+
     }
 
-    private boolean isInternalJavaType(Field field) {
+    public static boolean isTimeZone(Field field) {
         Class<?> fieldType = field.getType();
-        String packageName = fieldType.getPackageName();
-        return packageName.equals(JAVA_LANG) || packageName.equals(JAVA_MATH)
-                || packageName.equals(JAVA_SQL) || packageName.equals(JAVA_TIME);
+        return fieldType.equals(OffsetTime.class) || fieldType.equals(OffsetDateTime.class);
+    }
+
+    public static boolean isTimestamp(Field field) {
+        Class<?> fieldType = field.getType();
+        return fieldType.equals(OffsetTime.class) || fieldType.equals(OffsetDateTime.class)
+                || fieldType.equals(LocalDate.class) || fieldType.equals(LocalTime.class)
+                || fieldType.equals(LocalDateTime.class);
     }
 
     public static String mappedByJoinColumnName(Field field) {
@@ -145,7 +155,8 @@ public class EntityReflectionUtils {
                 .filter(Predicate.not(String::isEmpty))
                 .orElse(null);
     }
-public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
+
+    public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
@@ -159,7 +170,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
     }
 
     private static String getManyManyDefaultTableName(Field field, Class<?> entityClass) {
-        if(field.isAnnotationPresent(ManyToMany.class)) {
+        if (field.isAnnotationPresent(ManyToMany.class)) {
             Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
             String thisEntityTableName = table(entityClass);
             String relationEntityTableName = table(collectionGenericType);
@@ -185,6 +196,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         String columnIdName = columnIdName(entityClass);
         return JOIN_TABLE_NAME_PATTERN.formatted(entityClass.getSimpleName().toLowerCase(), columnIdName);
     }
+
     public static String inverseTableJoinColumnName(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
             ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
@@ -274,11 +286,11 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
     public static String joinColumnName(Class<?> sourceType, Class<?> fieldType) {
         return Arrays.stream(sourceType.getDeclaredFields())
-          .filter(field -> fieldType.isAssignableFrom(field.getType())
-            || (isSupportedCollection(field) && fieldType.isAssignableFrom(getCollectionGenericType(field))))
-          .map(EntityReflectionUtils::joinColumnName)
-          .findFirst()
-          .orElse(null);
+                .filter(field -> fieldType.isAssignableFrom(field.getType())
+                        || (isSupportedCollection(field) && fieldType.isAssignableFrom(getCollectionGenericType(field))))
+                .map(EntityReflectionUtils::joinColumnName)
+                .findFirst()
+                .orElse(null);
     }
 
     public static String joinColumnName(Field field) {
@@ -395,7 +407,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
             return field.get(obj);
         } catch (IllegalAccessException exe) {
             throw new BibernateGeneralException("Unable to get [%s] field value for entity [%s], message [%s]"
-              .formatted(field.getName(), obj.getClass(), exe.getMessage()));
+                    .formatted(field.getName(), obj.getClass(), exe.getMessage()));
         }
     }
 
@@ -405,7 +417,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
             return entity.getClass().getDeclaredField(columnIdName);
         } catch (NoSuchFieldException exe) {
             throw new BibernateGeneralException("Unable to get id field for entity [%s], message [%s]"
-              .formatted(entity.getClass(), exe.getMessage()));
+                    .formatted(entity.getClass(), exe.getMessage()));
         }
     }
 
@@ -507,8 +519,8 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
             .filter(Predicate.not(field ->
                     (field.isAnnotationPresent(GeneratedValue.class) && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy()))
                 || (field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(JoinColumn.class))
-                || (field.isAnnotationPresent(OneToMany.class))
-                    )
+                || (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(CreationTimestamp.class)
+                    || field.isAnnotationPresent(UpdateTimestamp.class)))
             )
             //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
             //TODO: ADD utility jdbc class to insert all types or null
@@ -524,10 +536,10 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
     public static Field getIdField(Class<?> entityClass) {
         return Arrays.stream(entityClass.getDeclaredFields())
-            .filter(field -> field.isAnnotationPresent(Id.class))
-            .findFirst()
-            .orElseThrow(() -> new MissingAnnotationException(
-                UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+                .filter(field -> field.isAnnotationPresent(Id.class))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
     }
 
     public static Object setIdField(Object entity, Object value) {
@@ -538,42 +550,44 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
     public static Field getGeneratedValueField(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
-            .filter(field -> field.isAnnotationPresent(GeneratedValue.class))
-            .findFirst()
-            .orElseThrow(() -> new MissingAnnotationException(
-                UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY.formatted(
-                    entity.getClass().getSimpleName())));
+                .filter(field -> field.isAnnotationPresent(GeneratedValue.class))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        UNABLE_TO_GET_GENERATED_VALUE_FIELD_FOR_ENTITY.formatted(
+                                entity.getClass().getSimpleName())));
 
     }
 
     public static Field getGeneratedValueSequenceStrategyField(Object entity) {
         return Arrays.stream(entity.getClass().getDeclaredFields())
-            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
-                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
-            .findFirst()
-            .orElseThrow(() -> new MissingAnnotationException(
-                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
+                .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                        && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entity.getClass().getSimpleName())));
 
     }
 
-    public static SequenceConf getGeneratedValueSequenceConfig(Class<?> entityClass, String tableName) {
+    public static SequenceConf getGeneratedValueSequenceConfig(Class<?> entityClass,
+                                                               String tableName) {
         return Arrays.stream(entityClass.getDeclaredFields())
-            .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
-                && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
-            .map(field -> getSequenceConfFromField(field, tableName))
-            .findFirst()
-            .orElseThrow(() -> new MissingAnnotationException(
-                CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entityClass.getSimpleName())));
+                .filter(field -> field.isAnnotationPresent(GeneratedValue.class)
+                        && SEQUENCE.equals(field.getAnnotation(GeneratedValue.class).strategy()))
+                .map(field -> getSequenceConfFromField(field, tableName))
+                .findFirst()
+                .orElseThrow(() -> new MissingAnnotationException(
+                        CANNOT_FIND_SEQUENCE_STRATEGY.formatted(entityClass.getSimpleName())));
 
     }
 
-    public static boolean isAnnotationPresent(Field field, Class<? extends Annotation> annotationClass) {
+    public static boolean isAnnotationPresent(Field field,
+                                              Class<? extends Annotation> annotationClass) {
         return field.isAnnotationPresent(annotationClass);
     }
 
     private static SequenceConf getSequenceConfFromField(Field field, String tableName) {
         var generatorName = field.getAnnotation(GeneratedValue.class).generator();
-        if(!generatorName.isEmpty() && generatorName.equals(field.getAnnotation(SequenceGenerator.class).name())) {
+        if (!generatorName.isEmpty() && generatorName.equals(field.getAnnotation(SequenceGenerator.class).name())) {
             var sequenceName = field.getAnnotation(SequenceGenerator.class).sequenceName();
             var initialValue = field.getAnnotation(SequenceGenerator.class).initialValue();
             var allocationSize = field.getAnnotation(SequenceGenerator.class).allocationSize();
@@ -586,11 +600,11 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
 
     public static boolean isBidirectional(Field field) {
         return !field.getAnnotation(OneToOne.class).mappedBy().isBlank() ||
-               Arrays.stream(field.getType().getDeclaredFields())
-                       .map(bidirectionalField -> bidirectionalField.getAnnotation(OneToOne.class))
-                       .filter(Objects::nonNull)
-                       .map(OneToOne::mappedBy)
-                       .anyMatch(mappedByName -> mappedByName.equals(field.getName()));
+                Arrays.stream(field.getType().getDeclaredFields())
+                        .map(bidirectionalField -> bidirectionalField.getAnnotation(OneToOne.class))
+                        .filter(Objects::nonNull)
+                        .map(OneToOne::mappedBy)
+                        .anyMatch(mappedByName -> mappedByName.equals(field.getName()));
     }
 
     private static Object convertToType(Object value, Class<?> targetType) {
@@ -612,7 +626,7 @@ public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
             return value;
         } else if (value instanceof Character && targetType.equals(Character.class)) {
             return value;
-        } else  if (value instanceof String valueString && targetType.equals(Long.class)) {
+        } else if (value instanceof String valueString && targetType.equals(Long.class)) {
             return Long.valueOf(valueString);
         }
         // Add more conditions for other types if needed

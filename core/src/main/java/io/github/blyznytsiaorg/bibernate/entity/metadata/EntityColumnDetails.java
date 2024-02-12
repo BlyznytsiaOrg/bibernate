@@ -31,6 +31,8 @@ public class EntityColumnDetails {
     private ManyToManyMetadata manyToMany;
     private JoinColumnMetadata joinColumn;
     private JoinTableMetadata joinTable;
+    private CreationTimestampMetadata creationTimestampMetadata;
+    private UpdateTimestampMetadata updateTimestampMetadata;
 
     public List<CascadeType> getCascadeTypes() {
         List<CascadeType> cascadeTypes = new ArrayList<>();
