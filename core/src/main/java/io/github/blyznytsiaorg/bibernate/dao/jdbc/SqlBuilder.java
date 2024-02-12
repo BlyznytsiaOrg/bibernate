@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -236,6 +238,29 @@ public class SqlBuilder {
                 .join(entityTableName, onCondition, JoinType.INNER)
                 .whereCondition(fieldEqualsParameterCondition(joinColumnName))
                 .buildSelectStatement();
+    }
+
+    /**
+     * Merges a LEFT JOIN query with an INNER JOIN query.
+     *
+     * @param leftJoinQuery  the LEFT JOIN query
+     * @param innerJoinQuery the INNER JOIN query
+     * @return the merged query
+     */
+    public String mergeQueries(String leftJoinQuery, String innerJoinQuery) {
+        Pattern pattern = Pattern.compile("(?i)\\bFROM\\s+(.+?)\\bINNER\\b");
+        Matcher matcher = pattern.matcher(innerJoinQuery);
+
+        if (matcher.find()) {
+            String secondPart = matcher.group(1).trim();
+            String firstPart = innerJoinQuery.replaceAll(".*\\b(ON.+)", "$1").trim();
+            String modifiedQuery = JoinType.INNER.name() + " JOIN " + secondPart + " " + firstPart;
+
+            String modifiedLeftJoinQuery = leftJoinQuery.replaceAll("(?i)\\s*WHERE\\s+.*", "");
+            return modifiedLeftJoinQuery + " " + modifiedQuery;
+        } else {
+            return leftJoinQuery;
+        }
     }
 
     /**

@@ -91,6 +91,17 @@ public interface Dao {
     <T> List<T> findOneByWhereJoin(Class<T> entityClass, Object... bindValues);
 
     /**
+     * Retrieves a list of entities of the specified type based on a custom SQL query with WHERE and JOIN clauses.
+     *
+     * @param <T>         the type of entities to retrieve
+     * @param entityClass the class object representing the entity type
+     * @param query       the custom SQL query with WHERE and JOIN clauses
+     * @param bindValues  the bind values to be used in the query
+     * @return a list of entities of the specified type that match the criteria defined in the custom SQL query
+     */
+    <T> List<T> findAllByWhereJoin(Class<T> entityClass, String query, Object... bindValues);
+
+    /**
      * Retrieves entities based on a custom query.
      *
      * @param entityClass The class of the entity.
