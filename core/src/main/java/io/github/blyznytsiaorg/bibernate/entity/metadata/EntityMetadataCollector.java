@@ -232,8 +232,10 @@ public class EntityMetadataCollector {
 
             String joinColumnName = joinColumnName(field);
             String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
+            JoinColumn joinColumn = field.getAnnotation(JoinColumn.class);
+
             Optional<String> key = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
-                    .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
+                    .map(annotation -> annotation.foreignKey())
                     .map(ForeignKey::name);
             String foreignKeyName;
             if (key.isEmpty() || key.get().isEmpty()) {

@@ -17,8 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(indexes = {@Index(name = "phone_idx", columnList = "mobileNumber"),
-        @Index(name = "phone_idx", columnList = "companyNumber")})
+@Table(indexes = {@Index(name = "phone_idx", columnList = "companyNumber")})
 public class Phone {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "phone_gen")
