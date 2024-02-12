@@ -68,7 +68,8 @@ public class CloseBibernateSession implements BibernateSession {
 
     @Override
     public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
-        return Optional.empty();
+        verifySessionNotClosed();
+        return bibernateSession.findByWhereJoin(entityClass, bindValues);
     }
 
     @Override

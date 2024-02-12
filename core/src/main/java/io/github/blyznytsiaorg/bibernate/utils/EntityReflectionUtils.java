@@ -6,6 +6,7 @@ import io.github.blyznytsiaorg.bibernate.entity.ColumnSnapshot;
 import io.github.blyznytsiaorg.bibernate.entity.EntityColumn;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.model.IndexMetadata;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateValidationException;
 import io.github.blyznytsiaorg.bibernate.exception.MappingException;
 import io.github.blyznytsiaorg.bibernate.exception.MissingAnnotationException;
 import lombok.SneakyThrows;
@@ -37,6 +38,7 @@ import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUEN
 import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnVersionFound;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_MUST_BE_NOT_NULL;
 import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
 
 
@@ -57,6 +59,7 @@ public class EntityReflectionUtils {
     private static final String REPLACEMENT = "$1_$2";
     private static final String ID_POSTFIX = "_id";
     public static final String JOIN_TABLE_NAME_PATTERN = "%s_%s";
+    public static final String ENTITY_S_SHOULD_HAVE_ID_THAT_NOT_NULL_OR_ADD_ANNOTATION_GENERATED_VALUE = "Entity %s should have Id that not null or add annotation @GeneratedValue";
 
     public static String table(Class<?> entityClass) {
         return Optional.ofNullable(entityClass.getAnnotation(Table.class))
@@ -128,26 +131,6 @@ public class EntityReflectionUtils {
         return fieldType.equals(OffsetTime.class) || fieldType.equals(OffsetDateTime.class)
                 || fieldType.equals(LocalDate.class) || fieldType.equals(LocalTime.class)
                 || fieldType.equals(LocalDateTime.class);
-    }
-
-    public static String mappedByJoinColumnName(Field field) {
-        return Optional.ofNullable(field.getAnnotation(OneToMany.class))
-                .map(OneToMany::mappedBy)
-                .filter(Predicate.not(String::isEmpty))
-                .flatMap(mappedByName -> {
-                    Class<?> collectionGenericType = getCollectionGenericType(field);
-
-                    return getMappedByColumnName(mappedByName, collectionGenericType);
-                })
-                .orElse(joinColumnName(field));
-    }
-
-    private static Optional<String> getMappedByColumnName(String mappedByName,
-                                                          Class<?> collectionGenericType) {
-        return Arrays.stream(collectionGenericType.getDeclaredFields())
-                .filter(f -> Objects.equals(f.getName(), mappedByName))
-                .findFirst()
-                .map(EntityReflectionUtils::joinColumnName);
     }
 
     public static String joinTableName(Field field) {
@@ -441,10 +424,31 @@ public class EntityReflectionUtils {
     }
 
     @SneakyThrows
-    private static Object getIdValueFromField(Object reference) {
+    public static Object getIdValueFromField(Object reference) {
         Field referenceIdField = getIdField(reference.getClass());
         referenceIdField.setAccessible(true);
         return referenceIdField.get(reference);
+    }
+
+    @SneakyThrows
+    public static <T> void verifyIsIdHasStrategyGeneratorOrNotNullValue(T reference) {
+        Field referenceIdField = getIdField(reference.getClass());
+        if (!referenceIdField.isAnnotationPresent(GeneratedValue.class)) {
+            referenceIdField.setAccessible(true);
+            Object idValue = referenceIdField.get(reference);
+            if (Objects.isNull(idValue)) {
+                throw new BibernateValidationException(
+                        ENTITY_S_SHOULD_HAVE_ID_THAT_NOT_NULL_OR_ADD_ANNOTATION_GENERATED_VALUE.formatted(reference.getClass().getSimpleName())
+                );
+            }
+        }
+    }
+
+    @SneakyThrows
+    public static <T> void verifyIsIdHasStrategyGeneratorOrNotNullValue(Collection<T> references) {
+        references.stream()
+                .map(reference -> Objects.requireNonNull(reference, ENTITY_MUST_BE_NOT_NULL))
+                .forEach(EntityReflectionUtils::verifyIsIdHasStrategyGeneratorOrNotNullValue);
     }
 
     @SneakyThrows
