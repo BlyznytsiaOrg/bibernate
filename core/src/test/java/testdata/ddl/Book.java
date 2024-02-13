@@ -1,4 +1,4 @@
-package testdata.entity;
+package testdata.ddl;
 
 import io.github.blyznytsiaorg.bibernate.annotation.Entity;
 import io.github.blyznytsiaorg.bibernate.annotation.ForeignKey;

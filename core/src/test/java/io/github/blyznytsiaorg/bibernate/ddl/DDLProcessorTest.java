@@ -27,7 +27,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("Bibernate should create tables")
     @SneakyThrows
     void shouldCreateTables() {
-        createPersistentWithBb2ddlCreate("testdata.entity");
+        createPersistentWithBb2ddlCreate("testdata.ddl");
 
 
         //when
@@ -55,7 +55,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTableAuthors() {
 
         //when
-        TableMetadata metadata = getMetadata("testdata.entity", TABLE_NAME_AUTHORS);
+        TableMetadata metadata = getMetadata("testdata.ddl", TABLE_NAME_AUTHORS);
         List<String> primaryColumnNames = metadata.primaryKeyName();
         List<IndexData> indexData = metadata.indexData();
         List<ForeignKey> foreignKeys = metadata.foreignKeys();
@@ -115,7 +115,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTableAuthorProfile() {
 
         //when
-        TableMetadata metadata = getMetadata("testdata.entity", TABLE_NAME_AUTHOR_PROFILES);
+        TableMetadata metadata = getMetadata("testdata.ddl", TABLE_NAME_AUTHOR_PROFILES);
         List<String> primaryColumnNames = metadata.primaryKeyName();
         List<IndexData> indexData = metadata.indexData();
         List<ForeignKey> foreignKeys = metadata.foreignKeys();
@@ -173,7 +173,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTableBook() {
 
         //when
-        TableMetadata metadata = getMetadata("testdata.entity", TABLE_NAME_BOOK);
+        TableMetadata metadata = getMetadata("testdata.ddl", TABLE_NAME_BOOK);
         List<String> primaryColumnNames = metadata.primaryKeyName();
         List<IndexData> indexData = metadata.indexData();
         List<ForeignKey> foreignKeys = metadata.foreignKeys();
@@ -210,7 +210,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTablePhone() {
 
         //when
-        TableMetadata metadata = getMetadata("testdata.entity", TABLE_NAME_PHONE);
+        TableMetadata metadata = getMetadata("testdata.ddl", TABLE_NAME_PHONE);
         List<String> primaryColumnNames = metadata.primaryKeyName();
         List<IndexData> indexData = metadata.indexData();
         List<ForeignKey> foreignKeys = metadata.foreignKeys();
@@ -283,7 +283,7 @@ class DDLProcessorTest extends AbstractPostgresInfrastructurePrep {
     void shouldCreateTableBookAuthors() {
 
         //when
-        TableMetadata metadata = getMetadata("testdata.entity", TABLE_NAME_BOOK_AUTHORS);
+        TableMetadata metadata = getMetadata("testdata.ddl", TABLE_NAME_BOOK_AUTHORS);
         List<String> primaryColumnNames = metadata.primaryKeyName();
         List<IndexData> indexData = metadata.indexData();
         List<ForeignKey> foreignKeys = metadata.foreignKeys();

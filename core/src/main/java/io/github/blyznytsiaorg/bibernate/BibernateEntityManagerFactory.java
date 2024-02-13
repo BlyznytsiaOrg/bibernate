@@ -1,7 +1,7 @@
 package io.github.blyznytsiaorg.bibernate;
 
-import com.zaxxer.hikari.HikariDataSource;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
+import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDataSource;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
@@ -30,7 +30,7 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
      */
     @Override
     public void close() {
-        HikariDataSource dataSource = bibernateSettings.getDataSource();
+        BibernateDataSource dataSource = bibernateSettings.getDataSource();
         if (dataSource != null) {
             log.trace("Close dataSource...");
             dataSource.close();
