@@ -12,11 +12,30 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
+/**
+ * BibernateDataSource is an implementation of the DataSource interface that provides connections to a database.
+ * It manages a connection pool and allows clients to obtain connections and release them when done.
+ *
+ * @see BibernateDataSource
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Slf4j
 public class BibernateDataSource implements DataSource {
     public static final String METHOD_IS_NOT_SUPPORTED = "Method is not supported";
+
+    /**
+     * The connection pool that manages connections to the database.
+     */
     private final Queue<Connection> connectionPool = new ConcurrentLinkedQueue<>();
 
+    /**
+     * Constructs a new BibernateDataSource with the given configuration.
+     *
+     * @param config the configuration for this data source
+     * @throws BibernateDataSourceException if an error occurs while creating connections
+     */
     public BibernateDataSource(BibernateDatasSourceConfig config) {
         log.debug("Starting Bibernate Datasource ...");
         for (int i = 0; i < config.getMaximumPoolSize(); i++) {
@@ -34,6 +53,11 @@ public class BibernateDataSource implements DataSource {
         log.debug("Start completed Bibernate Datasource ...");
     }
 
+    /**
+     * Closes all connections in the connection pool.
+     *
+     * @throws ConnectionPoolException if an error occurs while closing connections
+     */
     public void close(){
         while (!connectionPool.isEmpty()) {
             ProxyConnection connection = (ProxyConnection)connectionPool.poll();
@@ -46,11 +70,18 @@ public class BibernateDataSource implements DataSource {
         }
     }
 
+    /**
+     * Retrieves a Connection wrapped by ProxyConnection from the connection pool.
+     *
+     * @return a Connection object from the connection pool
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public Connection getConnection() throws SQLException {
         return connectionPool.poll();
     }
 
+    // DataSource interface methods with UnsupportedOperationException
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
         throw new UnsupportedOperationException(METHOD_IS_NOT_SUPPORTED);

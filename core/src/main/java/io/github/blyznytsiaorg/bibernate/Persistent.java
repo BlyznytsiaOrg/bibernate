@@ -22,6 +22,12 @@ import static java.util.Objects.requireNonNull;
  * The Persistent class provides methods for configuring and creating Bibernate entity managers, stateless sessions, and enabling Flyway migrations and Redis caching.
  * It allows for both default and external configurations, enabling flexibility in setting up the persistence layer.
  *
+ * @see BibernateDatabaseSettings
+ * @see BibernateEntityManagerFactory
+ * @see FlywayConfiguration
+ * @see DDLConfiguration
+ * @see RedisConfiguration
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */

@@ -9,6 +9,9 @@ import java.io.Closeable;
  * Interface representing a factory for creating EntityManager instances in the Bibernate framework.
  * An EntityManagerFactory is used to obtain EntityManager instances, which provide access to the underlying persistence context.
  *
+ * @see BibernateSessionFactory
+ * @see SimpleRepositoryInvocationHandler
+ *
  *  @author Blyzhnytsia Team
  *  @since 1.0
  */
