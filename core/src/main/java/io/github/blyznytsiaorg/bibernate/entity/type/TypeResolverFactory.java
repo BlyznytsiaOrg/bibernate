@@ -17,12 +17,13 @@ public class TypeResolverFactory {
     /**
      * Constructs a new {@code TypeResolverFactory} and initializes the list of type field resolvers.
      * The default resolvers added to the factory are:
-     *
+     *<ul>
      *     <li>{@link OneToOneEagerFieldResolver}</li>
      *     <li>{@link LazyEntityFieldResolver}</li>
      *     <li>{@link EntityFieldResolver}</li>
      *     <li>{@link RegularFieldFieldResolver}</li>
      *     <li>{@link CollectionFieldResolver}</li>
+     *</ul>
      */
     public TypeResolverFactory() {
         this.typeFieldResolvers.add(new OneToOneEagerFieldResolver());
