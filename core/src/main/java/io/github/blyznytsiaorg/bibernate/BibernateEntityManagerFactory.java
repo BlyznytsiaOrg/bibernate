@@ -1,10 +1,10 @@
 package io.github.blyznytsiaorg.bibernate;
 
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
-import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDataSource;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSessionFactory;
+import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Implementation of the EntityManagerFactory interface for creating EntityManager instances in the Bibernate framework.
  * The BibernateEntityManagerFactory provides access to the underlying database settings and repository invocation handler.
+ *
+ * @see EntityManagerFactory
+ * @see BibernateDatabaseSettings
+ * @see SimpleRepositoryInvocationHandler
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0
@@ -30,7 +34,7 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
      */
     @Override
     public void close() {
-        BibernateDataSource dataSource = bibernateSettings.getDataSource();
+        TransactionalDatasource dataSource = bibernateSettings.getDataSource();
         if (dataSource != null) {
             log.trace("Close dataSource...");
             dataSource.close();
