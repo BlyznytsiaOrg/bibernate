@@ -1,15 +1,14 @@
 package io.github.blyznytsiaorg.bibernate.transaction;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
+import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDataSource;
+import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDatasSourceConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class TransactionalDatasource extends HikariDataSource {
+public class TransactionalDatasource extends BibernateDataSource {
 
-    public TransactionalDatasource(HikariConfig configuration) {
-        super(configuration);
+    public TransactionalDatasource(BibernateDatasSourceConfig config) {
+        super(config);
     }
 
     @Override
@@ -21,6 +20,7 @@ public class TransactionalDatasource extends HikariDataSource {
         return super.getConnection();
     }
 
+    @Override
     public void close() {
         TransactionHolder.removeTransaction();
         super.close();

@@ -1,6 +1,6 @@
 package io.github.blyznytsiaorg.bibernate.ddl;
 
-import com.zaxxer.hikari.HikariDataSource;
+import io.github.blyznytsiaorg.bibernate.connectionpool.BibernateDataSource;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import lombok.extern.slf4j.Slf4j;
 import java.sql.SQLException;
@@ -9,9 +9,9 @@ import java.util.List;
 @Slf4j
 public class DDLProcessor {
     private final DDLQueryCreator ddlQueryCreator;
-    private final HikariDataSource dataSource;
+    private final BibernateDataSource dataSource;
 
-    public DDLProcessor(DDLQueryCreator ddlQueryCreator, HikariDataSource dataSource) {
+    public DDLProcessor(DDLQueryCreator ddlQueryCreator, BibernateDataSource dataSource) {
         this.ddlQueryCreator = ddlQueryCreator;
         this.dataSource = dataSource;
     }

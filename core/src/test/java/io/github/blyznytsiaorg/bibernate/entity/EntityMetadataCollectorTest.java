@@ -7,9 +7,9 @@ import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.entity.Author;
-import testdata.entity.Book;
-import testdata.entity.Phone;
+import testdata.ddl.Author;
+import testdata.ddl.Book;
+import testdata.ddl.Phone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,7 @@ class EntityMetadataCollectorTest {
 
     @BeforeAll
     static void beforeAll() {
-        var entityMetadataCollector = new EntityMetadataCollector("testdata.entity");
+        var entityMetadataCollector = new EntityMetadataCollector("testdata.ddl");
         entityMetadataCollector.collectMetadata();
         inMemoryEntityMetadata = entityMetadataCollector.getInMemoryEntityMetadata();
     }
