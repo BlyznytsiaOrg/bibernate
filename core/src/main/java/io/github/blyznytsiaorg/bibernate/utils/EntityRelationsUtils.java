@@ -132,10 +132,4 @@ public class EntityRelationsUtils {
     public boolean isManyToMany(Field field) {
         return field.isAnnotationPresent(ManyToMany.class);
     }
-
-    public boolean hasOneToOneRelation(Class<?> entityClass) {
-        return Arrays.stream(entityClass.getDeclaredFields())
-                .anyMatch(field -> field.isAnnotationPresent(OneToOne.class));
-    }
-
 }
