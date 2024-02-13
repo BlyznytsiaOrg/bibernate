@@ -1,10 +1,5 @@
 package io.github.blyznytsiaorg.bibernate;
 
-import io.github.blyznytsiaorg.bibernate.annotation.Entity;
-import io.github.blyznytsiaorg.bibernate.annotation.GeneratedValue;
-import io.github.blyznytsiaorg.bibernate.annotation.Id;
-import io.github.blyznytsiaorg.bibernate.annotation.IgnoreEntity;
-import io.github.blyznytsiaorg.bibernate.annotation.SequenceGenerator;
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 
 import javax.annotation.processing.*;
@@ -173,6 +168,13 @@ public class EntityRequirementProcessor extends AbstractProcessor {
         return false;
     }
 
+    /**
+     * Checks if any field of the specified class has an annotation related to entity relationships.
+     *
+     * @param typeElement       the {@link TypeElement} representing the class to inspect
+     * @return {@code true} if any field of the class has an annotation related to entity relationships,
+     *         {@code false} otherwise
+     */
     private boolean hasRelationAnnotationOnEntityField(TypeElement typeElement) {
         for (Element enclosedElement : typeElement.getEnclosedElements()) {
             if (enclosedElement.getKind() == ElementKind.FIELD) {

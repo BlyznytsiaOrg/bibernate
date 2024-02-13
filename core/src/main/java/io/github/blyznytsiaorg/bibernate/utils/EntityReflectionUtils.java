@@ -18,25 +18,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.*;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.SEQUENCE;
 import static io.github.blyznytsiaorg.bibernate.utils.DDLUtils.getForeignKeyConstraintName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnVersionFound;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_FIND_SEQUENCE_STRATEGY;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_MUST_BE_NOT_NULL;
 import static io.github.blyznytsiaorg.bibernate.utils.TypeConverter.convertToDatabaseType;
@@ -474,6 +463,15 @@ public class EntityReflectionUtils {
         }
 
         return null;
+    }
+
+    public static Object getEntityId(Field field, ResultSet resultSet) {
+        try {
+            var idFieldName = columnIdName(field.getDeclaringClass());
+            return resultSet.getObject(idFieldName);
+        } catch (SQLException e) {
+            return null;
+        }
     }
 
     public static List<ColumnSnapshot> getDifference(List<ColumnSnapshot> currentEntitySnapshot,
