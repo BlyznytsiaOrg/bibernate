@@ -16,16 +16,40 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+/**
+ * Represents a persistent list that lazily initializes its internal list using a supplier.
+ *
+ * @param <T> the type of elements in the list
+ *           
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 public class PersistentList<T> implements List<T> {
 
+  /**
+   * Supplier responsible for providing the underlying collection when needed.
+   */
   private final Supplier<List<?>> collectionSupplier;
 
+  /**
+   * The internal list that holds the elements of the PersistentList.
+   */
   private List<T> internalList;
 
+  /**
+   * Constructs a new PersistentList with the specified collection supplier.
+   *
+   * @param collectionSupplier the supplier used to lazily initialize the internal list
+   */
   public PersistentList(Supplier<List<?>> collectionSupplier) {
     this.collectionSupplier = collectionSupplier;
   }
 
+  /**
+   * Retrieves the internal list, initializing it if necessary.
+   *
+   * @return the internal list
+   */
   private List<T> getInternalList() {
     return Optional.ofNullable(internalList).orElseGet(() -> {
       internalList = (List<T>) collectionSupplier.get();
