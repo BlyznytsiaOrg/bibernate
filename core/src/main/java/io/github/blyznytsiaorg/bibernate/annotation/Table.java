@@ -6,14 +6,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * Indicates that the annotated class represents a database table.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Table {
 
+    /**
+     * Specifies the name of the table.
+     *
+     * @return the name of the table
+     */
     String name() default "";
 
     /**
@@ -22,7 +28,8 @@ public @interface Table {
      * to specify an index for a primary key, as the primary key
      * index will be created automatically.
      *
+     * @return an array of indexes for the table
      */
     Index[] indexes() default {};
-    
+
 }
