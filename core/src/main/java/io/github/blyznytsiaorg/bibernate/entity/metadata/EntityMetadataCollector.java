@@ -281,8 +281,8 @@ public class EntityMetadataCollector {
      */
     private JoinTableMetadata getJoinTable(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(JoinTable.class) && (!field.isAnnotationPresent(ManyToMany.class))) {
-            throw new MappingException((("No @ManyToMany annotation in class '%s' on field '%s' "
-                    + "annotated with annotated @JoinTable")
+            throw new MappingException((("No @ManyToMany annotation is set in class '%s' on field '%s' "
+                    + "annotated with @JoinTable annotation")
                     .formatted(entityClass.getSimpleName(), field.getName())));
         }
         if (field.isAnnotationPresent(ManyToMany.class)) {

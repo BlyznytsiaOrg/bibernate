@@ -21,5 +21,4 @@ public class Note {
     private int id;
 
     private String description;
-
 }

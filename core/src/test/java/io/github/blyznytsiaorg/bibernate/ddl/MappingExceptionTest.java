@@ -69,7 +69,7 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     @DisplayName("should throw exception on field with @JoinTable but no @ManyToMany")
     @SneakyThrows
     void shouldThrowExceptionOnNoManyToMany() {
-        String expectedErrorMessage = ("No @ManyToMany annotation in class '%s' on field '%s' annotated with annotated @JoinTable")
+        String expectedErrorMessage = ("No @ManyToMany annotation is set in class '%s' on field '%s' annotated with @JoinTable annotation")
                 .formatted(CLASS_WITH_NO_MANY_TO_MANY, FIELD_WITH_NO_MANY_TO_MANY);
 
         // when
