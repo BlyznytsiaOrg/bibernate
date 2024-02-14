@@ -128,7 +128,7 @@ We can think of the API of Bibernate in terms of three basic elements:
  - [Native SQL Queries:](features/): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
  - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup.
  - [Extensibility](features/): Provides a flexible architecture that allows developers to extend and customize Bibernate functionality to meet specific application requirements.
- - [Bibernate Data Repository](features/): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
+ - [Bibernate Data Repository](features/BibernateDataRepository.md): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
  - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
  - [Versioning](features/): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.

@@ -9,8 +9,29 @@ import java.lang.reflect.Method;
  * Interface for handling the execution of repository methods. Implementations of this interface
  * define how to identify and execute specific repository methods.
  *
- *  @author Blyzhnytsia Team
- *  @since 1.0
+ * <p>Example:</p>
+ * Suppose we have a repository method {@code findById} that retrieves an entity by its primary key. An implementation
+ * of this interface could identify this method and execute it by delegating to the appropriate data access layer
+ * for retrieving the entity from the database.
+ *
+ * <pre>{@code
+ * public class UserRepositoryMethodHandler implements SimpleRepositoryMethodHandler {
+ *
+ *     // Implementation of isMethodHandle method
+ *     public boolean isMethodHandle(Method method) {
+ *         return method.getName().equals("findById");
+ *     }
+ *
+ *     // Implementation of execute method
+ *     public Object execute(Method method, Object[] parameters, RepositoryDetails repositoryDetails,
+ *                           MethodMetadata methodMetadata) {
+ *         // Implementation to retrieve entity by primary key from database
+ *     }
+ * }
+ * }</pre>
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
  */
 public interface SimpleRepositoryMethodHandler {
 

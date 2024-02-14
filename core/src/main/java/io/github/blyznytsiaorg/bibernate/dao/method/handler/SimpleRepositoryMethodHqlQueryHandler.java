@@ -26,7 +26,7 @@ public class SimpleRepositoryMethodHqlQueryHandler implements SimpleRepositoryMe
     @Override
     public boolean isMethodHandle(Method method) {
         return method.isAnnotationPresent(Query.class) &&
-                method.getAnnotation(Query.class).hql() &&
+                method.getAnnotation(Query.class).bql() &&
                 !method.getAnnotation(Query.class).nativeQuery();
     }
 
