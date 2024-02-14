@@ -7,19 +7,19 @@
 
 ## Getting Started
 
-If you're new to Bibernate, consider initiating your experience with a [Bibernate Playground Application](https://github.com/BlyznytsiaOrg/bibernate-playground) 
+If you're new to *the Bibernate*, consider initiating your experience with a [Bibernate Playground Application](https://github.com/BlyznytsiaOrg/bibernate-playground) 
 with a variety of examples of how to use it.
-Bibernate offers a swift and opinionated method to develop a Bibernate-based application ready for play.
+*The Bibernate* offers a swift and opinionated method to develop a Bibernate-based application ready for play.
 
 ## Bibernate Framework Overview
 
-Bibernate simplifies the development of Java enterprise applications and efficient ORM (Object-Relational Mapping) framework designed
+*The Bibernate* simplifies the development of Java enterprise applications and efficient ORM (Object-Relational Mapping) framework designed
 to simplify database interaction in Java applications by providing comprehensive support for leveraging the Java language within an enterprise setting. 
 Bibernate 1.0 development requires Java 17.
 
 ## Prerequisites
 
-Before getting started with Bibernate, ensure you have the following prerequisites installed:
+Before getting started with *the Bibernate*, ensure you have the following prerequisites installed:
 
 - Java 17
 - Your preferred Java IDE such as IntelliJ IDEA
@@ -39,7 +39,7 @@ Locate the pom.xml file in your project.
 - Add Repository Configuration:
 
 Inside the <repositories> section of your pom.xml, add the following repository configuration
-if you want to try latest Snapshot version of Bibernate project:
+if you want to try the latest Snapshot version of Bibernate project:
 
 ```
   <repositories>
@@ -66,7 +66,7 @@ This configuration informs Maven about the repository location where it can find
 
 - Include Dependency:
 
-Within the <dependencies> section of your pom.xml, add the Bibernate framework dependency (You will have core & annotation-processor):
+Within the <dependencies> section of your pom.xml, add *the Bibernate* framework dependency (You will have core & annotation-processor):
 
 ```
     <dependency>
@@ -80,8 +80,8 @@ Within the <dependencies> section of your pom.xml, add the Bibernate framework d
 
 ## Design Philosophy
 
-Bibernate embodies educational principles in its design, empowering users to master reflection and architectural design.
-As a ORM framework, Bibernate serves as a cornerstone for understanding and implementing persistence in web applications.
+*The Bibernate* embodies educational principles in its design, empowering users to master reflection and architectural design.
+As a ORM framework, *the Bibernate* serves as a cornerstone for understanding and implementing persistence in web applications.
 Its robust features facilitate seamless mapping of Java objects to database tables, simplifying data access and fostering efficient development practices for teams.
 
 
@@ -89,24 +89,24 @@ Its robust features facilitate seamless mapping of Java objects to database tabl
 
 # Bibernate Core
 
-Bibernate can be described as a library that simplifies the issue of mapping Java classes to relational database tables.
+*The Bibernate* can be described as a library that simplifies the issue of mapping Java classes to relational database tables.
 
-Bibernate takes the pain out of persistence by freeing the developer from the burden of manually writing tedious, 
+*The Bibernate* takes the pain out of persistence by freeing the developer from the burden of manually writing tedious, 
 repetitive, and error-prone code to flatten object graphs into database tables and reconstruct object graphs from flat SQL 
-query result sets. Moreover, Bibernate significantly simplifies performance tuning by allowing developers to focus on writing
+query result sets. Moreover, *the Bibernate* significantly simplifies performance tuning by allowing developers to focus on writing
 basic persistence logic first, with the ability to optimize performance later.
 
 # Bibernate and API
 
-Bibernate served as the inspiration behind the Java (now Jakarta) Persistence API, or JPA. 
+*The Bibernate* served as the inspiration behind the Java (now Jakarta) Persistence API, or JPA. 
 While JPA is well-suited for production environments, for educational purposes, 
 we have developed our own simplified version of the Persistence API.
 
 
-We can think of the API of Bibernate in terms of three basic elements:
+*The Bibernate* API can be described in terms of three basic elements:
 
 - The `EntityManagerFactory` is typically created during application startup based on configuration settings and entity mappings.
-- `BibernateSessionFactory` is responsible for creating and managing BibernateSession instances.
+- The `BibernateSessionFactory` is responsible for creating and managing BibernateSession instances.
 - The `BibernateSession` is a fundamental component of Bibernate, analogous to the `Session` interface in `Hibernate`.
 
 <img width="566" alt="image" src="https://github.com/BlyznytsiaOrg/bring/assets/73576438/cb61bdf2-c0bf-4b6a-81a3-00045a3aa3b3">
@@ -131,7 +131,7 @@ We can think of the API of Bibernate in terms of three basic elements:
  - [Bibernate Data Repository](features/BibernateDataRepository.md): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
  - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
  - [Versioning](features/): Supports versioning of entity data and implementing optimistic concurrency control.
- - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
+ - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
 - Annotations
 
@@ -149,5 +149,5 @@ We can think of the API of Bibernate in terms of three basic elements:
 
 ## Feedback and Contributions
 
-If you suspect an issue within the Bibernate ORM Framework or wish to propose a new feature, kindly utilize [GitHub Issues](https://github.com/BlyznytsiaOrg/bibernate/issues/new) for reporting problems or submitting feature suggestions
+If you suspect an issue within *the Bibernate ORM Framework* or wish to propose a new feature, kindly utilize [GitHub Issues](https://github.com/BlyznytsiaOrg/bibernate/issues/new) for reporting problems or submitting feature suggestions
 If you have a solution in mind or a suggested fix, you can submit a pull request on [Github](https://github.com/BlyznytsiaOrg/bibernate). In addition, please read and configure you idea to follow our [Setup Code Style Guidelines](https://github.com/BlyznytsiaOrg/bring/wiki#setup-code-style-guidelines)

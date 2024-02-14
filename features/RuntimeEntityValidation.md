@@ -1,6 +1,6 @@
 ## Runtime Entity Validation
 
-- The Bibernate utilize the `EntityMetadataCollector` class to gather all entities using reflection and subsequently utilize the collected data.
+- *The Bibernate* utilize the `EntityMetadataCollector` class to gather all entities using reflection and subsequently utilize the collected data.
     Then print the number of entities found. If you don't have any entities you will see and errors.
 
 ```bash
