@@ -8,6 +8,19 @@ import java.lang.annotation.Target;
 /**
  * Indicates that the annotated method represents a query.
  *
+ * Example usage:
+ *
+ * {@code
+ * public interface ProductRepository {
+ *     \@Query("SELECT p FROM Product p WHERE p.category = ?")
+ *     List<Product> findByCategory(@Param("category") String category);
+ * }
+ * }
+ *
+ * In this example, the 'findByCategory' method in the 'ProductRepository' interface is annotated
+ * with '@Query' to indicate that it represents a query. The value of the annotation specifies
+ * the HQL (Hibernate Query Language) query to be executed.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -30,9 +43,9 @@ public @interface Query {
     boolean nativeQuery() default false;
 
     /**
-     * Indicates whether the query is written in HQL (Hibernate Query Language).
+     * Indicates whether the query is written in HQL (Bibernate Query Language).
      *
      * @return true if the query is written in HQL, false otherwise
      */
-    boolean hql() default true;
+    boolean bql() default true;
 }

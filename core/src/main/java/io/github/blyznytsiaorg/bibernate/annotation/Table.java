@@ -8,6 +8,22 @@ import java.lang.annotation.Target;
 /**
  * Indicates that the annotated class represents a database table.
  *
+ * Example usage:
+ *
+ * {@code
+ * \@Table(name = "products", indexes = {
+ *     \@Index(name = "idx_product_name", columnList = "name"),
+ *     \@Index(name = "idx_product_category", columnList = "category_id")
+ * })
+ * public class Product {
+ *     // Class implementation omitted for brevity
+ * }
+ * }
+ *
+ * In this example, the 'Product' class is annotated with '@Table' to indicate that it
+ * represents a database table named 'products'. Additionally, two indexes are defined
+ * for the 'products' table: one on the 'name' column and another on the 'category_id' column.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
