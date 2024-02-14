@@ -15,7 +15,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Resolves fields representing one-to-one or many-to-one relationships in entity columns.
+ *
+ * @see FieldResolver
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 public class ToOneRelationFieldResolver implements FieldResolver {
+
+    /**
+     * Determines if there is a field to resolve based on the provided entity column details.
+     *
+     * @param entityColumnDetails The entity column details to check.
+     * @return True if there is a field to resolve, false otherwise.
+     */
     @Override
     public boolean hasFieldToResolve(EntityColumnDetails entityColumnDetails) {
         Field field = entityColumnDetails.getField();
@@ -26,6 +40,13 @@ public class ToOneRelationFieldResolver implements FieldResolver {
         return false;
     }
 
+    /**
+     * Handles the resolution of the given entity column details by generating database type information
+     * and adding it to the list of column name and database type.
+     *
+     * @param metadataHolder The holder containing metadata related to the field.
+     * @param ddlMetadata    The map storing DDL metadata.
+     */
     @Override
     public void handleField(DDLFieldMetadataHolder metadataHolder, Map<Integer, List<String>> ddlMetadata) {
         EntityColumnDetails entityColumn = metadataHolder.getColumnDetails();

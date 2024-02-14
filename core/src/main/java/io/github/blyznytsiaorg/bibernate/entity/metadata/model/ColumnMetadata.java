@@ -4,6 +4,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Represents metadata about a column in an entity, including its name, database type, uniqueness, nullability,
+ * column definition, and other properties.
+ *
+ * @see io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Getter
 @Setter
 @Builder
