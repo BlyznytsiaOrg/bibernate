@@ -28,7 +28,55 @@ Before getting started with Bibernate, ensure you have the following prerequisit
 
 ## Installation
 
-//TODO
+- Open your Maven Project:
+
+Open the Maven project where you want to add the Bibernate framework dependencies.
+
+- Edit pom.xml:
+
+Locate the pom.xml file in your project.
+
+- Add Repository Configuration:
+
+Inside the <repositories> section of your pom.xml, add the following repository configuration
+if you want to try latest Snapshot version of Bibernate project:
+
+```
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <name>Nexus Snapshots</name>
+      <id>snapshots-repo</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+```
+
+This configuration informs Maven about the repository location where it can find the Bibernate framework artifacts.
+
+- Include Dependency:
+
+Within the <dependencies> section of your pom.xml, add the Bibernate framework dependency (You will have core & annotation-processor):
+
+```
+    <dependency>
+      <groupId>io.github.blyznytsiaorg.bibernate</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+```
+
 
 ## Design Philosophy
 
