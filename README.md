@@ -133,6 +133,14 @@ We can think of the API of Bibernate in terms of three basic elements:
  - [Versioning](features/): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
+- Annotations
+
+//TODO
+
+- Exceptions
+
+//TODO
+
 # Additional items:
  - [Annotation processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.
  - [Runtime Entity validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.

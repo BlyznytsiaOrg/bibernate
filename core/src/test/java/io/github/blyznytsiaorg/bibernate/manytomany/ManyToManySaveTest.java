@@ -12,7 +12,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.QueryUtils.assertQueries;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class ManyToManySaveTest extends AbstractPostgresInfrastructurePrep {
+class ManyToManySaveTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should save Person with courses")
     @Test
