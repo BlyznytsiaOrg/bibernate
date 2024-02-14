@@ -401,7 +401,7 @@ public class EntityReflectionUtils {
         field.setAccessible(true);
         if (isToOneReference(field)) {
             Object reference = field.get(entity);
-            if(!reference.getClass().getName().contains("$$")) {
+            if(reference != null && !reference.getClass().getName().contains("$$")) {
                 return getIdValueFromField(reference);
             }
         }
@@ -524,11 +524,11 @@ public class EntityReflectionUtils {
             .filter(Predicate.not(field ->
                     (field.isAnnotationPresent(GeneratedValue.class) && IDENTITY.equals(field.getAnnotation(GeneratedValue.class).strategy()))
                 || (field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(JoinColumn.class))
+                || (field.isAnnotationPresent(ManyToOne.class) && !field.isAnnotationPresent(JoinColumn.class))
                 || (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(CreationTimestamp.class)
+                || (field.isAnnotationPresent(ManyToMany.class))
                     || field.isAnnotationPresent(UpdateTimestamp.class)))
             )
-            //.filter(field -> Objects.nonNull(getValueFromObject(entity, field)))
-            //TODO: ADD utility jdbc class to insert all types or null
             .toList();
     }
 
@@ -545,6 +545,13 @@ public class EntityReflectionUtils {
                 .findFirst()
                 .orElseThrow(() -> new MissingAnnotationException(
                         UNABLE_TO_GET_ID_FIELD_FOR_ENTITY.formatted(entityClass.getSimpleName())));
+    }
+
+    public static List<Field> getManyToManyWithJoinTableFields(Class<?> entityClass) {
+        return Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(ManyToMany.class)
+                        && field.isAnnotationPresent(JoinTable.class))
+                .toList();
     }
 
     public static Object setIdField(Object entity, Object value) {
