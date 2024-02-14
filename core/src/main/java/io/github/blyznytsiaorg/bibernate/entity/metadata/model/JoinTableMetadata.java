@@ -4,6 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Represents metadata for a join table in a database.
+ *
+ * @see io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Getter
 @Setter
 @Builder

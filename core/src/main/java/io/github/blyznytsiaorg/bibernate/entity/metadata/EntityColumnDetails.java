@@ -12,6 +12,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Represents metadata about an entity class, including details about its columns, indexes, and relationships.
+ * This class provides methods to manipulate and retrieve metadata associated with the entity.
+ *
+ * @see EntityMetadataCollector
+ * @see EntityMetadata
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Getter
 @Setter
 @Builder
@@ -34,6 +44,11 @@ public class EntityColumnDetails {
     private CreationTimestampMetadata creationTimestampMetadata;
     private UpdateTimestampMetadata updateTimestampMetadata;
 
+    /**
+     * Retrieves the cascade types associated with the entity column.
+     *
+     * @return A list of cascade types associated with the entity column.
+     */
     public List<CascadeType> getCascadeTypes() {
         List<CascadeType> cascadeTypes = new ArrayList<>();
         addCascadeTypes(cascadeTypes, OneToOneMetadata::getCascadeTypes, oneToOne);
@@ -43,6 +58,14 @@ public class EntityColumnDetails {
         return cascadeTypes;
     }
 
+    /**
+     * Adds cascade types to the list if they are not null.
+     *
+     * @param types    The list of cascade types to add to.
+     * @param function The function to retrieve cascade types from the object.
+     * @param obj      The object containing cascade types.
+     * @param <T>      The type of the object.
+     */
     private <T> void addCascadeTypes(List<CascadeType> types, Function<T, List<CascadeType>> function, T obj) {
         Optional.ofNullable(obj).ifPresent(o -> types.addAll(function.apply(obj)));
     }
