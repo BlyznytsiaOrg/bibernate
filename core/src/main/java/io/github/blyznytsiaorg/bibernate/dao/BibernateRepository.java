@@ -21,7 +21,6 @@ public interface BibernateRepository<T, ID> {
      *
      * @param primaryKey The primary key of the entity to be retrieved.
      * @return An {@code Optional} containing the entity if found, or an empty {@code Optional} otherwise.
-     * @example
      * <pre>{@code
      * Optional<User> user = userRepository.findById(123);
      * if (user.isPresent()) {
@@ -38,7 +37,6 @@ public interface BibernateRepository<T, ID> {
      *
      * @param primaryKey The primary key of the entity to be retrieved.
      * @return The entity if found, or {@code null} otherwise.
-     * @example
      * <pre>{@code
      * User user = userRepository.findOne(123);
      * if (user != null) {
@@ -54,7 +52,6 @@ public interface BibernateRepository<T, ID> {
      * Retrieves all entities of the managed type.
      *
      * @return A list containing all entities in the repository.
-     * @example
      * <pre>{@code
      * List<User> users = userRepository.findAll();
      * for (User user : users) {
@@ -68,7 +65,6 @@ public interface BibernateRepository<T, ID> {
      * Updates the given entity in the repository.
      *
      * @param entity The entity to be updated.
-     * @example
      * <pre>{@code
      * User user = userRepository.findOne(123);
      * user.setName("John Doe");
@@ -82,7 +78,6 @@ public interface BibernateRepository<T, ID> {
      *
      * @param entity The entity to be saved.
      * @return The saved entity.
-     * @example
      * <pre>{@code
      * User user = new User("Alice");
      * userRepository.save(user);
@@ -94,7 +89,6 @@ public interface BibernateRepository<T, ID> {
      * Saves a list of entities in the repository.
      *
      * @param entities The list of entities to be saved.
-     * @example
      * <pre>{@code
      * List<User> users = Arrays.asList(new User("Alice"), new User("Bob"));
      * userRepository.saveAll(users);
@@ -106,7 +100,6 @@ public interface BibernateRepository<T, ID> {
      * Deletes an entity by its primary key.
      *
      * @param primaryKey The primary key of the entity to be deleted.
-     * @example
      * <pre>{@code
      * userRepository.delete(123);
      * }</pre>
@@ -117,7 +110,6 @@ public interface BibernateRepository<T, ID> {
      * Deletes multiple entities by their primary keys.
      *
      * @param ids The list of primary keys of entities to be deleted.
-     * @example
      * <pre>{@code
      * List<Integer> userIds = Arrays.asList(123, 456, 789);
      * userRepository.deleteAll(userIds);
