@@ -183,6 +183,21 @@ public class SqlBuilder {
     }
 
     /**
+     * Generates an INSERT SQL statement for inserting records into a specified table based on the provided table name and
+     * list of column names.
+     *
+     * @param tableName The name of the table into which records will be inserted.
+     * @param columns   The names of columns which will take part in the building of the query.
+     * @return The generated INSERT SQL statement as a string.
+     */
+    public static String insert(String tableName, List<String> columns) {
+        var insert = InsertQueryBuilder.from(tableName);
+        columns.forEach(column -> insert.setField(column));
+
+        return insert.buildInsertStatement();
+    }
+
+    /**
      * Generates a DELETE SQL statement for deleting records from a specified table based on the provided ID field.
      *
      * @param tableName   The name of the table from which records will be deleted.
