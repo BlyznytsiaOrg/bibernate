@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * <pre>{@code
  *   @Entity
  *   public class EntityA {
- *       @OneToOne(mappedBy = "entityA", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+ *       @OneToOne(mappedBy = "entityA", cascade = CascadeType.DELETE, fetch = FetchType.LAZY)
  *       private EntityB entityB;
  *       // Other fields and methods
  *   }
@@ -25,8 +25,7 @@ import java.lang.annotation.Target;
  *   @Entity
  *   public class EntityB {
  *       // No need to specify mappedBy when the relationship is unidirectional
- *       @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
- *       @JoinColumn(name = "specify_foreign_key_here")
+ *       @OneToOne(cascade = CascadeType.DELETE, fetch = FetchType.LAZY)
  *       private EntityA entityA;
  *       // Other fields and methods
  *   }
