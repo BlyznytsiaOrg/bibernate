@@ -29,6 +29,8 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
     private static final String MAPPED_BY_MANY_TO_MANY= "testOnes";
     public static final String CREATED_AT = "createdAt";
     public static final String FOREIGN_KEY_CONSTRAINT = "test";
+    private static final String FIELD_WITH_COLUMN_AND_ONE_TO_ONE =  "testTwo";
+    private static final String CLASS_WITH_COLUMN_AND_ONE_TO_ONE = "TestOne";
 
     @Test
     @DisplayName("should throw exception on mismatch of index columnList and column name")
@@ -182,6 +184,23 @@ class MappingExceptionTest extends AbstractPostgresInfrastructurePrep {
         // when
         RuntimeException exception = catchRuntimeException(
                 () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.foreignkeyconstraintduplicate"));
+        String actualMessage = exception.getMessage();
+
+        // then
+        assertThat(exception).isExactlyInstanceOf(MappingException.class);
+        assertThat(actualMessage).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    @DisplayName("should throw exception on field annotated with @Column on relation")
+    @SneakyThrows
+    void shouldThrowExceptionOnFieldWithColumnAnnotationOnRelation() {
+        String expectedErrorMessage = ("The @Column annotation can not be used on relation field '%s' in class '%s'"
+                .formatted(FIELD_WITH_COLUMN_AND_ONE_TO_ONE, CLASS_WITH_COLUMN_AND_ONE_TO_ONE));
+
+        // when
+        RuntimeException exception = catchRuntimeException(
+                () -> createPersistentWithBb2ddlCreate("testdata.mappingexception.onetooneoncolumn"));
         String actualMessage = exception.getMessage();
 
         // then

@@ -8,6 +8,16 @@ import java.lang.annotation.Target;
 /**
  * Specifies a column for joining an entity association.
  *
+ * Example usage:
+ * <pre>{@code
+ * public class ExampleEntity {
+ *     @JoinColumn(name = "column_name", foreignKey = @ForeignKey(name = "fk_name"))
+ *     private String example;
+ * }
+ * }</pre>
+ *
+ * @see ForeignKey
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */

@@ -20,6 +20,6 @@ This processor ensures compliance with certain standards such as:
 
 - Checks if any field in the entity class is missing a required relation annotation such as `@OneToOne` or `@ManyToOne`.
  Error message *'Entity field should have relation annotation @OneToOne or @ManyToOne'*.
-![img.png](img.png)
+![img.png](images/img_2.png)
 
 Additionally, it supports the `@IgnoreEntity` annotation to exclude specific classes from the compile validation process.

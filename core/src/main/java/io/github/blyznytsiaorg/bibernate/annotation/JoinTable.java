@@ -6,7 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies a join table for an entity association.
+ * Specifies a join table for defining a many-to-many association between two entities.
+ *
+ * When using this annotation, you must specify the name of the join table, the join column,
+ * the inverse join column, and optionally, foreign key constraints for both columns.
+ *
+ * The join table should only be specified on fields representing many-to-many associations,
+ * and it cannot be used for other types of associations (e.g., one-to-many, many-to-one).
+ *
+ * @see ManyToMany
  *
  * @author Blyzhnytsia Team
  * @since 1.0
