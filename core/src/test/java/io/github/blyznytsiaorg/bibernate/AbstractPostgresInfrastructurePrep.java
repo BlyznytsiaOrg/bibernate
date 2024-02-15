@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate;
 
+import io.github.blyznytsiaorg.bibernate.utils.BibernateBanner;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,6 +90,7 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         bibernateSettings.put(SECOND_LEVEL_CACHE_POST, String.valueOf(redisPort));
 
         jedis = new Jedis(redisHost, redisPort);
+        System.setProperty(BibernateBanner.BIBERNATE_BANNER_KEY, "off");
     }
 
     public Persistent createPersistent(String packageName) {
