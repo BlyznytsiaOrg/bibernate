@@ -21,6 +21,26 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * The DDLQueryCreator class is responsible for creating Data Definition Language (DDL) queries
+ * based on the metadata of entities in the Bibernate framework. It generates queries for operations
+ * such as creating and dropping tables, indexes and sequences. Additionally, it handles the resolution
+ * of field mappings and the creation of queries based on entity metadata.
+ * <p>
+ * This class also provides methods for validating and creating DDL queries for various database operations.
+ * <p>
+ * The DDLQueryCreator class is designed to work in conjunction with other components of the Bibernate framework
+ * to facilitate database schema management and migration tasks.
+ *
+ * @see io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector
+ * @see EntityMetadata
+ * @see DDLFieldMetadataHolder
+ * @see OperationOrder
+ * @see FieldResolver
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Getter
 public class DDLQueryCreator {
     public static final String DROP_TABLE = "drop table if exists %s cascade";
@@ -39,6 +59,17 @@ public class DDLQueryCreator {
     private final Map<Integer, List<String>> ddlMetadata = new TreeMap<>();
     private final List<FieldResolver> fieldResolvers = new ArrayList<>();
 
+    /**
+     * Constructs a new DDLQueryCreator instance.
+     * <p>
+     * Initializes the DDL query metadata map and field resolvers list.
+     * Retrieves Bibernate entity metadata and sets up DDL metadata for various operations such as dropping
+     * constraints, tables and sequences, as well as creating sequences, tables, indexes and constraints.
+     * Finally, it invokes the createQueries() method to generate the DDL queries based on the entity metadata.
+     *
+     * @see BibernateContextHolder
+     * @see OperationOrder
+     */
     public DDLQueryCreator() {
         bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
         ddlMetadata.put(OperationOrder.DROP_CONSTRAINT, dropConstraints);
@@ -54,6 +85,20 @@ public class DDLQueryCreator {
         createQueries();
     }
 
+    /**
+     * Generates Data Definition Language (DDL) queries based on the metadata of Bibernate entities.
+     * <p>
+     * Iterates over each Bibernate entity metadata and creates DDL queries for operations such as
+     * dropping tables, creating tables and creating indexes. For each entity, it creates DDL queries
+     * for its columns and resolves any associated field mappings using field resolvers.
+     * <p>
+     * The generated DDL queries are added to the respective lists in the DDL metadata map for further processing.
+     *
+     * @see NoRelationFieldResolver
+     * @see ToOneRelationFieldResolver
+     * @see ManyToManyFieldResolver
+     * @since 1.0
+     */
     public void createQueries() {
 
         bibernateEntityMetadata.forEach((entityClass, entityMetadata) -> {
@@ -91,6 +136,11 @@ public class DDLQueryCreator {
         });
     }
 
+    /**
+     * Creates Data Definition Language (DDL) queries for creating indexes on the specified entity table.
+     *
+     * @param entityMetadata the metadata of the entity for which indexes are created
+     */
     private void createIndexQuery(EntityMetadata entityMetadata) {
         String tableName = entityMetadata.getTableName();
         List<IndexMetadata> indexMetadatas = entityMetadata.getIndexMetadatas();
@@ -114,6 +164,17 @@ public class DDLQueryCreator {
         });
     }
 
+    /**
+     * Checks if the specified column exists in the entity metadata for creating an index.
+     * <p>
+     * Verifies whether the specified column exists in the entity metadata list of columns.
+     * If the column does not exist, it throws a MappingException indicating that the column
+     * does not exist for creating an index.
+     *
+     * @param entityMetadata the metadata of the entity
+     * @param columnList     the list of columns for which the index is being created
+     * @throws MappingException if the specified column does not exist in the entity metadata
+     */
     private void checkIfColumnForIndexExists(EntityMetadata entityMetadata, String columnList) {
         boolean hasSuchColumn = entityMetadata.getEntityColumns().stream()
                 .anyMatch(entityColumnDetails -> entityColumnDetails

@@ -57,9 +57,9 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
                     ps.executeBatch();
                 }
             }
-
             ps.executeBatch();
             showSql(() -> log.debug(QUERY, query));
+            insertManyToManyJoinTable(entities, dataSource);
         } catch (Exception e) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);

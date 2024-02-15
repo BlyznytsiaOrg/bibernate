@@ -26,7 +26,7 @@ public class SimpleRepositoryMethodNativeQueryHandler implements SimpleRepositor
     public boolean isMethodHandle(Method method) {
         return method.isAnnotationPresent(Query.class) &&
                 method.getAnnotation(Query.class).nativeQuery() &&
-                method.getAnnotation(Query.class).hql();
+                method.getAnnotation(Query.class).bql();
     }
 
     /**

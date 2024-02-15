@@ -1,11 +1,13 @@
 # Bibernate Framework Documentation
 
-<img width="602" alt="image" src="https://github.com/BlyznytsiaOrg/bring/assets/73576438/32dd414f-dc3b-4d4b-8170-348e584b556b">
+<div style="text-align:center;">
+  <img width="602" alt="image" src="https://github.com/BlyznytsiaOrg/bring/assets/73576438/32dd414f-dc3b-4d4b-8170-348e584b556b">
+</div>
 
 
 ## Getting Started
 
-If you're new to Bibernate, consider initiating your experience with a [Bibernate playground application repo](https://github.com/BlyznytsiaOrg/bibernate-playground) 
+If you're new to Bibernate, consider initiating your experience with a [Bibernate Playground Application](https://github.com/BlyznytsiaOrg/bibernate-playground) 
 with a variety of examples of how to use it.
 Bibernate offers a swift and opinionated method to develop a Bibernate-based application ready for play.
 
@@ -26,20 +28,68 @@ Before getting started with Bibernate, ensure you have the following prerequisit
 
 ## Installation
 
-//TODO
+- Open your Maven Project:
+
+Open the Maven project where you want to add the Bibernate framework dependencies.
+
+- Edit pom.xml:
+
+Locate the pom.xml file in your project.
+
+- Add Repository Configuration:
+
+Inside the <repositories> section of your pom.xml, add the following repository configuration
+if you want to try latest Snapshot version of Bibernate project:
+
+```
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+      <name>Nexus Snapshots</name>
+      <id>snapshots-repo</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <layout>default</layout>
+    </repository>
+  </repositories>
+```
+
+This configuration informs Maven about the repository location where it can find the Bibernate framework artifacts.
+
+- Include Dependency:
+
+Within the <dependencies> section of your pom.xml, add the Bibernate framework dependency (You will have core & annotation-processor):
+
+```
+    <dependency>
+      <groupId>io.github.blyznytsiaorg.bibernate</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </dependency>
+
+```
+
 
 ## Design Philosophy
 
 Bibernate embodies educational principles in its design, empowering users to master reflection and architectural design.
-As a leading ORM framework, Bibernate serves as a cornerstone for understanding and implementing persistence in web servlet applications.
+As a ORM framework, Bibernate serves as a cornerstone for understanding and implementing persistence in web applications.
 Its robust features facilitate seamless mapping of Java objects to database tables, simplifying data access and fostering efficient development practices for teams.
 
 
-## Key Features of Bibernate
+## Key Features
 
 # Bibernate Core
 
-Bibernate is often described as a library that simplifies the task of mapping Java classes to relational database tables.
+Bibernate can be described as a library that simplifies the issue of mapping Java classes to relational database tables.
 
 Bibernate takes the pain out of persistence by freeing the developer from the burden of manually writing tedious, 
 repetitive, and error-prone code to flatten object graphs into database tables and reconstruct object graphs from flat SQL 
@@ -55,13 +105,13 @@ we have developed our own simplified version of the Persistence API.
 
 We can think of the API of Bibernate in terms of three basic elements:
 
-- The EntityManagerFactory is typically created during application startup based on configuration settings and entity mappings.
-- BibernateSessionFactory is responsible for creating and managing BibernateSession instances.
-- The BibernateSession is a fundamental component of Bibernate, analogous to the Session interface in Hibernate.
+- The `EntityManagerFactory` is typically created during application startup based on configuration settings and entity mappings.
+- `BibernateSessionFactory` is responsible for creating and managing BibernateSession instances.
+- The `BibernateSession` is a fundamental component of Bibernate, analogous to the `Session` interface in `Hibernate`.
 
 <img width="566" alt="image" src="https://github.com/BlyznytsiaOrg/bring/assets/73576438/cb61bdf2-c0bf-4b6a-81a3-00045a3aa3b3">
 
-## Documentations
+## Documentation
 
 - There are two types of documentation: Markdown (see below) and [JavaDoc](https://github.com/BlyznytsiaOrg/bibernate-core-javadoc)
 
@@ -70,22 +120,30 @@ We can think of the API of Bibernate in terms of three basic elements:
 
  - [Object-Relational Mapping (ORM)](features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
  - [Automatic Persistence](features/): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
- - [Hibernate Query Language(HQL)](features/): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
+ - [Bibernate Query Language(HQL)](features/): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
  - [Transaction Management](features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
  - [Lazy Loading](features/): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
  - [Criteria API](features/): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
  - [Native SQL Queries:](features/): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
- - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup and migration.
+ - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup.
  - [Extensibility](features/): Provides a flexible architecture that allows developers to extend and customize Bibernate functionality to meet specific application requirements.
- - [Bring Data Repository](features/): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
+ - [Bibernate Data Repository](features/BibernateDataRepository.md): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
  - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
  - [Versioning](features/): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
-# additional items:
+- Annotations
+
+//TODO
+
+- Exceptions
+
+//TODO
+
+# Additional items:
  - [Annotation processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.
- - [Runtime entity validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.
+ - [Runtime Entity validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.
  - [Reflection optimization](features/ReflectionOptimization.md): We gather all the details during startup and store them for later use because reflection is slow.
 
 

@@ -4,6 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Represents metadata for a sequence generator used in entity mapping.
+ * It includes attributes such as name, sequence name, initial value and allocation size.
+ *
+ * @see io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 @Getter
 @Setter
 @AllArgsConstructor

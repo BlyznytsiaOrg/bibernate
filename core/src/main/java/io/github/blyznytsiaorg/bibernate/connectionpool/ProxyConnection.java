@@ -23,16 +23,50 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
+/**
+ * ProxyConnection is a wrapper around a JDBC Connection that intercepts calls to create statements and provides
+ * additional functionality such as managing statement lifecycles and releasing connections back to a connection pool.
+ *
+ * @see BibernateDataSource
+ *
+ * @author Blyzhnytsia Team
+ * @since 1.0
+ */
 public class ProxyConnection implements Connection {
+
+    /**
+     * The physical JDBC Connection being wrapped.
+     */
     private final Connection connection;
+
+    /**
+     * The connection pool to which this connection belongs.
+     */
     private final Queue<Connection> connectionPool;
+
+    /**
+     * List of statements associated with this connection.
+     */
     private final List<Statement> statementList = new ArrayList<>();
 
+    /**
+     * Constructs a ProxyConnection object with the given JDBC Connection and connection pool.
+     *
+     * @param connection    the JDBC Connection to wrap
+     * @param connectionPool the connection pool to which this connection belongs
+     */
     public ProxyConnection(Connection connection, Queue<Connection> connectionPool) {
         this.connection = connection;
         this.connectionPool = connectionPool;
     }
 
+    /**
+     * Creates a Statement object for sending SQL statements to the database.
+     * Adds the created PreparedStatement to the list of statements associated with this connection.
+     *
+     * @return a new Statement object
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public Statement createStatement() throws SQLException {
         Statement statement = connection.createStatement();
@@ -40,6 +74,14 @@ public class ProxyConnection implements Connection {
         return statement;
     }
 
+    /**
+     * Creates a PreparedStatement object for sending parameterized SQL statements to the database.
+     * Adds the created PreparedStatement to the list of statements associated with this connection.
+     *
+     * @param sql the SQL statement to be sent to the database
+     * @return a new PreparedStatement object
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -47,6 +89,14 @@ public class ProxyConnection implements Connection {
         return statement;
     }
 
+    /**
+     * Creates a CallableStatement object for calling database stored procedures.
+     * Adds the created CallableStatement to the list of statements associated with this connection.
+     *
+     * @param sql the SQL statement to be sent to the database
+     * @return a new CallableStatement object
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
         CallableStatement callableStatement = connection.prepareCall(sql);
@@ -79,6 +129,12 @@ public class ProxyConnection implements Connection {
         connection.rollback();
     }
 
+    /**
+     * Releases this connection back to the connection pool.
+     * Also closes all associated statements and clears the statement list.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     @Override
     public void close() throws SQLException {
         for (Statement statement : statementList) {
@@ -88,6 +144,13 @@ public class ProxyConnection implements Connection {
         connectionPool.add(this);
     }
 
+    /**
+     * Releases this connection and closes all associated statements.
+     * This method is typically called when the connection is no longer needed and can be closed entirely.
+     * It closes all associated statements and then closes the underlying physical connection to the database.
+     *
+     * @throws SQLException if a database access error occurs
+     */
     public void release() throws SQLException {
         for (Statement statement : statementList) {
             statement.close();

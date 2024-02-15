@@ -12,8 +12,7 @@ import java.util.List;
 import static io.github.blyznytsiaorg.bibernate.annotation.GenerationType.IDENTITY;
 import static io.github.blyznytsiaorg.bibernate.dao.jdbc.SqlBuilder.insert;
 import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setIdField;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_SAVE_ENTITY_CLASS;
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
@@ -66,12 +65,12 @@ public class IdentityIdGenerator extends AbstractGenerator implements Generator 
                     }
                 }
             }
-
             ps.executeBatch();
             var generatedKeys = ps.getGeneratedKeys();
             while (generatedKeys.next()) {
                 updateEntity(entityArr[countEntity++], generatedKeys.getObject(1));
             }
+            insertManyToManyJoinTable(entities, dataSource);
         } catch (Exception e) {
             throw new BibernateGeneralException(
                     CANNOT_EXECUTE_SAVE_ENTITY_CLASS.formatted(entityClass, e.getMessage()), e);

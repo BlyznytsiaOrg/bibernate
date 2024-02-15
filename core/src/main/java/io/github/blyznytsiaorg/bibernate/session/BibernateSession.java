@@ -200,9 +200,30 @@ public interface BibernateSession extends Closeable {
      */
     Dao getDao();
 
+    /**
+     * Starts a new transaction. This method should be called before any operations that
+     * are meant to be part of a transaction.
+     *
+     * @throws SQLException if a database access error occurs or this method is called
+     *         on a closed connection
+     */
     void startTransaction() throws SQLException;
 
+    /**
+     * Commits the current transaction. This method should be called to make all changes
+     * made within the transaction permanent.
+     *
+     * @throws SQLException if a database access error occurs, the connection is closed
+     *         or this method is called when no transaction is active
+     */
     void commitTransaction() throws SQLException;
 
+    /**
+     * Rolls back the current transaction. This method should be called if any errors
+     * occur within the transaction and the changes made need to be discarded.
+     *
+     * @throws SQLException if a database access error occurs, the connection is closed
+     *         or this method is called when no transaction is active
+     */
     void rollbackTransaction() throws SQLException;
 }
