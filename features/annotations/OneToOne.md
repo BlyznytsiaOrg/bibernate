@@ -1,6 +1,6 @@
-# Custom OneToOne Annotation
+# OneToOne Annotation
 
-The `OneToOne` annotation is used to define a one-to-one relationship between two entities in Java.
+The `@OneToOne` annotation is used to define a one-to-one relationship between two entities in Java.
 
 ## Attributes
 
@@ -12,8 +12,10 @@ The `OneToOne` annotation is used to define a one-to-one relationship between tw
 
 ## Usage
 
+One main point! If you want to use relations you should use unique names of fields between entities!
+
 ```java
-import java.lang.annotation.*;
+package io.github.blyznytsiaorg.bibernate.annotation;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -38,3 +40,55 @@ public @interface OneToOne {
      */
     FetchType fetch() default FetchType.EAGER;
 }
+```
+## Examples
+### Unidirectional One-to-One Relationship
+
+```java
+@Entity
+@Table(name = "employees")
+public class Employee {
+    @Id
+    @Column(name = "employees_id")
+    private Long id;
+    
+    @OneToOne
+    @JoinColumn(name = "employees_address_id")
+    private Address address;
+
+    // Other fields and methods
+}
+```
+
+### Bidirectional One-to-One Relationship
+```java
+@Entity
+@Table(name = "addresses")
+public class Address {
+    @Id
+    @Column(name = "addresses_id")
+    private Long id;
+
+    @OneToOne(mappedBy = "address")
+    private Employee employee;
+
+    // Other fields and methods
+}
+```
+
+### One-to-One Relationship with Fetch Options
+```java
+@Entity
+@Table(name = "employees")
+public class Employee {
+    @Id
+    @Column(name = "employees_id")
+    private Long id;
+    
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employees_address_id")
+    private Address address;
+
+    // Other fields and methods
+}
+```
