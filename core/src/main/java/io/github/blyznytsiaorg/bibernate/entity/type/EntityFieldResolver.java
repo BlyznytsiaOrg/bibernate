@@ -51,7 +51,10 @@ public class EntityFieldResolver implements TypeFieldResolver {
         var joinColumnName = joinColumnName(field);
         var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
 
-        return session.findById(field.getType(), joinColumnValue)
-                .orElse(null);
+        if(joinColumnValue != null) {
+            return session.findById(field.getType(), joinColumnValue)
+                    .orElse(null);
+        }
+        return null;
     }
 }

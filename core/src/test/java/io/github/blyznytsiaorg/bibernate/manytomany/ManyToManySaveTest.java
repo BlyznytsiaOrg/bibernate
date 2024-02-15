@@ -28,18 +28,24 @@ class ManyToManySaveTest extends AbstractPostgresInfrastructurePrep {
                 Course savedCourse = session.save(Course.class, course);
 
                 var person = new Person();
+                person.setFirstName("Jack");
                 person.getCourses().add(savedCourse);
 
                 Person savedPerson = session.save(Person.class, person);
                 session.flush();
 
                 assertThat(savedPerson.getId()).isEqualTo(1L);
+                assertThat(savedPerson.getFirstName()).isEqualTo("Jack");
                 assertThat(savedCourse.getId()).isEqualTo(1L);
 
                 assertQueries(bibernateSessionFactory, List.of("INSERT INTO courses ( name ) VALUES ( ? );",
                 "INSERT INTO persons ( first_name, last_name, person_address_id ) VALUES ( ?, ?, ? );",
                         "INSERT INTO persons_courses ( person_id, course_id ) VALUES ( ?, ? );"));
-
+            }
+            try (var session = bibernateSessionFactory.openSession()) {
+                Person person = session.findById(Person.class, 1L).orElseThrow();
+                assertThat(person.getId()).isEqualTo(1L);
+                assertThat(person.getFirstName()).isEqualTo("Jack");
             }
         }
     }
