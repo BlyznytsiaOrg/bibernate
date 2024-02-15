@@ -76,8 +76,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Blyzhnytsia Team
@@ -193,7 +191,7 @@ public class EntityDao implements Dao {
         EntityMetadata entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
 
         if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
-            return findOneByWhereJoin(entityClass, bindValues);
+            return findByWhereJoin(entityClass, bindValues);
         }
         var tableName = table(entityClass);
         var query = sqlBuilder.selectBy(tableName, whereCondition);
@@ -225,8 +223,8 @@ public class EntityDao implements Dao {
     }
 
     @Override
-    public <T> List<T> findOneByWhereJoin(Class<T> entityClass,
-                                          Object... bindValues) {
+    public <T> List<T> findByWhereJoin(Class<T> entityClass,
+                                       Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();

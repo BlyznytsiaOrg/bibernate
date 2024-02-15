@@ -56,7 +56,7 @@ public class DefaultBibernateSession implements BibernateSession {
 
     @Override
     public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
-        return Optional.of(dao.findOneByWhereJoin(entityClass, bindValues).get(0));
+        return Optional.of(dao.findByWhereJoin(entityClass, bindValues).get(0));
     }
 
     @Override

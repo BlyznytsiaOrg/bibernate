@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * <pre>{@code
  *   @Entity
  *   public class Entity {
- *       @Column(name = "first_name", unique = true, nullable = false, columnDefinition = "VARCHAR(50)")
+ *       @Column(name = "first_name", unique = true, nullable = false, columnDefinition = "text")
  *       private String firstName;
  *       // Other fields and methods
  *   }

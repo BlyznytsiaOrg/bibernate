@@ -123,7 +123,7 @@ we have developed our own simplified version of the Persistence API.
  - [Bibernate Query Language(BQL)](features/): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
  - [Transaction Management](features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
- - [Lazy Loading](features/): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
+ - [Lazy Loading](features/LazyLoading.md): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
  - [Criteria API](features/): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
  - [Native SQL Queries:](features/): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
  - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup.
@@ -134,8 +134,10 @@ we have developed our own simplified version of the Persistence API.
  - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
 - Annotations
-
-//TODO
+ - [@OneToOne](features/annotations/OneToOne.md)
+ - [@Column](features/annotations/Column.md)
+ - [@Table](features/annotations/Table.md)
+ - [@JoinColumn](features/annotations/JoinColumn.md)
 
 - Exceptions
 

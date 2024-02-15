@@ -88,7 +88,7 @@ public interface Dao {
      * @param <T>         The generic type representing the entity class.
      * @return A list of entities matching the criteria.
      */
-    <T> List<T> findOneByWhereJoin(Class<T> entityClass, Object... bindValues);
+    <T> List<T> findByWhereJoin(Class<T> entityClass, Object... bindValues);
 
     /**
      * Retrieves a list of entities of the specified type based on a custom SQL query with WHERE and JOIN clauses.
