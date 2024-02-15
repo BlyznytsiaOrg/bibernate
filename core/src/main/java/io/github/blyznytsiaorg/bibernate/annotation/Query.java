@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  *
  * In this example, the 'findByCategory' method in the 'ProductRepository' interface is annotated
  * with '@Query' to indicate that it represents a query. The value of the annotation specifies
- * the HQL (Hibernate Query Language) query to be executed.
+ * the BQL (Bibernate Query Language) query to be executed.
  *
  * @author Blyzhnytsia Team
  * @since 1.0

@@ -54,7 +54,7 @@ public class Persistent {
      * Constructs a Persistent instance with external configuration.
      *
      * @param entitiesPackageName       the package name where entities are located
-     * @param externalBibernateSettings the external Hibernate settings
+     * @param externalBibernateSettings the external Bibernate settings
      * @param configFileName            the configuration file name
      * @return                          a Persistent instance with external configuration
      */
@@ -67,7 +67,7 @@ public class Persistent {
      * Constructs a Persistent instance with external configuration and a custom data source.
      *
      * @param entitiesPackageName       the package name where entities are located
-     * @param externalBibernateSettings the external Hibernate settings
+     * @param externalBibernateSettings the external Bibernate settings
      * @param configFileName            the configuration file name
      * @param dataSource                the custom data source
      * @return                          a Persistent instance with external configuration and a custom data source
@@ -79,9 +79,9 @@ public class Persistent {
     }
 
     /**
-     * Constructs a Persistent instance with external Hibernate settings and the entities package name.
+     * Constructs a Persistent instance with external Bibernate settings and the entities package name.
      *
-     * @param externalBibernateSettings the external Hibernate settings
+     * @param externalBibernateSettings the external Bibernate settings
      * @param entitiesPackageName       the package name where entities are located
      */
     public Persistent(String entitiesPackageName, Map<String, String> externalBibernateSettings, String configFileName) {
@@ -104,10 +104,10 @@ public class Persistent {
     }
 
     /**
-     * Constructs a Persistent instance with external Hibernate settings, the entities package name, and a custom data source.
+     * Constructs a Persistent instance with external Bibernate settings, the entities package name, and a custom data source.
      *
      * @param entitiesPackageName       the package name where entities are located
-     * @param externalBibernateSettings the external Hibernate settings
+     * @param externalBibernateSettings the external Bibernate settings
      * @param configFileName            the configuration file name
      * @param dataSource                the custom data source
      * @throws NullPointerException if any of the arguments is null
