@@ -155,7 +155,7 @@ public class EntityMetadataCollector {
                 .fieldType(field.getType())
                 .fieldType(isSupportedCollection(field) ? getCollectionGenericType(field) : field.getType())
                 .isCollection(isSupportedCollection(field))
-                .column(getColumn(field))
+                .column(getColumn(field, entityClass))
                 .id(getId(field))
                 .generatedValue(getGeneratedValue(field))
                 .sequenceGenerator(getSequenceGenerator(field))
@@ -498,7 +498,7 @@ public class EntityMetadataCollector {
      * @param field The field for which column metadata is retrieved.
      * @return Metadata related to the column.
      */
-    private ColumnMetadata getColumn(Field field) {
+    private ColumnMetadata getColumn(Field field, Class<?> entityClass) {
         String columnName = columnName(field);
         String databaseType = databaseTypeForInternalJavaType(field);
         ColumnMetadata.ColumnMetadataBuilder builder = ColumnMetadata.builder()
@@ -510,6 +510,7 @@ public class EntityMetadataCollector {
                 .timestamp(isTimestamp(field))
                 .timeZone(isTimeZone(field));
 
+        checkIfColumnAnnotationIsNotOnRelation(field, entityClass);
         Column annotation = field.getAnnotation(Column.class);
         if (annotation != null) {
             builder.unique(annotation.unique())
@@ -517,5 +518,22 @@ public class EntityMetadataCollector {
                     .columnDefinition(annotation.columnDefinition());
         }
         return builder.build();
+    }
+
+    /**
+     * Checks if the field is annotated with relational types are also annotated with the Column annotation.
+     *
+     * @param field The field to check for annotations.
+     * @param entityClass The class containing the field.
+     * @throws MappingException If the field is annotated with both relational and column annotations.
+     *                          The exception message indicates the name of the field and the class where the violation occurred.
+     */
+    private void checkIfColumnAnnotationIsNotOnRelation(Field field, Class<?> entityClass) {
+        if (field.isAnnotationPresent(Column.class) && (field.isAnnotationPresent(OneToOne.class) ||
+                field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToOne.class)
+                || field.isAnnotationPresent(ManyToMany.class))) {
+            throw new MappingException("The @Column annotation can not be used on relation field '%s' in class '%s'"
+                    .formatted(field.getName(), entityClass.getSimpleName()));
+        }
     }
 }

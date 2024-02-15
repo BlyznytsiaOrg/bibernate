@@ -7,6 +7,18 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates that the annotated field represents a timestamp that should be updated automatically upon entity modification.
+ * Example usage:
+ *
+ * <pre>{@code
+ * public class ExampleEntity {
+ *     @UpdateTimestamp
+ *     private LocalDateTime updatedAt;
+ *
+ *     // Getter and setter methods
+ * }
+ * }</pre>
+ *
+ * @see CreationTimestamp
  *
  * @author Blyzhnytsia Team
  * @since 1.0

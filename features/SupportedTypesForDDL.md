@@ -1,0 +1,25 @@
+# Supported Java Types for Schema Generation
+
+- Long 
+- long
+- BigInteger
+- Integer
+- int
+- Short
+- short
+- Byte
+- Float
+- float
+- Double
+- double
+- Boolean
+- boolean
+- Character
+- char
+- String
+- BigDecimal
+- LocalDate
+- LocalTime
+- OffsetTime
+- LocalDateTime
+- OffsetDateTime

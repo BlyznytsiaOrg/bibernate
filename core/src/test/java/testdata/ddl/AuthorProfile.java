@@ -27,6 +27,6 @@ public class AuthorProfile {
     @JoinColumn(name = "author_id")
     private Author author;
 
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "authorProfile")
     private List<Phone> phones = new ArrayList<>();
 }
