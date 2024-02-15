@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
 
 /**
+ * Utility class for handling entity relationships in Bibernate.
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0
@@ -38,10 +39,23 @@ public class EntityRelationsUtils {
     private final List<Class<? extends Annotation>> entityAnnotations = List.of(OneToOne.class, ManyToOne.class);
     private final List<Class<? extends Annotation>> collectionAnnotations = List.of(OneToMany.class, ManyToMany.class);
 
+    /**
+     * Checks if a field is a regular field (neither an entity nor a collection).
+     *
+     * @param field The field to check.
+     * @return {@code true} if the field is a regular field, {@code false} otherwise.
+     */
     public boolean isRegularField(Field field) {
         return !isEntityField(field) && !isCollectionField(field);
     }
 
+    /**
+     * Checks if a field is an entity field.
+     *
+     * @param field The field to check.
+     * @return {@code true} if the field is an entity field, {@code false} otherwise.
+     * @throws BibernateGeneralException If the field is annotated with an entity annotation but is a collection.
+     */
     public boolean isEntityField(Field field) {
         if (entityAnnotations.stream().anyMatch(field::isAnnotationPresent)) {
             if (Collection.class.isAssignableFrom(field.getType())) {
@@ -55,6 +69,13 @@ public class EntityRelationsUtils {
         return false;
     }
 
+    /**
+     * Checks if a field is a collection field.
+     *
+     * @param field The field to check.
+     * @return {@code true} if the field is a collection field, {@code false} otherwise.
+     * @throws BibernateGeneralException If the field is annotated with a collection annotation but is not a supported Collection.
+     */
     public boolean isCollectionField(Field field) {
         if (collectionAnnotations.stream().anyMatch(field::isAnnotationPresent)) {
             if (isSupportedCollection(field)) {
@@ -68,10 +89,23 @@ public class EntityRelationsUtils {
         return false;
     }
 
+    /**
+     * Checks if a field is an inverse side in a ManyToMany relationship.
+     *
+     * @param field The field to check.
+     * @return {@code true} if the field is an inverse side, {@code false} otherwise.
+     */
     public static boolean isInverseSide(Field field) {
         return isManyToMany(field) && !field.isAnnotationPresent(JoinTable.class);
     }
 
+    /**
+     * Gets the owning field from an inverse field in a ManyToMany relationship.
+     *
+     * @param field The inverse field.
+     * @return The owning field.
+     * @throws BibernateGeneralException If the owning field cannot be obtained.
+     */
     public static Field owningFieldByInverse(Field field) {
         try {
             String mappedBy = Optional.ofNullable(field.getAnnotation(ManyToMany.class))
@@ -87,6 +121,12 @@ public class EntityRelationsUtils {
         }
     }
 
+    /**
+     * Gets the join column name based on the 'mappedBy' attribute of the OneToMany annotation.
+     *
+     * @param field The field annotated with OneToMany.
+     * @return The join column name.
+     */
     public static String mappedByJoinColumnName(Field field) {
         return Optional.ofNullable(field.getAnnotation(OneToMany.class))
           .map(OneToMany::mappedBy)
@@ -99,6 +139,14 @@ public class EntityRelationsUtils {
           .orElse(joinColumnName(field));
     }
 
+    /**
+     * Retrieves the name of the column associated with a mapped-by field in a collection.
+     *
+     * @param mappedByName           The name of the field that is mapped by another field.
+     * @param collectionGenericType  The type of the collection.
+     * @return                      An Optional containing the name of the column associated with the mapped-by field,
+     *                              or an empty Optional if no matching field is found.
+     */
     private static Optional<String> getMappedByColumnName(String mappedByName, Class<?> collectionGenericType) {
         return Arrays.stream(collectionGenericType.getDeclaredFields())
           .filter(f -> Objects.equals(f.getName(), mappedByName))
@@ -106,6 +154,13 @@ public class EntityRelationsUtils {
           .map(EntityReflectionUtils::joinColumnName);
     }
 
+    /**
+     * Retrieves the names of bidirectional relations for a given many-to-many association field of an entity.
+     *
+     * @param entityClass   The class of the entity.
+     * @param field         The field representing the many-to-many association.
+     * @return              A list of names of bidirectional relations for the given field.
+     */
     public static List<String> bidirectionalRelations(Class<?> entityClass, Field field) {
         return Arrays.stream(entityClass.getDeclaredFields())
                 .filter(EntityRelationsUtils::isManyToMany)
@@ -115,6 +170,13 @@ public class EntityRelationsUtils {
                 .toList();
     }
 
+    /**
+     * Retrieves the CascadeType values specified in the cascade attribute of a given annotation.
+     *
+     * @param annotation The annotation from which to retrieve cascade types.
+     * @return A list of CascadeType values specified in the cascade attribute of the annotation,
+     *         or an empty list if the cascade attribute is not present or cannot be accessed.
+     */
     public static List<CascadeType> getCascadeTypesFromAnnotation(Annotation annotation) {
         try {
             Method cascadeMethod = annotation.annotationType().getDeclaredMethod("cascade");
@@ -125,10 +187,22 @@ public class EntityRelationsUtils {
         }
     }
 
+    /**
+     * Checks if a field is annotated with @OneToMany.
+     *
+     * @param field The field to check.
+     * @return True if the field is annotated with @OneToMany, false otherwise.
+     */
     public boolean isOneToMany(Field field) {
         return field.isAnnotationPresent(OneToMany.class);
     }
 
+    /**
+     * Checks if a field is annotated with @ManyToMany.
+     *
+     * @param field The field to check.
+     * @return True if the field is annotated with @ManyToMany, false otherwise.
+     */
     public boolean isManyToMany(Field field) {
         return field.isAnnotationPresent(ManyToMany.class);
     }
