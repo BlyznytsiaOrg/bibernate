@@ -867,7 +867,7 @@ public class EntityReflectionUtils {
     /**
      * Retrieves fields of an entity that can be used during insert operations.
      * These are fields that do not have special annotations like @GeneratedValue, @OneToOne without @JoinColumn,
-     * @ManyToOne without @JoinColumn, @OneToMany, @CreationTimestamp, @ManyToMany, or @UpdateTimestamp.
+     * ManyToOne without @JoinColumn, @OneToMany, @CreationTimestamp, @ManyToMany, or @UpdateTimestamp.
      *
      * @param entityClass The class representing the entity.
      * @return A list of fields suitable for insert operations.
