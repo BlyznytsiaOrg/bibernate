@@ -134,7 +134,7 @@ We can think of the API of Bibernate in terms of three basic elements:
  - [Flyway Migration Support](features/): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
 - Annotations
-
+ - [@OneToOne](features/annotations/OneToOne.md)
 //TODO
 
 - Exceptions
