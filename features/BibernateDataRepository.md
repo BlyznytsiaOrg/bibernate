@@ -8,7 +8,7 @@ Bibernate Data Repository provides several benefits:
 
 - **Type Safety:** The repository methods are type-safe, meaning that the compiler can catch errors at compile-time rather than at runtime. This helps prevent common mistakes and improves the robustness of your code.
 
-- **Query Methods:** The repository interface allows you to define custom query methods using method names that follow a specific naming convention. This makes it easy to write and read custom queries without having to write SQL or HQL (Hibernate Query Language) directly.
+- **Query Methods:** The repository interface allows you to define custom query methods using method names that follow a specific naming convention. This makes it easy to write and read custom queries without having to write SQL or BQL (Bibernate Query Language) directly.
 
 - **Dynamic Query Generation:** Query methods can be dynamically generated based on method names, allowing you to query entities by various criteria without having to write custom query code for each use case.
 
