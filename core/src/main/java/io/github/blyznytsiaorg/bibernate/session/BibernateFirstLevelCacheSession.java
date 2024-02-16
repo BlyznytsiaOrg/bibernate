@@ -383,7 +383,6 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
-            //TODO: add entire oneToOne entity to cache
             boolean isEntityHasLazyField = Arrays.stream(entityFromDb.getClass().getDeclaredFields())
                     .anyMatch(field -> field.isAnnotationPresent(OneToOne.class) &&
                                        field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY);
