@@ -6,7 +6,6 @@ import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import testdata.findbyid.Person;
 import testdata.update.immutable.PersonImmutable;
 
 import java.util.List;

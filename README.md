@@ -138,6 +138,10 @@ we have developed our own simplified version of the Persistence API.
  - [@Column](features/annotations/Column.md)
  - [@Table](features/annotations/Table.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
+ - [@Version](features/annotations/Version.md)
+ - [@Param](features/annotations/Param.md)
+ - [@Query](features/annotations/Query.md)
+ - [@DynamicUpdate](features/annotations/DynamicUpdate.md)
 
 **Exceptions:**
   - [BibernateDataSourceException](features/exceptions/BibernateDataSourceException.md)
