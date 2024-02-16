@@ -12,6 +12,7 @@ import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector;
+import io.github.blyznytsiaorg.bibernate.utils.BibernateBanner;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
@@ -78,6 +79,8 @@ public class Persistent {
      * @param entitiesPackageName       the package name where entities are located
      */
     public Persistent(String entitiesPackageName, Map<String, String> externalBibernateSettings) {
+        BibernateBanner.printBanner();
+
         requireNonNull(entitiesPackageName, "EntitiesPackageName should not be null");
         requireNonNull(externalBibernateSettings, "externalBibernateSettings should not be null");
 
@@ -105,6 +108,8 @@ public class Persistent {
      */
     public Persistent(String entitiesPackageName,
                       String configFileName) {
+        BibernateBanner.printBanner();
+
         requireNonNull(entitiesPackageName, "EntitiesPackageName should not be null");
         requireNonNull(configFileName, "configFileName should not be null");
 
