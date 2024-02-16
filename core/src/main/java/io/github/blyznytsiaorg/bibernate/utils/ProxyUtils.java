@@ -6,9 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -26,7 +24,7 @@ public class ProxyUtils {
      * to the provided supplier.
      *
      * @param clazz    the class for which a proxy should be created
-     * @param supplier the supplier to delegate method invocations to
+     * @param supplier the supplier to delegate method invocations to object
      * @return a dynamic proxy instance for the specified class
      */
     @SneakyThrows

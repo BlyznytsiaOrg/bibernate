@@ -118,7 +118,7 @@ we have developed our own simplified version of the Persistence API.
 
 ## Features:
 
- - [Object-Relational Mapping (ORM)](features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
+ - [Object-Relational Mapping (ORM)](features/ObjectRelationalMapping.md): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
  - [Automatic Persistence](features/AutomaticPersistence.md): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
  - [Bibernate Query Language(BQL)](features/BQL.md): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/CachingMechanisms.md): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
@@ -134,7 +134,6 @@ we have developed our own simplified version of the Persistence API.
  - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
 **Annotations:**
- - [@OneToOne](features/annotations/OneToOne.md)
  - [@Column](features/annotations/Column.md)
  - [@Table](features/annotations/Table.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
@@ -142,6 +141,10 @@ we have developed our own simplified version of the Persistence API.
  - [@Param](features/annotations/Param.md)
  - [@Query](features/annotations/Query.md)
  - [@DynamicUpdate](features/annotations/DynamicUpdate.md)
+ - [@OneToOne](features/annotations/OneToOne.md)
+ - [@OneToMany](features/annotations/OneToMany.md)
+ - [@ManyToOne](features/annotations/ManyToOne.md)
+ - [@ManyToMany](features/annotations/ManyToMany.md)
 
 **Exceptions:**
   - [BibernateDataSourceException](features/exceptions/BibernateDataSourceException.md)
