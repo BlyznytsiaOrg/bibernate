@@ -2,6 +2,7 @@ package io.github.blyznytsiaorg.bibernate.dao.method.handler;
 
 import io.github.blyznytsiaorg.bibernate.dao.method.MethodMetadata;
 import io.github.blyznytsiaorg.bibernate.dao.method.RepositoryDetails;
+import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
 import io.github.blyznytsiaorg.bibernate.session.BibernateSession;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,6 +62,15 @@ public class SimpleRepositoryMethodSaveAllHandler implements SimpleRepositoryMet
         return null;
     }
 
+    /**
+     * Helper method for executing the save operation on a BibernateSession instance.
+     * Saves a collection of entities of the specified class using the provided BibernateSession.
+     *
+     * @param <T>          the type of the entities being saved
+     * @param entityClass  the class of the entities to be saved
+     * @param entities     the collection of entities to be saved
+     * @param bringSession the BibernateSession instance used for saving entities
+     */
     private <T> void executeHelper(Class<T> entityClass, Collection entities, BibernateSession bringSession) {
         bringSession.saveAll(entityClass, entities);
     }

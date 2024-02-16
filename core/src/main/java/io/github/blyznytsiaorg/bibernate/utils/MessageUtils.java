@@ -35,8 +35,9 @@ public class MessageUtils {
         public static final String ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA = "Entity %s was change need to get new data findBy%s[%s]";
         public static final String CANNOT_FIND_SEQUENCE_STRATEGY =
                 "Cannot find SEQUENCE strategy for entity entityClass [%s]";
-        public static final String CANNOT_GET_ID_FROM_SEQUENCE =
-                "Cannot get Id for sequence: [%s]";
+        public static final String CANNOT_GET_ID_FROM_SEQUENCE = "Cannot get Id for sequence: [%s]";
+        public static final String UNSUPPORTED_ACTION_TYPE = "Unsupported action type: [%s]";
+        public static final String NOT_SPECIFIED_ENTITY_ID = "Not specified entity Id";
     }
 
     @UtilityClass

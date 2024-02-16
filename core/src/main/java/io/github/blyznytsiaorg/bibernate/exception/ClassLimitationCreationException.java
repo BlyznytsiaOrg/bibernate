@@ -8,6 +8,7 @@ package io.github.blyznytsiaorg.bibernate.exception;
  * @since 1.0
  */
 public class ClassLimitationCreationException extends BibernateGeneralException {
+
     /**
      * Constructs a new ClassLimitationCreationException with the specified detail message.
      *

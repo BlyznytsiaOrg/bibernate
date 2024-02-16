@@ -4,12 +4,14 @@ import io.github.blyznytsiaorg.bibernate.actionqueue.ActionQueue;
 import io.github.blyznytsiaorg.bibernate.actionqueue.ActionType;
 import io.github.blyznytsiaorg.bibernate.actionqueue.EntityAction;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateGeneralException;
+import io.github.blyznytsiaorg.bibernate.exception.UnsupportedActionTypeException;
 import io.github.blyznytsiaorg.bibernate.utils.CollectionUtils;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 import static io.github.blyznytsiaorg.bibernate.actionqueue.ActionType.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.UNSUPPORTED_ACTION_TYPE;
 
 /**
  * Default implementation of the {@link io.github.blyznytsiaorg.bibernate.actionqueue.ActionQueue} interface.
@@ -25,6 +27,12 @@ public class DefaultActionQueue implements ActionQueue {
      * A map that categorizes entity actions based on their types (INSERT, UPDATE, DELETE).
      */
     private final Map<ActionType, Set<EntityAction>> entityActions = new HashMap<>();
+
+    /**
+     * Flag indicating whether the action queue has been executed.
+     * When 'true', it signifies that the action queue should not perform any
+     * execution of entity actions, providing control over the processing flow.
+     */
     private boolean isExecuted;
 
     /**
@@ -56,7 +64,8 @@ public class DefaultActionQueue implements ActionQueue {
             case INSERT -> addInsertAction(entityAction);
             case UPDATE -> addUpdateAction(entityAction);
             case DELETE -> addDeleteAction(entityAction);
-            default -> throw new BibernateGeneralException("Unsupported action type");
+            default -> throw new UnsupportedActionTypeException(
+                    UNSUPPORTED_ACTION_TYPE.formatted(entityAction.getActionType()));
         }
     }
 

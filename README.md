@@ -119,7 +119,7 @@ we have developed our own simplified version of the Persistence API.
 ## Features:
 
  - [Object-Relational Mapping (ORM)](features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
- - [Automatic Persistence](features/): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
+ - [Automatic Persistence](features/AutomaticPersistence.md): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
  - [Bibernate Query Language(BQL)](features/BQL.md): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
  - [Transaction Management](features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
@@ -133,15 +133,34 @@ we have developed our own simplified version of the Persistence API.
  - [Versioning](features/Versioning.md): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
 
-- Annotations
+**Annotations:**
  - [@OneToOne](features/annotations/OneToOne.md)
  - [@Column](features/annotations/Column.md)
  - [@Table](features/annotations/Table.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
 
-- Exceptions
-
-//TODO
+**Exceptions:**
+  - [BibernateDataSourceException](features/exceptions/BibernateDataSourceException.md)
+  - [BibernateGeneralException](features/exceptions/BibernateGeneralException.md)
+  - [BibernateSessionClosedException](features/exceptions/BibernateSessionClosedException.md)
+  - [BibernateValidationException](features/exceptions/BibernateValidationException.md)
+  - [ClassLimitationCreationException](features/exceptions/ClassLimitationCreationException.md)
+  - [CollectionIsEmptyException](features/exceptions/CollectionIsEmptyException.md)
+  - [ConnectionPoolException](features/exceptions/ConnectionPoolException.md)
+  - [EntitiesNotFoundException](features/exceptions/EntitiesNotFoundException.md)
+  - [EntityNotFoundException](features/exceptions/EntityNotFoundException.md)
+  - [EntityStateWasChangeException](features/exceptions/EntityStateWasChangeException.md)
+  - [FailedToMatchPropertyException](features/exceptions/FailedToMatchPropertyException.md)
+  - [ImmutableEntityException](features/exceptions/ImmutableEntityException.md)
+  - [MappingException](features/exceptions/MappingException.md)
+  - [MissingAnnotationException](features/exceptions/MissingAnnotationException.md)
+  - [MissingRequiredParametersInMethod](features/exceptions/MissingRequiredParametersInMethod.md)
+  - [NonUniqueResultException](features/exceptions/NonUniqueResultException.md)
+  - [NotFoundImplementationForCustomRepository](features/exceptions/NotFoundImplementationForCustomRepository.md)
+  - [RepositoryInvocationException](features/exceptions/RepositoryInvocationException.md)
+  - [UnsupportedActionTypeException](features/exceptions/UnsupportedActionTypeException.md)
+  - [UnsupportedDataTypeException](features/exceptions/UnsupportedDataTypeException.md)
+  - [UnsupportedReturnTypeException](features/exceptions/UnsupportedReturnTypeException.md)
 
 # Additional items:
  - [Annotation processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.

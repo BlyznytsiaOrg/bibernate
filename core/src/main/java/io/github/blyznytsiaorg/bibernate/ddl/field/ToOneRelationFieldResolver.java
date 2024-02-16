@@ -32,7 +32,7 @@ public class ToOneRelationFieldResolver implements FieldResolver {
      */
     @Override
     public boolean hasFieldToResolve(EntityColumnDetails entityColumnDetails) {
-        Field field = entityColumnDetails.getField();
+        var field = entityColumnDetails.getField();
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
             OneToOne oneToOne = field.getAnnotation(OneToOne.class);
             return oneToOne == null || oneToOne.mappedBy().isEmpty();
@@ -49,20 +49,20 @@ public class ToOneRelationFieldResolver implements FieldResolver {
      */
     @Override
     public void handleField(DDLFieldMetadataHolder metadataHolder, Map<Integer, List<String>> ddlMetadata) {
-        EntityColumnDetails entityColumn = metadataHolder.getColumnDetails();
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = metadataHolder.getBibernateEntityMetadata();
-        Class<?> entityClass = metadataHolder.getEntityClass();
-        List<String> columnNameAndDatabaseTypeList = metadataHolder.getColumnNameAndDatabaseTypeList();
-        String tableName = metadataHolder.getTableName();
-        Set<String> foreignNameConstraints = metadataHolder.getForeignNameConstraints();
+        var entityColumn = metadataHolder.getColumnDetails();
+        var bibernateEntityMetadata = metadataHolder.getBibernateEntityMetadata();
+        var entityClass = metadataHolder.getEntityClass();
+        var columnNameAndDatabaseTypeList = metadataHolder.getColumnNameAndDatabaseTypeList();
+        var tableName = metadataHolder.getTableName();
+        var foreignNameConstraints = metadataHolder.getForeignNameConstraints();
 
-        Class<?> fieldType = entityColumn.getFieldType();
-        EntityMetadata metadataOfRelation = bibernateEntityMetadata.get(fieldType);
+        var fieldType = entityColumn.getFieldType();
+        var metadataOfRelation = bibernateEntityMetadata.get(fieldType);
         checkIfRelationExists(entityClass, fieldType, metadataOfRelation);
         JoinColumnMetadata joinColumn = entityColumn.getJoinColumn();
-        String joinColumnName = joinColumn.getName();
-        String databaseType = joinColumn.getDatabaseType();
-        String nameDatabaseType = NAME_DATA_PATTERN.formatted(joinColumnName, databaseType);
+        var joinColumnName = joinColumn.getName();
+        var databaseType = joinColumn.getDatabaseType();
+        var nameDatabaseType = NAME_DATA_PATTERN.formatted(joinColumnName, databaseType);
 
         columnNameAndDatabaseTypeList.add(nameDatabaseType);
 
@@ -77,11 +77,11 @@ public class ToOneRelationFieldResolver implements FieldResolver {
 
         checkForeignKeyName(foreignKey, foreignNameConstraints);
 
-        String dropRelationConstraint = DROP_CONSTRAINT.formatted(tableName, foreignKey);
+        var dropRelationConstraint = DROP_CONSTRAINT.formatted(tableName, foreignKey);
         ddlMetadata.computeIfAbsent(OperationOrder.DROP_CONSTRAINT, k -> new ArrayList<>()).add(dropRelationConstraint);
 
-        String relationTableName = metadataOfRelation.getTableName();
-        String createRelationConstraint = CREATE_CONSTRAINT.formatted(tableName,
+        var relationTableName = metadataOfRelation.getTableName();
+        var createRelationConstraint = CREATE_CONSTRAINT.formatted(tableName,
                 foreignKey, joinColumnName, relationTableName);
         ddlMetadata.computeIfAbsent(OperationOrder.CREATE_CONSTRAINT, k -> new ArrayList<>()).add(createRelationConstraint);
     }

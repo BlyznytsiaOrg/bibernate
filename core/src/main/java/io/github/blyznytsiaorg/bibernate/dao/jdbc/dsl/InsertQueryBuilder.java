@@ -70,6 +70,10 @@ public class InsertQueryBuilder extends QueryBuilder {
         return INSERT_INTO.formatted(tableName, fieldNames, values);
     }
 
+    /**
+     * A record representing a field to be used in an INSERT operation.
+     * This record encapsulates the information about a field name to be inserted into a database.
+     */
     record InsertField(String fieldName) {
     }
 }

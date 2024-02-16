@@ -1,43 +1,5 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnIdName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnIdValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnVersionName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnVersionValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getFieldValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getIdField;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromObject;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnHasAnnotation;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnVersionFound;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDynamicUpdate;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setVersionValueIfNull;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_DELETE_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_DELETE_ENTITY_CLASS_ALL_BY_ID;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_QUERY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_UPDATE_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.COLLECTION_MUST_BE_NOT_EMPTY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_CLASS_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.FIELD_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.NON_UNIQUE_RESULT_FOR_FIND_BY_ID;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.PRIMARY_KEY_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.DELETE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.DELETE_ALL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_TWO_VALUES;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_VALUE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_VALUES;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.SAVE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.SAVE_ALL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.UPDATE;
-
 import io.github.blyznytsiaorg.bibernate.annotation.UpdateTimestamp;
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
@@ -62,20 +24,21 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.internal.util.Pair;
+
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
+
+import static io.github.blyznytsiaorg.bibernate.dao.utils.HqlQueryInfo.DOT;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
  * @author Blyzhnytsia Team
@@ -148,7 +111,7 @@ public class EntityDao implements Dao {
 
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
-        var query = sqlBuilder.selectAllById(tableName, fieldIdName, primaryKeys.size());
+        var query = sqlBuilder.selectAllByFieldName(tableName, fieldIdName, primaryKeys.size());
         var dataSource = bibernateDatabaseSettings.getDataSource();
         var ids = primaryKeys.toArray();
         var items = new ArrayList<T>();
@@ -207,8 +170,8 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
         var query = sqlBuilder.selectWithJoin(tableName, fieldIdName, field);
-        
-        EntityMetadata entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
+
+        var entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
         if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
             return findAllByWhereJoin(entityClass, query, bindValues);
         }
@@ -229,7 +192,7 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        String query = createLeftJoinQuery(entityClass);
+        var query = createLeftJoinQuery(entityClass);
 
         addToExecutedQueries(query);
         var items = new ArrayList<T>();
@@ -264,8 +227,8 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        String leftJoinQuery = createLeftJoinQuery(entityClass);
-        String mergedQuery = sqlBuilder.mergeQueries(leftJoinQuery, query);
+        var leftJoinQuery = createLeftJoinQuery(entityClass);
+        var mergedQuery = sqlBuilder.mergeQueries(leftJoinQuery, query);
 
         addToExecutedQueries(mergedQuery);
         var items = new ArrayList<T>();
@@ -292,26 +255,6 @@ public class EntityDao implements Dao {
         }
 
         return items;
-    }
-
-    private <T> String createLeftJoinQuery(Class<T> entityClass) {
-        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
-        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
-
-        var tableName = searchedEntityMetadata.getTableName();
-        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
-                .map(EntityColumnDetails::getColumn)
-                .map(ColumnMetadata::getName)
-                .findFirst()
-                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
-
-        var whereConditionId = tableName.concat(".").concat(columnIdName);
-        var joinInfos = searchedEntityMetadata.joinInfos(
-                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
-        );
-
-        return sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
     }
 
     @Override
@@ -613,6 +556,26 @@ public class EntityDao implements Dao {
         }
     }
 
+    private <T> String createLeftJoinQuery(Class<T> entityClass) {
+        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
+        var tableName = searchedEntityMetadata.getTableName();
+        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                .map(EntityColumnDetails::getColumn)
+                .map(ColumnMetadata::getName)
+                .findFirst()
+                .orElseThrow(() -> new BibernateGeneralException(NOT_SPECIFIED_ENTITY_ID));
+
+        var whereConditionId = tableName.concat(DOT).concat(columnIdName);
+        var joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+
+        return sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
+    }
+
     private <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value,
                                             boolean returnDeletedEntities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -762,8 +725,8 @@ public class EntityDao implements Dao {
                     if (isUpdateTimestamp(field)) {
                         statement.setObject(parameterIndex++, OffsetDateTime.now());
                     } else {
-                    var fieldValue = getValueFromObject(entity, field);
-                    statement.setObject(parameterIndex++, fieldValue);
+                        var fieldValue = getValueFromObject(entity, field);
+                        statement.setObject(parameterIndex++, fieldValue);
                     }
                 }
             }
