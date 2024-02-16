@@ -124,19 +124,6 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
-    public SelectQueryBuilder selectFieldsFromTables(Map<String, List<EntityColumnDetails>> tableNameColumnsDetails) {
-        Objects.requireNonNull(tableNameColumnsDetails);
-        tableNameColumnsDetails.forEach((table, columns) ->
-                columns.forEach(entityColumn -> selectedFields.add(getAliasField(table, entityColumn))));
-        return this;
-    }
-
-    //TODO
-    @NotNull
-    private String getAliasField(String table, EntityColumnDetails entityColumn) {
-        return table.concat(DOT).concat(entityColumn.getColumn().getName()).concat(SPACE).concat(AS).concat(SPACE).concat(table).concat(UNDERSCORE).concat(entityColumn.getColumn().getName());
-    }
-
     /**
      * Adds a JOIN clause to the SELECT statement.
      *
@@ -151,7 +138,12 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
-    //TODO:
+    /**
+     * Adds a list of join clauses to the current select query builder.
+     *
+     * @param joinClausesList The list of join clauses to be added.
+     * @return The updated SelectQueryBuilder instance with the specified join clauses.
+     */
     public SelectQueryBuilder join(List<JoinClause> joinClausesList) {
         joinClauses.addAll(joinClausesList);
         return this;
