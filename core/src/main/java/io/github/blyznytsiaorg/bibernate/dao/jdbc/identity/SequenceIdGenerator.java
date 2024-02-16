@@ -24,6 +24,13 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 
 /**
+ * Implementation of the sequence-based ID generator in Bibernate.
+ * <p>
+ * This generator is responsible for handling entities with sequence-based
+ * generation of primary key values.
+ * This SequenceIdGenerator generator anticipates that the identifier will be
+ * generated in additional query to database before an INSERT operation into the table. </p>
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -33,17 +40,42 @@ public class SequenceIdGenerator extends AbstractGenerator implements Generator 
 
     private final Map<Class<?>, SequenceConf> sequences = new HashMap<>();
 
+    /**
+     * Constructs an SequenceIdGenerator with the specified Bibernate database settings
+     * and a list to store executed queries.
+     *
+     * @param bibernateDatabaseSettings The database settings for Bibernate.
+     * @param executedQueries           The list to store executed queries.
+     */
     public SequenceIdGenerator(
             BibernateDatabaseSettings bibernateDatabaseSettings,
             List<String> executedQueries) {
         super(bibernateDatabaseSettings, executedQueries);
     }
 
+    /**
+     * Returns SEQUENCE GenerationType for further understanding of what type
+     * of generator we are dealing with
+     *
+     */
     @Override
     public GenerationType type() {
         return SEQUENCE;
     }
 
+    /**
+     * Handles the generation of sequence-based primary keys for a collection of entities
+     * and inserts the entities into the database using batch processing.
+     * Gets generated id from the sequence of database and sets it to the entity.
+     * If the method will be performed in transaction then id will be cleaned up
+     * from the entity in case of rollback. Can overbook set of sequences (depends on
+     * allocation size property) and use it to avoid redundant sql queries to database
+     *
+     * @param entityClass The class of the entities being handled.
+     * @param entities    The collection of entities for which primary keys are generated.
+     * @param dataSource  The data source for obtaining a database connection.
+     * @param <T>         The type of entities in the collection.
+     */
     @Override
     public <T> void handle(Class<T> entityClass, Collection<T> entities, DataSource dataSource) {
         var tableName = table(entityClass);

@@ -1,5 +1,6 @@
 package io.github.blyznytsiaorg.bibernate;
 
+import io.github.blyznytsiaorg.bibernate.utils.BibernateBanner;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,41 +90,42 @@ public abstract class AbstractPostgresInfrastructurePrep implements AbstractPost
         bibernateSettings.put(SECOND_LEVEL_CACHE_POST, String.valueOf(redisPort));
 
         jedis = new Jedis(redisHost, redisPort);
+        System.setProperty(BibernateBanner.BIBERNATE_BANNER_KEY, "off");
     }
 
     public Persistent createPersistent(String packageName) {
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(packageName, bibernateSettings);
     }
 
     public Persistent createPersistent() {
-        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings);
     }
 
     public Persistent createPersistentWithFlayWayEnabled() {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(PACKAGE_NAME, bibernateSettings);
     }
 
     public Persistent createPersistentWithFlayWayEnabled(String packageName) {
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(packageName, bibernateSettings);
     }
 
     public Persistent createPersistentWithBb2ddlCreate(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(packageName, bibernateSettings);
     }
 
     public Persistent createPersistentWithFlayWayEnabledAndBb2ddlCreate(String packageName) {
         bibernateSettings.put(BB2DDL_AUTO, CREATE);
         bibernateSettings.put(BIBERNATE_FLYWAY_ENABLED, Boolean.TRUE.toString());
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(packageName, bibernateSettings);
     }
 
 
     public Persistent createPersistentWithSecondLevelCache(String packageName) {
         bibernateSettings.put(SECOND_LEVEL_CACHE, Boolean.TRUE.toString());
-        return withExternalConfiguration(packageName, bibernateSettings, BIBERNATE_PROPERTIES);
+        return withExternalConfiguration(packageName, bibernateSettings);
     }
 
     @AfterEach

@@ -1,43 +1,5 @@
 package io.github.blyznytsiaorg.bibernate.dao;
 
-import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnIdName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnIdValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnVersionName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.columnVersionValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getFieldValue;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getIdField;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.getValueFromObject;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnHasAnnotation;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isColumnVersionFound;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isDynamicUpdate;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.joinColumnName;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.setVersionValueIfNull;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.table;
-import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_DELETE_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_DELETE_ENTITY_CLASS_ALL_BY_ID;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_FIND_BY_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_QUERY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.CANNOT_EXECUTE_UPDATE_ENTITY_CLASS;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.COLLECTION_MUST_BE_NOT_EMPTY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_CLASS_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.ENTITY_WAS_CHANGE_NEED_TO_GET_NEW_DATA;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.FIELD_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.NON_UNIQUE_RESULT_FOR_FIND_BY_ID;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.PRIMARY_KEY_MUST_BE_NOT_NULL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.DELETE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.DELETE_ALL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_TWO_VALUES;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_VALUE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY_BIND_VALUES;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.SAVE;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.SAVE_ALL;
-import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.UPDATE;
-
 import io.github.blyznytsiaorg.bibernate.annotation.UpdateTimestamp;
 import io.github.blyznytsiaorg.bibernate.annotation.Version;
 import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
@@ -62,22 +24,39 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.internal.util.Pair;
+
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
+import static io.github.blyznytsiaorg.bibernate.dao.utils.HqlQueryInfo.DOT;
+import static io.github.blyznytsiaorg.bibernate.transaction.TransactionJdbcUtils.close;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.*;
+import static io.github.blyznytsiaorg.bibernate.utils.EntityRelationsUtils.bidirectionalRelations;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMessage.*;
+import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
+
 /**
+ * Data Access Object (DAO) implementation for managing entities in Bibernate.
+ * <p>
+ * This DAO provides methods for interacting with the database to perform CRUD operations on entities.
+ * It uses a combination of JDBC and custom SQL queries to execute operations such as saving, updating, deleting,
+ * and querying entities. The class is designed to be used with various entities and supports flexible querying.</p>
+ *
+ * <p>The DAO utilizes the provided {@link SqlBuilder} for constructing SQL queries,
+ * {@link BibernateDatabaseSettings} for obtaining database-related settings,
+ * {@link EntityPersistent} for entity-related persistence operations,
+ * and {@link Identity} for managing identity generators.</p>
+ *
+ * <p>The class supports logging executed queries, which can be useful for debugging and monitoring database interactions.</p>
+ *
+ * <p>Note: This class assumes that entities follow the convention of having an identifier (ID) column,
+ * and it supports primary key-based operations accordingly.</p>
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -93,6 +72,17 @@ public class EntityDao implements Dao {
     @Getter
     private final List<String> executedQueries;
 
+    /**
+     * Retrieves an entity by its primary key. If the result set contains more than one entity,
+     * a {@link NonUniqueResultException} is thrown.
+     *
+     * @param <T>          The type of the entity.
+     * @param entityClass  The class of the entity.
+     * @param primaryKey   The primary key value to search for.
+     * @return An {@link Optional} containing the found entity, or an empty Optional if not found.
+     * @throws NullPointerException if either {@code entityClass} or {@code primaryKey} is null.
+     * @throws NonUniqueResultException if more than one entity is found for the given primary key.
+     */
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -109,6 +99,15 @@ public class EntityDao implements Dao {
         return resultList.stream().findFirst();
     }
 
+    /**
+     * Retrieves all entities of a given class from the database.
+     *
+     * @param <T>         The type of the entity.
+     * @param entityClass The class of the entity.
+     * @return A list containing all entities of the specified class.
+     * @throws NullPointerException if {@code entityClass} is null.
+     * @throws BibernateGeneralException if an error occurs while executing the query.
+     */
     @Override
     public <T> List<T> findAll(Class<T> entityClass) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -141,6 +140,16 @@ public class EntityDao implements Dao {
         return items;
     }
 
+    /**
+     * Retrieves entities by their primary keys from the database.
+     *
+     * @param <T>          The type of the entity.
+     * @param entityClass  The class of the entity.
+     * @param primaryKeys  The collection of primary key values to search for.
+     * @return A list containing the found entities.
+     * @throws NullPointerException if {@code entityClass} or {@code primaryKeys} is null.
+     * @throws BibernateGeneralException if an error occurs while executing the query.
+     */
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -148,7 +157,7 @@ public class EntityDao implements Dao {
 
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
-        var query = sqlBuilder.selectAllById(tableName, fieldIdName, primaryKeys.size());
+        var query = sqlBuilder.selectAllByFieldName(tableName, fieldIdName, primaryKeys.size());
         var dataSource = bibernateDatabaseSettings.getDataSource();
         var ids = primaryKeys.toArray();
         var items = new ArrayList<T>();
@@ -178,6 +187,18 @@ public class EntityDao implements Dao {
         return items;
     }
 
+    /**
+     * Retrieves a list of entities of type {@code T} based on the specified column's value.
+     * <p>
+     * This method constructs a WHERE condition using the provided column name and value
+     * and delegates to {@link #findByWhere(Class, String, Object...)} method for execution.</p>
+     *
+     * @param <T>          The type of entities to retrieve.
+     * @param entityClass  The class of the entity.
+     * @param columnName   The name of the column.
+     * @param columnValue  The value to match in the specified column.
+     * @return A list of entities matching the specified column value.
+     */
     @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         var whereCondition = sqlBuilder.fieldEqualsParameterCondition(columnName);
@@ -185,6 +206,20 @@ public class EntityDao implements Dao {
         return findByWhere(entityClass, whereCondition, columnValue);
     }
 
+    /**
+     * Retrieves a list of entities of type {@code T} based on the specified WHERE condition.
+     * <p>
+     * This method constructs a SELECT query using the provided entity class, WHERE condition,
+     * and optional bind values, and delegates to {@link #findByQuery(Class, String, Object...)} method for execution.</p>
+     * <p>
+     * If the entity has any one-to-one eager fetch type relationships, it utilizes a left join for fetching.</p>
+     *
+     * @param <T>            The type of entities to retrieve.
+     * @param entityClass    The class of the entity.
+     * @param whereCondition The WHERE condition for the query.
+     * @param bindValues     The optional bind values for the WHERE condition.
+     * @return A list of entities matching the specified WHERE condition.
+     */
     @Override
     public <T> List<T> findByWhere(Class<T> entityClass, String whereCondition, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -199,6 +234,20 @@ public class EntityDao implements Dao {
         return findByQuery(entityClass, query, bindValues);
     }
 
+    /**
+     * Retrieves a list of entities of type {@code T} based on the specified field and optional bind values.
+     * <p>
+     * This method constructs a SELECT query using the provided entity class, field, and optional bind values,
+     * and delegates to {@link #findByQuery(Class, String, Object...)} method for execution.</p>
+     * <p>
+     * If the entity has any one-to-one eager fetch type relationships, it utilizes a left join for fetching.</p>
+     *
+     * @param <T>         The type of entities to retrieve.
+     * @param entityClass The class of the entity.
+     * @param field       The field for the join operation.
+     * @param bindValues  The optional bind values for the join operation.
+     * @return A list of entities matching the specified join table field.
+     */
     @Override
     public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -207,8 +256,8 @@ public class EntityDao implements Dao {
         var tableName = table(entityClass);
         var fieldIdName = columnIdName(entityClass);
         var query = sqlBuilder.selectWithJoin(tableName, fieldIdName, field);
-        
-        EntityMetadata entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
+
+        var entityMetadata = BibernateContextHolder.getBibernateEntityMetadata().get(entityClass);
         if (hasAnyOneToOneEagerFetchType(entityMetadata)) {
             return findAllByWhereJoin(entityClass, query, bindValues);
         }
@@ -222,6 +271,15 @@ public class EntityDao implements Dao {
         return entities;
     }
 
+    /**
+     * Retrieves a list of entities of type {@code T} using a left join for fetching,
+     * based on the specified entity class and optional bind values.
+     *
+     * @param <T>         The type of entities to retrieve.
+     * @param entityClass The class of the entity.
+     * @param bindValues  The optional bind values for the left join operation.
+     * @return A list of entities matching the specified left join operation.
+     */
     @Override
     public <T> List<T> findByWhereJoin(Class<T> entityClass,
                                        Object... bindValues) {
@@ -229,7 +287,7 @@ public class EntityDao implements Dao {
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        String query = createLeftJoinQuery(entityClass);
+        var query = createLeftJoinQuery(entityClass);
 
         addToExecutedQueries(query);
         var items = new ArrayList<T>();
@@ -258,14 +316,24 @@ public class EntityDao implements Dao {
         return items;
     }
 
+    /**
+     * Retrieves a list of entities of type {@code T} using a left join for fetching,
+     * based on the specified entity class, query, and optional bind values.
+     *
+     * @param <T>         The type of entities to retrieve.
+     * @param entityClass The class of the entity.
+     * @param query       The query for the left join operation.
+     * @param bindValues  The optional bind values for the left join operation.
+     * @return A list of entities matching the specified left join operation.
+     */
     @Override
     public <T> List<T> findAllByWhereJoin(Class<T> entityClass, String query, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
 
         var dataSource = bibernateDatabaseSettings.getDataSource();
 
-        String leftJoinQuery = createLeftJoinQuery(entityClass);
-        String mergedQuery = sqlBuilder.mergeQueries(leftJoinQuery, query);
+        var leftJoinQuery = createLeftJoinQuery(entityClass);
+        var mergedQuery = sqlBuilder.mergeQueries(leftJoinQuery, query);
 
         addToExecutedQueries(mergedQuery);
         var items = new ArrayList<T>();
@@ -294,26 +362,17 @@ public class EntityDao implements Dao {
         return items;
     }
 
-    private <T> String createLeftJoinQuery(Class<T> entityClass) {
-        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
-        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
-
-        var tableName = searchedEntityMetadata.getTableName();
-        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
-                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
-                .map(EntityColumnDetails::getColumn)
-                .map(ColumnMetadata::getName)
-                .findFirst()
-                .orElseThrow(() -> new BibernateGeneralException("Not specified entity Id"));
-
-        var whereConditionId = tableName.concat(".").concat(columnIdName);
-        var joinInfos = searchedEntityMetadata.joinInfos(
-                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
-        );
-
-        return sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
-    }
-
+    /**
+     * Retrieves a list of entities of type {@code T} based on the provided SQL query and optional bind values.
+     * <p>
+     * This method prepares a SQL query, executes it, and maps the result set to entities of type {@code T}.</p>
+     *
+     * @param <T>          The type of entities to retrieve.
+     * @param entityClass  The class of the entity.
+     * @param query        The SQL query to execute.
+     * @param bindValues   The optional bind values for the query.
+     * @return A list of entities based on the specified SQL query.
+     */
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object... bindValues) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -346,6 +405,13 @@ public class EntityDao implements Dao {
         return items;
     }
 
+    /**
+     * Executes a SQL query and retrieves an integer result.
+     *
+     * @param query      The SQL query to execute.
+     * @param bindValues The bind values for the query.
+     * @return The integer result obtained from the executed SQL query.
+     */
     @Override
     public int find(String query, Object[] bindValues) {
         var dataSource = bibernateDatabaseSettings.getDataSource();
@@ -374,6 +440,16 @@ public class EntityDao implements Dao {
         return 0;
     }
 
+    /**
+     * Updates an entity of type {@code T} in the database based on the provided differences.
+     * <p>
+     * This method prepares and executes an SQL update query and handles version checking if a version column is present.</p>
+     *
+     * @param <T>        The type of entity to update.
+     * @param entityClass The class of the entity.
+     * @param entity     The entity to update.
+     * @param diff       The list of differences between the current and original entity state.
+     */
     @Override
     public <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -421,6 +497,17 @@ public class EntityDao implements Dao {
         }
     }
 
+    /**
+     * Saves an entity of type {@code T} in the database.
+     * <p>
+     * This method sets the version value if null, saves the entity using the identity,
+     * generates sql query for insert using different id generators.</p>
+     *
+     * @param <T>        The type of entity to save.
+     * @param entityClass The class of the entity.
+     * @param entity     The entity to save.
+     * @return The saved entity.
+     */
     @Override
     public <T> T save(Class<T> entityClass, T entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -433,6 +520,16 @@ public class EntityDao implements Dao {
         return entityClass.cast(entity);
     }
 
+    /**
+     * Saves a collection of entities of type {@code T} in the database.
+     * <p>
+     * This method sets the version value if null, saves the collection using the identity,
+     * generates sql query for insert using different id generators.</p>
+     *
+     * @param <T>        The type of entities to save.
+     * @param entityClass The class of the entities.
+     * @param entities    The collection of entities to save.
+     */
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -444,6 +541,13 @@ public class EntityDao implements Dao {
         log.trace(SAVE_ALL, entityClass.getSimpleName());
     }
 
+    /**
+     * Deletes an entity of type {@code T} by its primary key.
+     *
+     * @param <T>         The type of entity to delete.
+     * @param entityClass  The class of the entity.
+     * @param primaryKey   The primary key of the entity to delete.
+     */
     @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
@@ -451,11 +555,27 @@ public class EntityDao implements Dao {
         deleteByColumnValue(entityClass, columnIdName(entityClass), primaryKey, false);
     }
 
+    /**
+     * Deletes entities of type {@code T} based on a specified column value.
+     *
+     * @param <T>        The type of entities to delete.
+     * @param entityClass The class of the entities.
+     * @param columnName  The name of the column to use for deletion.
+     * @param value       The value of the column to match for deletion.
+     * @return A list of deleted entities.
+     */
     @Override
     public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value) {
         return deleteByColumnValue(entityClass, columnName, value, true);
     }
 
+    /**
+     * Deletes entities of type {@code T} by their primary keys.
+     *
+     * @param <T>          The type of entities to delete.
+     * @param entityClass  The class of the entities.
+     * @param primaryKeys  The collection of primary keys for entities to delete.
+     */
     @Override
     public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -494,6 +614,13 @@ public class EntityDao implements Dao {
         }
     }
 
+    /**
+     * Deletes an entity of type {@code T} by providing the entity instance.
+     *
+     * @param <T>     The type of entity to delete.
+     * @param entityClass The class of the entity.
+     * @param entity  The entity instance to delete.
+     */
     @Override
     public <T> void delete(Class<T> entityClass, Object entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -548,6 +675,16 @@ public class EntityDao implements Dao {
         }
     }
 
+    /**
+     * Deletes all entities of type {@code T} from the database based on the provided collection of entities.
+     * <p>
+     * This method takes a collection of entities, determines their primary keys and version values (if applicable),
+     * and executes batch delete queries to remove the entities from the database.</p>
+     *
+     * @param <T>        The type of entities to delete.
+     * @param entityClass The class of the entities.
+     * @param entities    The collection of entities to delete.
+     */
     @Override
     public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -590,11 +727,22 @@ public class EntityDao implements Dao {
         }
     }
 
+    /**
+     * Starts a new transaction and put it into ThreadLocal. If transaction is already in ThreadLocal
+     * will be kept the same.
+     *
+     * @throws SQLException If an SQL exception occurs while starting the transaction.
+     */
     @Override
     public void startTransaction() throws SQLException {
         getTransaction().start();
     }
 
+    /**
+     * Commits the current transaction.
+     *
+     * @throws SQLException If an SQL exception occurs while committing the transaction.
+     */
     @Override
     public void commitTransaction() throws SQLException {
         var transaction = TransactionHolder.getTransaction();
@@ -604,6 +752,11 @@ public class EntityDao implements Dao {
         }
     }
 
+    /**
+     * Rolls back the current transaction.
+     *
+     * @throws SQLException If an SQL exception occurs while rolling back the transaction.
+     */
     @Override
     public void rollbackTransaction() throws SQLException {
         var transaction = TransactionHolder.getTransaction();
@@ -611,6 +764,26 @@ public class EntityDao implements Dao {
             transaction.rollback();
             TransactionHolder.removeTransaction();
         }
+    }
+
+    private <T> String createLeftJoinQuery(Class<T> entityClass) {
+        var bibernateEntityMetadata = BibernateContextHolder.getBibernateEntityMetadata();
+        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
+
+        var tableName = searchedEntityMetadata.getTableName();
+        var columnIdName = searchedEntityMetadata.getEntityColumns().stream()
+                .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
+                .map(EntityColumnDetails::getColumn)
+                .map(ColumnMetadata::getName)
+                .findFirst()
+                .orElseThrow(() -> new BibernateGeneralException(NOT_SPECIFIED_ENTITY_ID));
+
+        var whereConditionId = tableName.concat(DOT).concat(columnIdName);
+        var joinInfos = searchedEntityMetadata.joinInfos(
+                entityClass, searchedEntityMetadata.getEntityColumns(), bibernateEntityMetadata, new HashSet<>()
+        );
+
+        return sqlBuilder.selectByWithJoin(tableName, whereConditionId, joinInfos, JoinType.LEFT);
     }
 
     private <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object value,
@@ -762,8 +935,8 @@ public class EntityDao implements Dao {
                     if (isUpdateTimestamp(field)) {
                         statement.setObject(parameterIndex++, OffsetDateTime.now());
                     } else {
-                    var fieldValue = getValueFromObject(entity, field);
-                    statement.setObject(parameterIndex++, fieldValue);
+                        var fieldValue = getValueFromObject(entity, field);
+                        statement.setObject(parameterIndex++, fieldValue);
                     }
                 }
             }
