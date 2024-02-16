@@ -1,5 +1,9 @@
 package io.github.blyznytsiaorg.bibernate;
 
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.setBibernateEntityMetadata;
+import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.setReflection;
+import static java.util.Objects.requireNonNull;
+
 import io.github.blyznytsiaorg.bibernate.cache.RedisConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateConfiguration;
 import io.github.blyznytsiaorg.bibernate.config.BibernateDatabaseSettings;
@@ -8,15 +12,9 @@ import io.github.blyznytsiaorg.bibernate.config.FlywayConfiguration;
 import io.github.blyznytsiaorg.bibernate.dao.SimpleRepositoryInvocationHandler;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadata;
 import io.github.blyznytsiaorg.bibernate.entity.metadata.EntityMetadataCollector;
-import io.github.blyznytsiaorg.bibernate.transaction.TransactionalDatasource;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
 import java.util.Map;
-
-import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.setBibernateEntityMetadata;
-import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.setReflection;
-import static java.util.Objects.requireNonNull;
 
 /**
  * The Persistent class provides methods for configuring and creating Bibernate entity managers, stateless sessions, and enabling Flyway migrations and Redis caching.
@@ -46,8 +44,7 @@ public class Persistent {
     public static Persistent withDefaultConfiguration(String entitiesPackageName) {
         var bibernateConfiguration = new BibernateConfiguration();
         var internalBibernateSettings = bibernateConfiguration.load();
-        var configFileName = bibernateConfiguration.getConfigFileName();
-        return new Persistent(entitiesPackageName, internalBibernateSettings, configFileName);
+        return new Persistent(entitiesPackageName, internalBibernateSettings);
     }
 
     /**
@@ -55,27 +52,23 @@ public class Persistent {
      *
      * @param entitiesPackageName       the package name where entities are located
      * @param externalBibernateSettings the external Bibernate settings
-     * @param configFileName            the configuration file name
      * @return                          a Persistent instance with external configuration
      */
     public static Persistent withExternalConfiguration(String entitiesPackageName,
-                                                Map<String, String> externalBibernateSettings, String configFileName) {
-        return new Persistent(entitiesPackageName, externalBibernateSettings, configFileName);
+                                                Map<String, String> externalBibernateSettings) {
+        return new Persistent(entitiesPackageName, externalBibernateSettings);
     }
 
     /**
-     * Constructs a Persistent instance with external configuration and a custom data source.
+     * Constructs a Persistent instance with external configuration.
      *
      * @param entitiesPackageName       the package name where entities are located
-     * @param externalBibernateSettings the external Bibernate settings
      * @param configFileName            the configuration file name
-     * @param dataSource                the custom data source
      * @return                          a Persistent instance with external configuration and a custom data source
      */
-    public static Persistent withExternalConfigurationAndDataSource(
-            String entitiesPackageName, Map<String, String> externalBibernateSettings,
-            String configFileName, TransactionalDatasource dataSource) {
-        return new Persistent(entitiesPackageName, externalBibernateSettings, configFileName, dataSource);
+    public static Persistent withExternalConfiguration(String entitiesPackageName,
+                                                       String configFileName) {
+        return new Persistent(entitiesPackageName, configFileName);
     }
 
     /**
@@ -84,13 +77,12 @@ public class Persistent {
      * @param externalBibernateSettings the external Bibernate settings
      * @param entitiesPackageName       the package name where entities are located
      */
-    public Persistent(String entitiesPackageName, Map<String, String> externalBibernateSettings, String configFileName) {
+    public Persistent(String entitiesPackageName, Map<String, String> externalBibernateSettings) {
         requireNonNull(entitiesPackageName, "EntitiesPackageName should not be null");
         requireNonNull(externalBibernateSettings, "externalBibernateSettings should not be null");
-        requireNonNull(configFileName, "configFileName should not be null");
 
         this.entitiesPackageName = entitiesPackageName;
-        this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings, configFileName);
+        this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings);
         setReflection(Persistent.class.getPackageName());
 
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
@@ -104,22 +96,22 @@ public class Persistent {
     }
 
     /**
-     * Constructs a Persistent instance with external Bibernate settings, the entities package name, and a custom data source.
+     * Constructs a Persistent instance with external Bibernate settings and the entities package name
+     * and a custom config file.
      *
      * @param entitiesPackageName       the package name where entities are located
-     * @param externalBibernateSettings the external Bibernate settings
      * @param configFileName            the configuration file name
-     * @param dataSource                the custom data source
      * @throws NullPointerException if any of the arguments is null
      */
-    public Persistent(String entitiesPackageName, Map<String, String> externalBibernateSettings,
-                      String configFileName, TransactionalDatasource dataSource) {
+    public Persistent(String entitiesPackageName,
+                      String configFileName) {
         requireNonNull(entitiesPackageName, "EntitiesPackageName should not be null");
-        requireNonNull(externalBibernateSettings, "externalBibernateSettings should not be null");
         requireNonNull(configFileName, "configFileName should not be null");
 
         this.entitiesPackageName = entitiesPackageName;
-        this.bibernateDatabaseSettings = new BibernateDatabaseSettings(externalBibernateSettings, configFileName, dataSource);
+        var bibernateConfiguration = new BibernateConfiguration(configFileName);
+        var bibernateSettings = bibernateConfiguration.load();
+        this.bibernateDatabaseSettings = new BibernateDatabaseSettings(bibernateSettings);
         setReflection(Persistent.class.getPackageName());
 
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
@@ -174,6 +166,9 @@ public class Persistent {
      * @return a new instance of {@link StatelessSession}
      */
     public StatelessSession createStatelessSession() {
-        return new StatelessSession(bibernateDatabaseSettings);
+        var bibernateConfiguration = new BibernateConfiguration();
+        var internalBibernateSettings = bibernateConfiguration.load();
+        var databaseSettings = new BibernateDatabaseSettings(internalBibernateSettings);
+        return new StatelessSession(databaseSettings);
     }
 }

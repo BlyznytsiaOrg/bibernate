@@ -32,7 +32,6 @@ public class BibernateDatabaseSettings {
     private static final String SECOND_LEVEL_CACHE_POST = "bibernate.secondLevelCache.port";
     private static final String BB2DDL_AUTO = "bibernate.2ddl.auto";
     public static final String BIBERNATE_APPLICATION_PROPERTIES = "application.properties";
-
     private static final String DEFAULT_BOOLEAN_FALSE_VALUE = "false";
     private static final String DEFAULT_REDIS_HOST = "localhost";
     private static final String DEFAULT_REDIS_PORT = "6379";
@@ -43,9 +42,7 @@ public class BibernateDatabaseSettings {
     private static final String DEFAULT_DB_CONNECTION_URL = "jdbc:postgresql://localhost:5432/db";
     private static final String DEFAULT_DB_USERNAME = "user";
     private static final String DEFAULT_DB_PASSWORD = "password";
-
     private final Map<String, String> bibernateSettingsProperties;
-    private final String bibernateFileName;
     private final TransactionalDatasource dataSource;
     private RedisConfiguration redisConfiguration;
 
@@ -53,30 +50,10 @@ public class BibernateDatabaseSettings {
      * Constructs a new BibernateDatabaseSettings instance with the specified Bibernate settings properties and file name.
      *
      * @param bibernateSettingsProperties the Bibernate settings properties loaded from a configuration file
-     * @param bibernateFileName           the name of the configuration file
      */
-    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
-                                     String bibernateFileName) {
+    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties) {
         this.bibernateSettingsProperties = bibernateSettingsProperties;
-        this.bibernateFileName = bibernateFileName;
         this.dataSource = createDataSource();
-        checkDatabaseSettings();
-    }
-
-    /**
-     * Constructs a new BibernateDatabaseSettings instance with the specified Bibernate settings properties,
-     * file name, and data source.
-     *
-     * @param bibernateSettingsProperties the Bibernate settings properties loaded from a configuration file
-     * @param bibernateFileName           the name of the configuration file
-     * @param dataSource                  the data source to be used
-     */
-    public BibernateDatabaseSettings(Map<String, String> bibernateSettingsProperties,
-                                     String bibernateFileName,
-                                     TransactionalDatasource dataSource) {
-        this.bibernateSettingsProperties = bibernateSettingsProperties;
-        this.bibernateFileName = bibernateFileName;
-        this.dataSource = dataSource;
         checkDatabaseSettings();
     }
 
