@@ -21,23 +21,56 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.QUERY;
 
 /**
+ * Implementation of the insert generation without ID generation in Bibernate.
+ * <p>
+ * This generator is responsible for handling entities with their own IDs already set.
+ *
+ * <p>This generator is suitable for entities where the IDs are provided, and no generation is needed.
+ * The generator operates by inserting entities into the database without attempting to generate IDs during the process.</p>
+ *
+ * <p>This class is designed to be used when dealing with entities that have their own unique identifiers specified,
+ * and there is no need for the database to generate new IDs during the insertion process.</p>
+ *
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
 @Slf4j
 public class NoneIdGenerator extends AbstractGenerator implements Generator {
 
+    /**
+     * Constructs an NoneIdGenerator with the specified Bibernate database settings
+     * and a list to store executed queries.
+     *
+     * @param bibernateDatabaseSettings The database settings for Bibernate.
+     * @param executedQueries           The list to store executed queries.
+     */
     public NoneIdGenerator(
             BibernateDatabaseSettings bibernateDatabaseSettings,
             List<String> executedQueries) {
         super(bibernateDatabaseSettings, executedQueries);
     }
 
+    /**
+     * Returns NONE GenerationType for further understanding of what type
+     * of generator we are dealing with
+     *
+     */
     @Override
     public GenerationType type() {
         return NONE;
     }
 
+    /**
+     * Handles the generation of insert query using id from the entity.
+     * This method constructs the INSERT query, prepares the statement, populates it with entity values,
+     * and executes the batch for improved performance. It also logs executed queries and handles many-to-many join tables.</p>
+     *
+     * @param entityClass The class of the entities being handled.
+     * @param entities    The collection of entities for which primary keys are generated.
+     * @param dataSource  The data source for obtaining a database connection.
+     * @param <T>         The type of entities in the collection.
+     */
     @Override
     public <T> void handle(Class<T> entityClass, Collection<T> entities, DataSource dataSource) {
         var tableName = table(entityClass);
