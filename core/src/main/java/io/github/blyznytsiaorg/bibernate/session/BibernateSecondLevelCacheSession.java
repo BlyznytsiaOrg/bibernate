@@ -18,6 +18,8 @@ import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isIm
 /**
  * Implementation of the {@link BibernateSession} interface that provides second-level caching functionality
  * for immutable entities fetched from the database.
+ * It utilizes a distributed set for caching entities and extends the capabilities of the underlying
+ * {@link BibernateSession}.
  *
  * @author Blyzhnytsia Team
  * @since 1.0
@@ -147,6 +149,15 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
         return Optional.empty();
     }
 
+    /**
+     * Retrieves entities based on the provided query and bind values.
+     *
+     * @param entityClass The class of the entity
+     * @param query       The query to execute
+     * @param bindValues  The bind values for parameters in the query
+     * @param <T>         The type of the entity
+     * @return A list of entities matching the provided query and bind values
+     */
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
         return bibernateSession.findByQuery(entityClass, query, bindValues);
@@ -157,6 +168,7 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      *
      * @param entityClass The class of the entity
      * @param entity      The entity to update
+     * @param <T>         The type of the entity
      */
     @Override
     public <T> void update(Class<T> entityClass, Object entity) {
@@ -192,45 +204,91 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
      * Flushes changes to the underlying database.
      * This method synchronizes the state of the Bibernate session with the database.
      * Any changes that have been queued for insertion, update, or deletion are executed immediately.
+     * @param entityClass The class of the entity
+     * @param entity      The entity to save
+     * @param <T>         The type of the entity
      */
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
         bibernateSession.saveAll(entityClass, entity);
     }
 
+    /**
+     * Flushes changes to the underlying database.
+     * This method synchronizes the state of the Bibernate session with the database.
+     * Any changes that have been queued for insertion, update, or deletion are executed immediately.
+     */
     @Override
     public void flush() {
         bibernateSession.flush();
     }
 
+    /**
+     * Deletes an entity by its primary key.
+     *
+     * @param entityClass The class of the entity
+     * @param primaryKey  The primary key of the entity to delete
+     * @param <T>         The type of the entity
+     */
     @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         bibernateSession.deleteById(entityClass, primaryKey);
     }
 
+    /**
+     * Deletes entities by their primary keys.
+     *
+     * @param entityClass The class of the entity
+     * @param primaryKeys The collection of primary keys for entities to delete
+     * @param <T>         The type of the entity
+     */
     @Override
     public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         bibernateSession.deleteAllById(entityClass, primaryKeys);
     }
 
+    /**
+     * Deletes entities based on the value of a specific column.
+     *
+     * @param entityClass The class of the entity
+     * @param columnName  The name of the column
+     * @param columnValue The value of the column
+     * @param <T>         The type of the entity
+     * @return A list of entities matching the criteria
+     */
     @Override
     public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         return bibernateSession.deleteByColumnValue(entityClass, columnName, columnValue);
     }
 
+    /**
+     * Deletes the given entity from the database.
+     *
+     * @param entityClass The class of the entity
+     * @param entity      The entity to delete
+     * @param <T>         The type of the entity
+     */
     @Override
     public <T> void delete(Class<T> entityClass, T entity) {
         bibernateSession.delete(entityClass, entity);
     }
 
     /**
-     * Closes the session and releases any resources associated with it.
+     * Deletes all entities in the provided collection from the database.
+     *
+     * @param entityClass The class of the entities
+     * @param entities    The collection of entities to delete
+     * @param <T>         The type of the entities
      */
     @Override
     public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
         bibernateSession.deleteAll(entityClass, entities);
     }
 
+    /**
+     * Closes the session and releases any resources associated with it.
+     *
+     */
     @Override
     public void close() {
         bibernateSession.close();
@@ -246,16 +304,31 @@ public class BibernateSecondLevelCacheSession implements BibernateSession {
         return bibernateSession.getDao();
     }
 
+    /**
+     * Starts a new transaction for the session using underlying Bibernate session.
+     *
+     * @throws SQLException If an SQL exception occurs while starting the transaction
+     */
     @Override
     public void startTransaction() throws SQLException {
         bibernateSession.startTransaction();
     }
 
+    /**
+     * Commits the current transaction for the session using underlying Bibernate session.
+     *
+     * @throws SQLException If an SQL exception occurs while committing the transaction
+     */
     @Override
     public void commitTransaction() throws SQLException {
         bibernateSession.commitTransaction();
     }
 
+    /**
+     * Rolls back the current transaction for the session using underlying Bibernate session.
+     *
+     * @throws SQLException If an SQL exception occurs while rolling back the transaction
+     */
     @Override
     public void rollbackTransaction() throws SQLException {
         bibernateSession.rollbackTransaction();
