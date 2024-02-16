@@ -26,7 +26,7 @@ public class DDLUtils {
      * @return a unique foreign key constraint name
      */
     public static String getForeignKeyConstraintName() {
-        String randomNumber = RandomStringUtils.random(12, 0, 35, true, true, setOfChars);
+        var randomNumber = RandomStringUtils.random(12, 0, 35, true, true, setOfChars);
         return FK_PATTERN.formatted(randomNumber);
     }
 
@@ -36,7 +36,7 @@ public class DDLUtils {
      * @return a unique index name
      */
     public static String getIndexName() {
-        String randomNumber = RandomStringUtils.random(12, 0, 35, true, true, setOfChars);
+        var randomNumber = RandomStringUtils.random(12, 0, 35, true, true, setOfChars);
         return INDEX_PATTERN.formatted(randomNumber);
     }
 }

@@ -132,6 +132,7 @@ we have developed our own simplified version of the Persistence API.
  - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
  - [Versioning](features/Versioning.md): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
+ - [Batch Processing](features/BatchProcessing.md): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
 
 **Annotations:**
  - [@Column](features/annotations/Column.md)

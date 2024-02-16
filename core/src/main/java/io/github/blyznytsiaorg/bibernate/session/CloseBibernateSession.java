@@ -18,6 +18,12 @@ import java.util.Optional;
 import static io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils.isImmutable;
 
 /**
+ * The 'CloseBibernateSession' class extends the BibernateSession and implements session management
+ * by delegating calls to an underlying BibernateSession while maintaining the ability to close the session.
+ * It introduces a closed flag to track the session state and prevent calls to the database after closure.
+ * Additionally, it logs warnings when attempting to modify immutable entities and handles the session's
+ * lifecycle methods such as starting, committing, and rolling back transactions.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -40,11 +46,13 @@ public class CloseBibernateSession implements BibernateSession {
 
     @Override
     public <T> List<T> findAll(Class<T> entityClass) {
+        verifySessionNotClosed();
         return bibernateSession.findAll(entityClass);
     }
 
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
+        verifySessionNotClosed();
         return bibernateSession.findAllById(entityClass, primaryKeys);
     }
 
@@ -103,6 +111,7 @@ public class CloseBibernateSession implements BibernateSession {
 
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entity) {
+        verifySessionNotClosed();
         bibernateSession.saveAll(entityClass, entity);
     }
 
@@ -158,6 +167,7 @@ public class CloseBibernateSession implements BibernateSession {
 
     @Override
     public void flush() {
+        verifySessionNotClosed();
         bibernateSession.flush();
     }
 
@@ -175,16 +185,19 @@ public class CloseBibernateSession implements BibernateSession {
 
     @Override
     public void startTransaction() throws SQLException {
+        verifySessionNotClosed();
         bibernateSession.startTransaction();
     }
 
     @Override
     public void commitTransaction() throws SQLException {
+        verifySessionNotClosed();
         bibernateSession.commitTransaction();
     }
 
     @Override
     public void rollbackTransaction() throws SQLException {
+        verifySessionNotClosed();
         bibernateSession.rollbackTransaction();
     }
 

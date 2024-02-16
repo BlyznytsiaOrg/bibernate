@@ -75,7 +75,7 @@ public class TypeConverter {
      */
     public static boolean isInternalJavaTypeSuitableForCreation(EntityColumnDetails entityColumn,
                                                                 String tableName) {
-        Class<?> fieldType = entityColumn.getFieldType();
+        var fieldType = entityColumn.getFieldType();
         if (typeToDatabaseTypeString.get(fieldType) == null) {
             throw new UnsupportedDataTypeException("Error creating SQL commands on DDL creation "
                     + "for table '%s' [column type '%s' is not supported]"

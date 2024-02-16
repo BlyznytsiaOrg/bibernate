@@ -34,7 +34,7 @@ public class EntityPersistent {
      * @throws ReflectiveOperationException If an error occurs during reflection-based operations.
      */
     public <T> T toEntity(ResultSet resultSet, Class<T> entityClass) throws ReflectiveOperationException {
-        T entity = entityClass.getDeclaredConstructor().newInstance();
+        var entity = entityClass.getDeclaredConstructor().newInstance();
 
         for (var field : entityClass.getDeclaredFields()) {
             typeResolverFactory.getTypeFieldResolvers().stream()
@@ -51,7 +51,7 @@ public class EntityPersistent {
                                         Field field,
                                         T entity,
                                         ResultSet resultSet) {
-        Object value = valueType.prepareValueForFieldInjection(field, resultSet, entity, this);
+        var value = valueType.prepareValueForFieldInjection(field, resultSet, entity, this);
         Optional.ofNullable(value).ifPresent(v -> setField(field, entity, v));
     }
 

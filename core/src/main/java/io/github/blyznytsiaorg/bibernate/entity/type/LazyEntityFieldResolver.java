@@ -1,8 +1,8 @@
 package io.github.blyznytsiaorg.bibernate.entity.type;
 
 import io.github.blyznytsiaorg.bibernate.annotation.ManyToOne;
-import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.annotation.OneToOne;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
 import io.github.blyznytsiaorg.bibernate.entity.EntityPersistent;
 import io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder;
 import io.github.blyznytsiaorg.bibernate.utils.ProxyUtils;
@@ -60,7 +60,7 @@ public class LazyEntityFieldResolver implements TypeFieldResolver {
 
         var joinColumnName = joinColumnName(field);
         var joinColumnValue = getValueFromResultSetByColumn(resultSet, joinColumnName);
-        Class<?> type = field.getType();
+        var type = field.getType();
         Supplier<?> entitySupplier = () -> session.findById(type, joinColumnValue).orElse(null);
 
         return ProxyUtils.createProxy(type, entitySupplier);

@@ -53,7 +53,7 @@ public class CollectionFieldResolver implements TypeFieldResolver {
                                                 ResultSet resultSet,
                                                 Object entity,
                                                 EntityPersistent entityPersistent) {
-        Object entityId = getEntityId(field, resultSet);
+        var entityId = getEntityId(field, resultSet);
 
         if (Objects.isNull(entityId)) {
             throw new BibernateGeneralException("Unable to get [%s] from entity [%s] without having the entity id."

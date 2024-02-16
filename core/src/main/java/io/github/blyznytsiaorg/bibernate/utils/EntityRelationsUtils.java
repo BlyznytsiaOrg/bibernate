@@ -108,12 +108,12 @@ public class EntityRelationsUtils {
      */
     public static Field owningFieldByInverse(Field field) {
         try {
-            String mappedBy = Optional.ofNullable(field.getAnnotation(ManyToMany.class))
+            var mappedBy = Optional.ofNullable(field.getAnnotation(ManyToMany.class))
                     .map(ManyToMany::mappedBy)
                     .filter(Predicate.not(String::isEmpty))
                     .orElseThrow(() -> new BibernateGeneralException(UNABLE_TO_GET_OWNING_FIELD_FROM_INVERSE_FIELD
                             .formatted(field.getName())));
-            Class<?> type = getCollectionGenericType(field);
+            var type = getCollectionGenericType(field);
 
             return type.getDeclaredField(mappedBy);
         } catch (NoSuchFieldException e) {
@@ -132,7 +132,7 @@ public class EntityRelationsUtils {
           .map(OneToMany::mappedBy)
           .filter(Predicate.not(String::isEmpty))
           .flatMap(mappedByName -> {
-              Class<?> collectionGenericType = getCollectionGenericType(field);
+              var collectionGenericType = getCollectionGenericType(field);
 
               return getMappedByColumnName(mappedByName, collectionGenericType);
           })
@@ -179,8 +179,8 @@ public class EntityRelationsUtils {
      */
     public static List<CascadeType> getCascadeTypesFromAnnotation(Annotation annotation) {
         try {
-            Method cascadeMethod = annotation.annotationType().getDeclaredMethod("cascade");
-            CascadeType[] cascadeTypes = (CascadeType[]) cascadeMethod.invoke(annotation);
+            var cascadeMethod = annotation.annotationType().getDeclaredMethod("cascade");
+            var cascadeTypes = (CascadeType[]) cascadeMethod.invoke(annotation);
             return Arrays.asList(cascadeTypes);
         } catch (Exception e) {
             return Collections.emptyList();
