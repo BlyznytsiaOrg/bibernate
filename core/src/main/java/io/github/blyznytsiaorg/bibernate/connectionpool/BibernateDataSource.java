@@ -3,6 +3,7 @@ package io.github.blyznytsiaorg.bibernate.connectionpool;
 import io.github.blyznytsiaorg.bibernate.exception.BibernateDataSourceException;
 import io.github.blyznytsiaorg.bibernate.exception.ConnectionPoolException;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,9 +17,8 @@ import javax.sql.DataSource;
  * BibernateDataSource is an implementation of the DataSource interface that provides connections to a database.
  * It manages a connection pool and allows clients to obtain connections and release them when done.
  *
- * @see BibernateDataSource
- *
  * @author Blyzhnytsia Team
+ * @see BibernateDataSource
  * @since 1.0
  */
 @Slf4j
@@ -41,7 +41,7 @@ public class BibernateDataSource implements DataSource {
         for (int i = 0; i < config.getMaximumPoolSize(); i++) {
             Connection connection;
             try {
-                Connection realConnection = DriverManager.getConnection(config.getJdbcUrl(),
+                var realConnection = DriverManager.getConnection(config.getJdbcUrl(),
                         config.getUsername(), config.getPassword());
                 connection = new ProxyConnection(realConnection, connectionPool);
             } catch (SQLException e) {
@@ -58,9 +58,9 @@ public class BibernateDataSource implements DataSource {
      *
      * @throws ConnectionPoolException if an error occurs while closing connections
      */
-    public void close(){
+    public void close() {
         while (!connectionPool.isEmpty()) {
-            ProxyConnection connection = (ProxyConnection)connectionPool.poll();
+            var connection = (ProxyConnection) connectionPool.poll();
             try {
                 connection.release();
                 log.trace("Closing database connection ...");

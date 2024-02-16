@@ -51,30 +51,41 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
+    /**
+     * Builds a SELECT statement with joins and a WHERE condition based on the provided parameters.
+     *
+     * @param tableName      the main table name for the SELECT statement
+     * @param whereCondition the WHERE condition for filtering results
+     * @param joinInfos      the information about joins to be performed
+     * @param joinType       the type of join to be used (e.g., INNER JOIN, LEFT JOIN)
+     * @return the dynamically generated SQL SELECT statement
+     * @throws BibernateGeneralException if there is an issue retrieving column or join information
+     */
     public String selectByWithJoin(String tableName,
                                    String whereCondition,
                                    Set<JoinInfo> joinInfos,
                                    JoinType joinType) {
-        List<JoinClause> joinClauses = joinInfos.stream()
+        var joinClauses = joinInfos.stream()
                 .map(joinInfo -> {
+                    var parentEntityMetadata = joinInfo.getParentEntityMetadata();
+                    var childEntityMetadata = joinInfo.getChildEntityMetadata();
 
-                    EntityMetadata parentEntityMetadata = joinInfo.getParentEntityMetadata();
-                    EntityMetadata childEntityMetadata = joinInfo.getChildEntityMetadata();
-
-                    String parentIdColumnName = parentEntityMetadata.getEntityColumns().stream()
+                    var parentIdColumnName = parentEntityMetadata.getEntityColumns().stream()
                             .filter(entityColumnDetails -> Objects.nonNull(entityColumnDetails.getId()))
                             .map(EntityColumnDetails::getColumn)
                             .map(ColumnMetadata::getName)
                             .findFirst()
                             .orElseThrow(() -> new BibernateGeneralException("Cannot retrieve id column name from parent class"));
-                    String childJoinColumnName = childEntityMetadata.getEntityColumns().stream()
+
+                    var childJoinColumnName = childEntityMetadata.getEntityColumns().stream()
                             .filter(entityColumnDetails -> entityColumnDetails.getFieldType().equals(parentEntityMetadata.getType()))
                             .map(EntityColumnDetails::getJoinColumn)
                             .filter(Objects::nonNull)
                             .map(JoinColumnMetadata::getName)
                             .findFirst()
                             .orElseThrow(() -> new BibernateGeneralException("Cannot retrieve join column name from child class"));
-                    String onCondition = getOnCondition(parentEntityMetadata.getTableName(),
+
+                    var onCondition = getOnCondition(parentEntityMetadata.getTableName(),
                             parentIdColumnName,
                             childEntityMetadata.getTableName(),
                             childJoinColumnName);
@@ -89,12 +100,26 @@ public class SqlBuilder {
                 .buildSelectStatement();
     }
 
+    /**
+     * Builds a simple SELECT statement for retrieving all records from a given table.
+     *
+     * @param tableName the name of the table to SELECT from
+     * @return the dynamically generated SQL SELECT statement
+     */
     public String selectAll(String tableName) {
         return from(tableName)
                 .buildSelectStatement();
     }
 
-    public String selectAllById(String tableName, String filedName, Integer countOfParameters) {
+    /**
+     * Builds a SELECT statement with a WHERE condition based on a specific field and parameter count.
+     *
+     * @param tableName         the main table name for the SELECT statement
+     * @param filedName         the field name for the WHERE condition
+     * @param countOfParameters the count of parameters for the WHERE condition
+     * @return the dynamically generated SQL SELECT statement
+     */
+    public String selectAllByFieldName(String tableName, String filedName, Integer countOfParameters) {
         return from(tableName)
                 .whereCondition(fieldInParametersCondition(filedName, countOfParameters))
                 .buildSelectStatement();

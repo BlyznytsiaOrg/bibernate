@@ -31,7 +31,7 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     private final BibernateSession bibernateSession;
-    private final ActionQueue defaultActionQueue;
+    private final ActionQueue actionQueue;
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
 
@@ -132,7 +132,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public <T> T save(Class<T> entityClass, T entity) {
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(InsertEntityAction.<T>builder()
+                () -> actionQueue.addEntityAction(InsertEntityAction.<T>builder()
                         .bibernateSession(bibernateSession)
                         .entityClass(entityClass)
                         .entities(new HashSet<>(Set.of(entity)))
@@ -148,7 +148,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         CollectionUtils.requireNonEmpty(entities, COLLECTION_MUST_BE_NOT_EMPTY);
 
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(InsertAllEntityAction.<T>builder()
+                () -> actionQueue.addEntityAction(InsertAllEntityAction.<T>builder()
                         .bibernateSession(bibernateSession)
                         .entityClass(entityClass)
                         .entities(new LinkedHashSet<>(entities))
@@ -165,7 +165,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         var entityKey = prepareEntityKey(entityClass, finalPrimaryKey);
 
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(
+                () -> actionQueue.addEntityAction(
                         prepareDeleteByIdEntityAction(entityClass, finalPrimaryKey, entityKey)),
                 () -> {
                     bibernateSession.deleteById(entityClass, finalPrimaryKey);
@@ -186,7 +186,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 .collect(Collectors.toList());
 
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(DeleteAllByIdEntityAction.<T>builder()
+                () -> actionQueue.addEntityAction(DeleteAllByIdEntityAction.<T>builder()
                         .bibernateSession(bibernateSession)
                         .entityClass(entityClass)
                         .primaryKeys(finalPrimaryKeys)
@@ -227,7 +227,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         var entityKey = prepareEntityKey(entityClass, primaryKey);
 
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(
+                () -> actionQueue.addEntityAction(
                         DeleteEntityAction.<T>builder()
                                 .bibernateSession(bibernateSession)
                                 .entityClass(entityClass)
@@ -253,7 +253,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 .toList();
 
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(DeleteAllEntityAction.<T>builder()
+                () -> actionQueue.addEntityAction(DeleteAllEntityAction.<T>builder()
                         .bibernateSession(bibernateSession)
                         .entityClass(entityClass)
                         .entities(entities)
@@ -268,7 +268,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     @Override
     public void flush() {
         performDirtyChecking();
-        defaultActionQueue.executeEntityAction();
+        actionQueue.executeEntityAction();
         bibernateSession.flush();
     }
 
@@ -276,7 +276,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     public void close() {
         log.trace(SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING);
         performDirtyChecking();
-        defaultActionQueue.executeEntityAction();
+        actionQueue.executeEntityAction();
         resetBibernateSession();
 
         clearCacheAndSnapshots();
@@ -322,7 +322,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     private <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         addToQueueOrExecute(
-                () -> defaultActionQueue.addEntityAction(UpdateEntityAction.builder()
+                () -> actionQueue.addEntityAction(UpdateEntityAction.builder()
                         .bibernateSession(bibernateSession)
                         .entityClass(entityClass)
                         .entities(new HashSet<>(Set.of(entity)))
@@ -434,7 +434,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     }
 
     private void addToQueueOrExecute(Runnable addToQueue, Runnable execute) {
-        if (defaultActionQueue.isNotExecuted()) {
+        if (actionQueue.isNotExecuted()) {
             addToQueue.run();
         } else {
             execute.run();

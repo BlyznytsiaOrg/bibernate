@@ -14,6 +14,7 @@ import java.util.Map;
  *  @since 1.0
  */
 public class FlywayConfiguration {
+
     /**
      * The name of the migration folder.
      */
@@ -35,8 +36,7 @@ public class FlywayConfiguration {
      */
     private void initFlyway(BibernateDatabaseSettings bibernateDatabaseSettings) {
         if (bibernateDatabaseSettings.isFlywayEnabled()) {
-            Map<String, String> bibernateSettingsProperties
-                    = bibernateDatabaseSettings.getBibernateSettingsProperties();
+            var bibernateSettingsProperties = bibernateDatabaseSettings.getBibernateSettingsProperties();
 
             var flyway = Flyway.configure()
                     .dataSource(bibernateSettingsProperties.get(DB_URL),

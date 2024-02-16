@@ -103,19 +103,19 @@ public class DDLQueryCreator {
 
         bibernateEntityMetadata.forEach((entityClass, entityMetadata) -> {
 
-            Set<String> foreignNameConstraints = new HashSet<>();
+            var foreignNameConstraints = new HashSet<String>();
             createIndexQuery(entityMetadata);
-            String tableName = entityMetadata.getTableName();
+            var tableName = entityMetadata.getTableName();
 
             ddlMetadata.computeIfAbsent(OperationOrder.DROP_TABLE, k -> new ArrayList<>())
                     .add(DROP_TABLE.formatted(tableName));
 
-            StringBuilder builder = new StringBuilder(CREATE_TABLE.formatted(tableName));
-            List<String> columnNameAndDatabaseTypeList = new ArrayList<>();
+            var builder = new StringBuilder(CREATE_TABLE.formatted(tableName));
+            var columnNameAndDatabaseTypeList = new ArrayList<String>();
 
             entityMetadata.getEntityColumns().forEach(entityColumnDetails -> {
 
-                DDLFieldMetadataHolder fieldMetadataHolder = DDLFieldMetadataHolder.builder()
+                var fieldMetadataHolder = DDLFieldMetadataHolder.builder()
                         .tableName(tableName)
                         .columnDetails(entityColumnDetails)
                         .columnNameAndDatabaseTypeList(columnNameAndDatabaseTypeList)
@@ -129,9 +129,9 @@ public class DDLQueryCreator {
                         .findFirst()
                         .ifPresent(fieldResolver -> fieldResolver.handleField(fieldMetadataHolder, ddlMetadata));
             });
-            String collectNameDatabaseTypes = String.join(DELIMITER, columnNameAndDatabaseTypeList);
+            var collectNameDatabaseTypes = String.join(DELIMITER, columnNameAndDatabaseTypeList);
             builder.append(collectNameDatabaseTypes);
-            String query = builder.append(BRACKET).toString();
+            var query = builder.append(BRACKET).toString();
             createTables.add(query);
         });
     }
@@ -142,14 +142,14 @@ public class DDLQueryCreator {
      * @param entityMetadata the metadata of the entity for which indexes are created
      */
     private void createIndexQuery(EntityMetadata entityMetadata) {
-        String tableName = entityMetadata.getTableName();
-        List<IndexMetadata> indexMetadatas = entityMetadata.getIndexMetadatas();
-        Map<String, List<String>> indexMetadataMap = new HashMap<>();
+        var tableName = entityMetadata.getTableName();
+        var indexMetadatas = entityMetadata.getIndexMetadatas();
+        var indexMetadataMap = new HashMap<String, List<String>>();
         indexMetadatas.forEach(indexMetadata -> {
-            String indexName = Optional.ofNullable(indexMetadata.getName())
+            var indexName = Optional.ofNullable(indexMetadata.getName())
                     .filter(name -> !name.isEmpty())
                     .orElseGet(DDLUtils::getIndexName);
-            String columnList = getSnakeString(indexMetadata.getColumnList());
+            var columnList = getSnakeString(indexMetadata.getColumnList());
 
             checkIfColumnForIndexExists(entityMetadata, columnList);
 
@@ -157,8 +157,8 @@ public class DDLQueryCreator {
         });
 
         indexMetadataMap.forEach((idxName, list) -> {
-            String columns = String.join(DELIMITER, list);
-            String createIndexQuery = CREATE_INDEX.formatted(idxName, tableName, columns);
+            var columns = String.join(DELIMITER, list);
+            var createIndexQuery = CREATE_INDEX.formatted(idxName, tableName, columns);
             ddlMetadata.computeIfAbsent(OperationOrder.CREATE_INDEX, k -> new ArrayList<>())
                     .add(createIndexQuery);
         });
@@ -176,7 +176,7 @@ public class DDLQueryCreator {
      * @throws MappingException if the specified column does not exist in the entity metadata
      */
     private void checkIfColumnForIndexExists(EntityMetadata entityMetadata, String columnList) {
-        boolean hasSuchColumn = entityMetadata.getEntityColumns().stream()
+        var hasSuchColumn = entityMetadata.getEntityColumns().stream()
                 .anyMatch(entityColumnDetails -> entityColumnDetails
                         .getColumn()
                         .getName()
