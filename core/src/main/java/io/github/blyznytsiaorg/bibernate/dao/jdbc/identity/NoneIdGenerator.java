@@ -64,7 +64,7 @@ public class NoneIdGenerator extends AbstractGenerator implements Generator {
     /**
      * Handles the generation of insert query using id from the entity.
      * This method constructs the INSERT query, prepares the statement, populates it with entity values,
-     * and executes the batch for improved performance. It also logs executed queries and handles many-to-many join tables.</p>
+     * and executes the batch for improved performance. It also logs executed queries and handles many-to-many join tables.
      *
      * @param entityClass The class of the entities being handled.
      * @param entities    The collection of entities for which primary keys are generated.
