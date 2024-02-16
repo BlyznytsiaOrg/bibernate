@@ -133,7 +133,7 @@ public interface BibernateSession extends Closeable {
 
     /**
      * Flushes changes to the underlying database.
-     * This method synchronizes the state of the Hibernate session with the database.
+     * This method synchronizes the state of the Bibernate session with the database.
      * Any changes that have been queued for insertion, update, or deletion are executed immediately.
      */
     default void flush() {

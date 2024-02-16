@@ -12,7 +12,7 @@ import static io.github.blyznytsiaorg.bibernate.session.BibernateContextHolder.g
 
 /**
  * Implementation of {@link SimpleRepositoryMethodHandler} for handling methods annotated with {@link Query}.
- * This handler executes HQL (Hibernate Query Language) queries.
+ * This handler executes BQL (Bibernate Query Language) queries.
  *
  *  @author Blyzhnytsia Team
  *  @since 1.0

@@ -124,7 +124,7 @@ public class UpdateQueryBuilder extends QueryBuilder {
             throw new IllegalStateException("No fields specified for update.");
         }
 
-        StringBuilder queryBuilder = new StringBuilder(UPDATE);
+        var queryBuilder = new StringBuilder(UPDATE);
         queryBuilder.append(tableName).append(SET);
 
         for (int i = 0; i < updateFields.size(); i++) {

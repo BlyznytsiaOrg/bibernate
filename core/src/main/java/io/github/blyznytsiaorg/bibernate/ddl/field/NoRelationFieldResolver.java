@@ -62,9 +62,9 @@ public class NoRelationFieldResolver implements FieldResolver {
      */
     @Override
     public void handleField(DDLFieldMetadataHolder metadataHolder, Map<Integer, List<String>> ddlMetadata) {
-        EntityColumnDetails columnDetails = metadataHolder.getColumnDetails();
-        String tableName = metadataHolder.getTableName();
-        List<String> columnNameAndDatabaseTypeList = metadataHolder.getColumnNameAndDatabaseTypeList();
+        var columnDetails = metadataHolder.getColumnDetails();
+        var tableName = metadataHolder.getTableName();
+        var columnNameAndDatabaseTypeList = metadataHolder.getColumnNameAndDatabaseTypeList();
         isInternalJavaTypeSuitableForCreation(columnDetails, tableName);
         String nameDatabaseType;
         if (columnDetails.getId() != null) {
@@ -87,20 +87,20 @@ public class NoRelationFieldResolver implements FieldResolver {
      */
     private String processIdField(String tableName, EntityColumnDetails entityColumn,
                                   Map<Integer, List<String>> ddlMetadata) {
-        Class<?> fieldType = entityColumn.getFieldType();
-        String columnName = entityColumn.getColumn().getName();
-        String databaseType = entityColumn.getColumn().getDatabaseType();
+        var fieldType = entityColumn.getFieldType();
+        var columnName = entityColumn.getColumn().getName();
+        var databaseType = entityColumn.getColumn().getDatabaseType();
         String nameDatabaseType;
         if (entityColumn.getGeneratedValue() == null) {
             nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
         } else {
-            GeneratedValueMetadata generatedValue = entityColumn.getGeneratedValue();
+            var generatedValue = entityColumn.getGeneratedValue();
             if (generatedValue.getStrategy().equals(IDENTITY)) {
-                String postgresIdType = getPostgresIdTypeForGeneration(fieldType, tableName);
+                var postgresIdType = getPostgresIdTypeForGeneration(fieldType, tableName);
                 nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, postgresIdType);
             } else if (generatedValue.getStrategy().equals(SEQUENCE)) {
                 checkIdTypeForGeneration(entityColumn.getFieldType(), tableName);
-                SequenceGeneratorMetadata sequenceGenerator = entityColumn.getSequenceGenerator();
+                var sequenceGenerator = entityColumn.getSequenceGenerator();
                 generateSequence(generatedValue, sequenceGenerator, tableName, columnName, ddlMetadata);
                 nameDatabaseType = PRIMARY_KEY_FIELD_CREATION.formatted(columnName, databaseType);
             } else {
@@ -122,7 +122,7 @@ public class NoRelationFieldResolver implements FieldResolver {
     private void generateSequence(GeneratedValueMetadata generatedValue,
                                   SequenceGeneratorMetadata sequenceGenerator,
                                   String tableName, String columnName, Map<Integer, List<String>> ddlMetadata) {
-        String sequenceNameDefault = DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName);
+        var sequenceNameDefault = DEFAULT_SEQ_TEMPLATE.formatted(tableName, columnName);
         if (sequenceGenerator == null || generatedValue.getGenerator() == null
                 || generatedValue.getGenerator().isEmpty()) {
             checkForDuplicateNameSequence(ddlMetadata, sequenceNameDefault);
@@ -134,8 +134,8 @@ public class NoRelationFieldResolver implements FieldResolver {
                     k -> new ArrayList<>()).add(SEQUENCE_CREATION.formatted(sequenceNameDefault,
                     DEFAULT_INITIAL_VALUE, DEFAULT_ALLOCATION_SIZE));
         } else {
-            String generatorName = generatedValue.getGenerator();
-            String sequenceGeneratorName = sequenceGenerator.getName();
+            var generatorName = generatedValue.getGenerator();
+            var sequenceGeneratorName = sequenceGenerator.getName();
             if (!generatorName.equals(sequenceGeneratorName)) {
                 ddlMetadata.computeIfAbsent(OperationOrder.DROP_SEQUENCE,
                         k -> new ArrayList<>()).add(SEQUENCE_DROP.formatted(sequenceNameDefault));
@@ -144,7 +144,7 @@ public class NoRelationFieldResolver implements FieldResolver {
                         k -> new ArrayList<>()).add(SEQUENCE_CREATION.formatted(sequenceNameDefault,
                         DEFAULT_INITIAL_VALUE, DEFAULT_ALLOCATION_SIZE));
             } else {
-                String sequenceName = sequenceGenerator.getSequenceName();
+                var sequenceName = sequenceGenerator.getSequenceName();
                 int initialValue = sequenceGenerator.getInitialValue();
                 int allocationSize = sequenceGenerator.getAllocationSize();
 
@@ -180,8 +180,8 @@ public class NoRelationFieldResolver implements FieldResolver {
      * @return The formatted string representing the timestamp column.
      */
     private String processTimestamp(EntityColumnDetails entityColumn) {
-        String name = entityColumn.getColumn().getName();
-        String databaseType = entityColumn.getColumn().getDatabaseType();
+        var name = entityColumn.getColumn().getName();
+        var databaseType = entityColumn.getColumn().getDatabaseType();
         String nameData;
         if (entityColumn.getColumn().isTimeZone()) {
             if (isCreationTimestamp(entityColumn)) {
@@ -216,13 +216,13 @@ public class NoRelationFieldResolver implements FieldResolver {
      * @return The formatted string representing the column name and its database type.
      */
     private String getColumnNameDatabaseType(EntityColumnDetails entityColumn) {
-        ColumnMetadata column = entityColumn.getColumn();
-        String columnName = column.getName();
-        String databaseType = column.getDatabaseType();
-        StringBuilder nameDatabaseType = new StringBuilder(NAME_DATA_PATTERN.formatted(columnName, databaseType));
+        var column = entityColumn.getColumn();
+        var columnName = column.getName();
+        var databaseType = column.getDatabaseType();
+        var nameDatabaseType = new StringBuilder(NAME_DATA_PATTERN.formatted(columnName, databaseType));
 
-        boolean isUnique = column.isUnique();
-        boolean isNullable = column.isNullable();
+        var isUnique = column.isUnique();
+        var isNullable = column.isNullable();
         if (!isNullable) {
             nameDatabaseType.append(NOT_NULL);
         }

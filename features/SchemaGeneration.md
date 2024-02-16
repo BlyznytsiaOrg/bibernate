@@ -1,13 +1,13 @@
 # Schema Generation
 
-To use auto Schema Generation the property `hibernate.2ddl.auto=create` should be set in the `bibernate.properties` file located in `resource` folder. Schema Generation support PostgresSQL database.
+To use auto Schema Generation the property `bibernate.2ddl.auto=create` should be set in the `bibernate.properties` file located in `resource` folder. Schema Generation support PostgresSQL database.
 ```properties
 db.url=
 db.user=
 db.password=
-hibernate.2ddl.auto=create
+bibernate.2ddl.auto=create
 ```
-**NOTE:** If both the `hibernate.flyway.enabled=true` and `hibernate.2ddl.auto=create` properties are set in the `bibernate.properties` file, then a `BibernateGeneralException` will be thrown, indicating that only one of these properties can be set.
+**NOTE:** If both the `bibernate.flyway.enabled=true` and `bibernate.2ddl.auto=create` properties are set in the `bibernate.properties` file, then a `BibernateGeneralException` will be thrown, indicating that only one of these properties can be set.
 
 
 

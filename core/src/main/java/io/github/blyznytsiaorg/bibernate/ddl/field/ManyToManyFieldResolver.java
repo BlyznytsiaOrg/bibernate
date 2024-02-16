@@ -35,7 +35,7 @@ public class ManyToManyFieldResolver implements FieldResolver {
      */
     @Override
     public boolean hasFieldToResolve(EntityColumnDetails entityColumnDetails) {
-        Field field = entityColumnDetails.getField();
+        var field = entityColumnDetails.getField();
         return field.isAnnotationPresent(ManyToMany.class);
     }
 
@@ -47,27 +47,27 @@ public class ManyToManyFieldResolver implements FieldResolver {
      */
     @Override
     public void handleField(DDLFieldMetadataHolder metadataHolder, Map<Integer, List<String>> ddlMetadata) {
-        EntityColumnDetails entityColumnDetails = metadataHolder.getColumnDetails();
-        Map<Class<?>, EntityMetadata> bibernateEntityMetadata = metadataHolder.getBibernateEntityMetadata();
-        Set<String> foreignNameConstraints = metadataHolder.getForeignNameConstraints();
-        String tableName = metadataHolder.getTableName();
+        var entityColumnDetails = metadataHolder.getColumnDetails();
+        var bibernateEntityMetadata = metadataHolder.getBibernateEntityMetadata();
+        var foreignNameConstraints = metadataHolder.getForeignNameConstraints();
+        var tableName = metadataHolder.getTableName();
 
-        ManyToManyMetadata manyToMany = entityColumnDetails.getManyToMany();
+        var manyToMany = entityColumnDetails.getManyToMany();
         if (manyToMany.getMappedBy().isEmpty()) {
-            JoinTableMetadata joinTable = entityColumnDetails.getJoinTable();
-            String joinTableName = joinTable.getName();
-            String joinColumnName = joinTable.getJoinColumn();
-            String inverseJoinColumnName = joinTable.getInverseJoinColumn();
-            String databaseTypeJoinColumn = joinTable.getJoinColumnDatabaseType();
-            String databaseTypeInverseJoinColumn = joinTable.getInverseJoinColumnDatabaseType();
-            String foreignKey = joinTable.getForeignKey();
-            String inverseForeignKey = joinTable.getInverseForeignKey();
+            var joinTable = entityColumnDetails.getJoinTable();
+            var joinTableName = joinTable.getName();
+            var joinColumnName = joinTable.getJoinColumn();
+            var inverseJoinColumnName = joinTable.getInverseJoinColumn();
+            var databaseTypeJoinColumn = joinTable.getJoinColumnDatabaseType();
+            var databaseTypeInverseJoinColumn = joinTable.getInverseJoinColumnDatabaseType();
+            var foreignKey = joinTable.getForeignKey();
+            var inverseForeignKey = joinTable.getInverseForeignKey();
 
-            String dropManyToManyTable = DROP_TABLE.formatted(joinTableName);
+            var dropManyToManyTable = DROP_TABLE.formatted(joinTableName);
             ddlMetadata.computeIfAbsent(OperationOrder.DROP_TABLE, k -> new ArrayList<>()).add(dropManyToManyTable);
 
-            Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(entityColumnDetails.getField());
-            EntityMetadata relationEntityMetadata = bibernateEntityMetadata.get(collectionGenericType);
+            var collectionGenericType = EntityReflectionUtils.getCollectionGenericType(entityColumnDetails.getField());
+            var relationEntityMetadata = bibernateEntityMetadata.get(collectionGenericType);
 
 
             var query = CREATE_TABLE_MANY_TO_MANY
@@ -104,11 +104,11 @@ public class ManyToManyFieldResolver implements FieldResolver {
                                                        Map<Integer, List<String>> ddlMetadata) {
         checkForeignKeyName(foreignKey, foreignNameConstraints);
 
-        String joinColumnDropConstraint = DROP_CONSTRAINT.formatted(joinTableName, foreignKey);
+        var joinColumnDropConstraint = DROP_CONSTRAINT.formatted(joinTableName, foreignKey);
         ddlMetadata.computeIfAbsent(OperationOrder.DROP_CONSTRAINT, k -> new ArrayList<>())
                 .add(joinColumnDropConstraint);
 
-        String joinColumnCreateConstraint = CREATE_CONSTRAINT.formatted(joinTableName, foreignKey,
+        var joinColumnCreateConstraint = CREATE_CONSTRAINT.formatted(joinTableName, foreignKey,
                 joinColumnName, tableName);
         ddlMetadata.computeIfAbsent(OperationOrder.CREATE_CONSTRAINT, k -> new ArrayList<>())
                 .add(joinColumnCreateConstraint);
@@ -131,13 +131,13 @@ public class ManyToManyFieldResolver implements FieldResolver {
                                                               String inverseJoinColumnName,
                                                               Map<Integer, List<String>> ddlMetadata) {
         checkForeignKeyName(foreignKey, foreignNameConstraints);
-        String inverseJoinColumnDropConstraint = DROP_CONSTRAINT.formatted(joinTableName,
+        var inverseJoinColumnDropConstraint = DROP_CONSTRAINT.formatted(joinTableName,
                 foreignKey);
         ddlMetadata.computeIfAbsent(OperationOrder.DROP_CONSTRAINT, k -> new ArrayList<>())
                 .add(inverseJoinColumnDropConstraint);
 
-        String inverseJoinTableName = relationEntityMetadata.getTableName();
-        String inverseJoinColumnCreateConstraint = CREATE_CONSTRAINT.formatted(joinTableName,
+        var inverseJoinTableName = relationEntityMetadata.getTableName();
+        var inverseJoinColumnCreateConstraint = CREATE_CONSTRAINT.formatted(joinTableName,
                 foreignKey, inverseJoinColumnName, inverseJoinTableName);
         ddlMetadata.computeIfAbsent(OperationOrder.CREATE_CONSTRAINT, k -> new ArrayList<>())
                 .add(inverseJoinColumnCreateConstraint);

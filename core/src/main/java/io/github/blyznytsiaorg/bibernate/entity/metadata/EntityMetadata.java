@@ -106,7 +106,6 @@ public class EntityMetadata {
         for (var entityColumn : currentEntityColumns) {
             var oneToOneMetadata = entityColumn.getOneToOne();
             if (oneToOneMetadata != null &&
-                    // EMPTY.equals(oneToOneMetadata.getMappedBy())
                 (EMPTY.equals(oneToOneMetadata.getMappedBy()) || oneToOneMetadata.getFetchType() == FetchType.EAGER)
             ) {
                 var build = JoinInfo.builder()
@@ -125,46 +124,5 @@ public class EntityMetadata {
             }
         }
         return joinInfos;
-    }
-
-    /**
-     * Retrieves the set of entities related to the specified entity class through OneToOne relationships.
-     *
-     * @param entityClass            The entity class to retrieve related entities for.
-     * @param currentEntityColumns   The list of entity columns to analyze.
-     * @param bibernateEntityMetadata  The metadata map containing entity metadata.
-     * @param trackVisitedClasses   The set of visited classes to avoid cyclic dependencies.
-     * @return The set of entities related to the specified entity class through OneToOne relationships.
-     */
-    public Set<EntityMetadata> getOneToOneEntities(Class<?> entityClass, List<EntityColumnDetails> currentEntityColumns,
-                                                   Map<Class<?>, EntityMetadata> bibernateEntityMetadata, Set<Class<?>> trackVisitedClasses) {
-
-        Set<EntityMetadata> oneToOneEntities = new HashSet<>();
-        var searchedEntityMetadata = bibernateEntityMetadata.get(entityClass);
-        oneToOneEntities.add(searchedEntityMetadata);
-
-        trackVisitedClasses.add(entityClass);
-
-        for (var entityColumnDetails : currentEntityColumns) {
-            var oneToOneMetadata = entityColumnDetails.getOneToOne();
-            if (Objects.nonNull(oneToOneMetadata) &&
-                 // EMPTY.equals(oneToOneMetadata.getMappedBy())
-                (EMPTY.equals(oneToOneMetadata.getMappedBy()) || oneToOneMetadata.getFetchType() == FetchType.EAGER)
-            ) {
-                var currentEntityClass = entityColumnDetails.getFieldType();
-                var entityMetadata = bibernateEntityMetadata.get(currentEntityClass);
-                oneToOneEntities.add(entityMetadata);
-
-                if (!trackVisitedClasses.contains(currentEntityClass)) {
-                    oneToOneEntities.addAll(
-                            getOneToOneEntities(
-                                    currentEntityClass, entityMetadata.getEntityColumns(),
-                                    bibernateEntityMetadata, trackVisitedClasses
-                            )
-                    );
-                }
-            }
-        }
-        return oneToOneEntities;
     }
 }
