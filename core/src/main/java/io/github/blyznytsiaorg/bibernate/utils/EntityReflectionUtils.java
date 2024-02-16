@@ -167,8 +167,8 @@ public class EntityReflectionUtils {
      * @return The database type.
      */
     public static String databaseTypeForInternalJavaType(Field field) {
-        Column annotation = field.getAnnotation(Column.class);
-        String columnDefinition = (annotation != null) ? annotation.columnDefinition() : "";
+        var column = field.getAnnotation(Column.class);
+        var columnDefinition = (column != null) ? column.columnDefinition() : "";
         return columnDefinition.isEmpty() ? convertToDatabaseType(field.getType()) : columnDefinition;
     }
 
@@ -179,7 +179,7 @@ public class EntityReflectionUtils {
      * @return True if the field represents a time zone, false otherwise.
      */
     public static boolean isTimeZone(Field field) {
-        Class<?> fieldType = field.getType();
+        var fieldType = field.getType();
         return fieldType.equals(OffsetTime.class) || fieldType.equals(OffsetDateTime.class);
     }
 
@@ -190,7 +190,7 @@ public class EntityReflectionUtils {
      * @return True if the field represents a timestamp, false otherwise.
      */
     public static boolean isTimestamp(Field field) {
-        Class<?> fieldType = field.getType();
+        var fieldType = field.getType();
         return fieldType.equals(OffsetTime.class) || fieldType.equals(OffsetDateTime.class)
                 || fieldType.equals(LocalDate.class) || fieldType.equals(LocalTime.class)
                 || fieldType.equals(LocalDateTime.class);
@@ -219,7 +219,7 @@ public class EntityReflectionUtils {
      */
     public static String joinTableNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
                 return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                         .map(JoinTable::name)
@@ -239,9 +239,9 @@ public class EntityReflectionUtils {
      */
     private static String getManyManyDefaultTableName(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
-            String thisEntityTableName = table(entityClass);
-            String relationEntityTableName = table(collectionGenericType);
+            var collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
+            var thisEntityTableName = table(entityClass);
+            var relationEntityTableName = table(collectionGenericType);
             return JOIN_TABLE_NAME_PATTERN.formatted(thisEntityTableName, relationEntityTableName);
         }
         return null;
@@ -257,7 +257,7 @@ public class EntityReflectionUtils {
      */
     public static String tableJoinColumnNameCorrect(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
                 return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                         .map(JoinTable::joinColumn)
@@ -275,7 +275,7 @@ public class EntityReflectionUtils {
      * @return The default join column name.
      */
     private static String defaultTableJoinColumnName(Class<?> entityClass) {
-        String columnIdName = columnIdName(entityClass);
+        var columnIdName = columnIdName(entityClass);
         return JOIN_TABLE_NAME_PATTERN.formatted(entityClass.getSimpleName().toLowerCase(), columnIdName);
     }
 
@@ -287,7 +287,7 @@ public class EntityReflectionUtils {
      */
     public static String inverseTableJoinColumnName(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
                 return Optional.ofNullable(field.getAnnotation(JoinTable.class))
                         .map(JoinTable::inverseJoinColumn)
@@ -306,8 +306,8 @@ public class EntityReflectionUtils {
      * @return The default inverse join column name.
      */
     public static String defaultInverseTableJoinColumnName(Field field) {
-        Class<?> collectionGenericType = getCollectionGenericType(field);
-        String columnIdName = columnIdName(collectionGenericType);
+        var collectionGenericType = getCollectionGenericType(field);
+        var columnIdName = columnIdName(collectionGenericType);
         return JOIN_TABLE_NAME_PATTERN.formatted(collectionGenericType.getSimpleName().toLowerCase(), columnIdName);
     }
 
@@ -320,9 +320,9 @@ public class EntityReflectionUtils {
      */
     public static String joinColumnJoinTableDatabaseType(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                Class<?> typeOfIdField = getTypeOfIdField(entityClass);
+                var typeOfIdField = getTypeOfIdField(entityClass);
                 return convertToDatabaseType(typeOfIdField);
             }
         }
@@ -337,10 +337,10 @@ public class EntityReflectionUtils {
      */
     public static String inverseJoinColumnJoinTableDatabaseType(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                Class<?> collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
-                Class<?> typeOfIdField = getTypeOfIdField(collectionGenericType);
+                var collectionGenericType = EntityReflectionUtils.getCollectionGenericType(field);
+                var typeOfIdField = getTypeOfIdField(collectionGenericType);
                 return convertToDatabaseType(typeOfIdField);
             }
         }
@@ -356,9 +356,9 @@ public class EntityReflectionUtils {
      */
     public static String foreignKeyForJoinColumn(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                Optional<String> optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                var optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
                         .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
                         .map(ForeignKey::name);
                 String foreignKeyName;
@@ -381,9 +381,9 @@ public class EntityReflectionUtils {
      */
     public static String foreignKeyForInverseJoinColumn(Field field) {
         if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             if (manyToMany.mappedBy().isEmpty()) {
-                Optional<String> optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
+                var optionalKey = Optional.ofNullable(field.getAnnotation(JoinTable.class))
                         .flatMap(annotation -> Optional.ofNullable(annotation.inverseForeignKey()))
                         .map(ForeignKey::name);
                 String foreignKeyName;
@@ -447,12 +447,12 @@ public class EntityReflectionUtils {
      * @return The database type for the join column if applicable, otherwise null.
      */
     public static String databaseTypeForJoinColumn(Field field) {
-        Class<?> fieldType = field.getType();
+        var fieldType = field.getType();
         if (field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToOne.class)) {
-            OneToOne oneToOne = field.getAnnotation(OneToOne.class);
-            ManyToOne manyToOne = field.getAnnotation(ManyToOne.class);
+            var oneToOne = field.getAnnotation(OneToOne.class);
+            var manyToOne = field.getAnnotation(ManyToOne.class);
             if (oneToOne != null && oneToOne.mappedBy().isEmpty()) {
-                Class<?> idTypeOfRelation = getTypeOfIdField(fieldType);
+                var idTypeOfRelation = getTypeOfIdField(fieldType);
                 return convertToDatabaseType(idTypeOfRelation);
             } else if (manyToOne != null) {
                 return convertToDatabaseType(getTypeOfIdField(fieldType));
@@ -654,7 +654,7 @@ public class EntityReflectionUtils {
     public static Object getValueFromObject(Object entity, Field field) {
         field.setAccessible(true);
         if (isToOneReference(field)) {
-            Object reference = field.get(entity);
+            var reference = field.get(entity);
             if(reference != null && !reference.getClass().getName().contains("$$")) {
                 return getIdValueFromField(reference);
             }
@@ -680,7 +680,7 @@ public class EntityReflectionUtils {
      */
     @SneakyThrows
     public static Object getIdValueFromField(Object reference) {
-        Field referenceIdField = getIdField(reference.getClass());
+        var referenceIdField = getIdField(reference.getClass());
         referenceIdField.setAccessible(true);
         return referenceIdField.get(reference);
     }
@@ -693,10 +693,10 @@ public class EntityReflectionUtils {
      */
     @SneakyThrows
     public static <T> void verifyIsIdHasStrategyGeneratorOrNotNullValue(T reference) {
-        Field referenceIdField = getIdField(reference.getClass());
+        var referenceIdField = getIdField(reference.getClass());
         if (!referenceIdField.isAnnotationPresent(GeneratedValue.class)) {
             referenceIdField.setAccessible(true);
-            Object idValue = referenceIdField.get(reference);
+            var idValue = referenceIdField.get(reference);
             if (Objects.isNull(idValue)) {
                 throw new BibernateValidationException(
                         ENTITY_S_SHOULD_HAVE_ID_THAT_NOT_NULL_OR_ADD_ANNOTATION_GENERATED_VALUE.formatted(reference.getClass().getSimpleName())
@@ -934,7 +934,7 @@ public class EntityReflectionUtils {
      * @return The modified entity object.
      */
     public static Object setIdField(Object entity, Object value) {
-        Field idField = getIdField(entity.getClass());
+        var idField = getIdField(entity.getClass());
         setField(idField, entity, value);
         return entity;
     }

@@ -23,6 +23,19 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.ExceptionMess
 import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 
 /**
+ * BibernateFirstLevelCacheSession is an implementation of the BibernateSession interface
+ * that introduces a first-level cache to improve the performance of entity retrieval operations.
+ * It wraps an existing BibernateSession and maintains a first-level cache along with snapshots
+ * for dirty checking. This class intercepts various session operations, manages the cache,
+ * and delegates the actual database interactions to the underlying BibernateSession.
+ * <p>
+ * The first-level cache stores entities in-memory, allowing for quick retrieval without repeated
+ * database queries. Snapshots are used for dirty checking, identifying changes in entities and
+ * triggering necessary updates to the database.
+ * <p>
+ * This class is part of the Bibernate framework and supports common CRUD operations, query
+ * executions, and transaction management.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
@@ -103,7 +116,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     @Override
     public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
-        return Optional.empty();
+        return bibernateSession.findByWhereJoin(entityClass, bindValues);
     }
 
     @Override
@@ -161,7 +174,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
         Objects.requireNonNull(primaryKey, PRIMARY_KEY_MUST_BE_NOT_NULL);
 
-        Object finalPrimaryKey = castIdToEntityId(entityClass, primaryKey);
+        var finalPrimaryKey = castIdToEntityId(entityClass, primaryKey);
         var entityKey = prepareEntityKey(entityClass, finalPrimaryKey);
 
         addToQueueOrExecute(
@@ -183,7 +196,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 .collect(Collectors.toList());
         var entityKeys = finalPrimaryKeys.stream()
                 .map(id -> prepareEntityKey(entityClass, id))
-                .collect(Collectors.toList());
+                .toList();
 
         addToQueueOrExecute(
                 () -> actionQueue.addEntityAction(DeleteAllByIdEntityAction.<T>builder()
@@ -208,7 +221,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         var entityKeys = deletedEntities.stream()
                 .map(entity -> prepareEntityKey(entityClass, getValueFromObject(entity, getIdField(entityClass))))
-                .collect(Collectors.toList());
+                .toList();
         var primaryKeys = entityKeys.stream()
                 .map(EntityKey::id)
                 .toList();
@@ -247,7 +260,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
         var entityKeys = entities.stream()
                 .map(entity -> prepareEntityKey(entityClass, getValueFromObject(entity, getIdField(entityClass))))
-                .collect(Collectors.toList());
+                .toList();
         var primaryKeys = entityKeys.stream()
                 .map(EntityKey::id)
                 .toList();
@@ -307,13 +320,13 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private List<ColumnSnapshot> buildEntitySnapshot(Object entity) {
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
-        Class<?> entityClass = entity.getClass();
-        Field[] declaredFields = entityClass.getDeclaredFields();
-        List<ColumnSnapshot> snapshot = new ArrayList<>(declaredFields.length);
+        var entityClass = entity.getClass();
+        var declaredFields = entityClass.getDeclaredFields();
+        var snapshot = new ArrayList<ColumnSnapshot>(declaredFields.length);
 
         for (var field : declaredFields) {
-            Object value = getValueFromObject(entity, field);
-            String columnName = columnName(field);
+            var value = getValueFromObject(entity, field);
+            var columnName = columnName(field);
             snapshot.add(new ColumnSnapshot(columnName, value, field.getType()));
         }
 
@@ -383,7 +396,7 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
     private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
-            boolean isEntityHasLazyField = Arrays.stream(entityFromDb.getClass().getDeclaredFields())
+            var isEntityHasLazyField = Arrays.stream(entityFromDb.getClass().getDeclaredFields())
                     .anyMatch(field -> field.isAnnotationPresent(OneToOne.class) &&
                                        field.getAnnotation(OneToOne.class).fetch() == FetchType.LAZY);
 
@@ -417,12 +430,12 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
 
     private <T> void removeCacheAndSnapshotBy(Collection<EntityKey<T>> entityKeys,
                                               Class<T> entityClass,
-                                              Collection<Object> ids) {
+                                              Collection<Object> primaryKeys) {
         if (firstLevelCache.keySet().removeAll(entityKeys)) {
-            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_FIRST_LEVEL_CACHE, entityClass, ids);
+            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_FIRST_LEVEL_CACHE, entityClass, primaryKeys);
         }
         if (snapshots.keySet().removeAll(entityKeys)) {
-            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_SNAPSHOT, entityClass, ids);
+            log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_SNAPSHOT, entityClass, primaryKeys);
         }
     }
 

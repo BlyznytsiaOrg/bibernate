@@ -50,7 +50,7 @@ public class EntityColumnDetails {
      * @return A list of cascade types associated with the entity column.
      */
     public List<CascadeType> getCascadeTypes() {
-        List<CascadeType> cascadeTypes = new ArrayList<>();
+        var cascadeTypes = new ArrayList<CascadeType>();
         addCascadeTypes(cascadeTypes, OneToOneMetadata::getCascadeTypes, oneToOne);
         addCascadeTypes(cascadeTypes, OneToManyMetadata::getCascadeTypes, oneToMany);
         addCascadeTypes(cascadeTypes, ManyToOneMetadata::getCascadeTypes, manyToOne);

@@ -91,7 +91,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
 
         var entityMetadataCollector = new EntityMetadataCollector(entitiesPackageName);
-        Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
+        var classEntityMetadataMap = entityMetadataCollector.collectMetadata();
         setBibernateEntityMetadata(classEntityMetadataMap);
 
         enableFlyway();
@@ -122,7 +122,7 @@ public class Persistent {
         bibernateDatabaseSettings.setRedisConfiguration(enabledRedisConfiguration());
 
         var entityMetadataCollector = new EntityMetadataCollector(entitiesPackageName);
-        Map<Class<?>, EntityMetadata> classEntityMetadataMap = entityMetadataCollector.collectMetadata();
+        var classEntityMetadataMap = entityMetadataCollector.collectMetadata();
         setBibernateEntityMetadata(classEntityMetadataMap);
 
         enableFlyway();

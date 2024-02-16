@@ -34,7 +34,7 @@ public class BibernateEntityManagerFactory implements EntityManagerFactory {
      */
     @Override
     public void close() {
-        TransactionalDatasource dataSource = bibernateSettings.getDataSource();
+        var dataSource = bibernateSettings.getDataSource();
         if (dataSource != null) {
             log.trace("Close dataSource...");
             dataSource.close();

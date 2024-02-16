@@ -50,31 +50,31 @@ public class OneToOneEagerFieldResolver implements TypeFieldResolver {
                                                 ResultSet resultSet,
                                                 Object entity,
                                                 EntityPersistent entityPersistent) {
-        Class<?> type = field.getType();
+        var type = field.getType();
 
         try {
             if (isBidirectional(field)) {
-                Object obj = field.getType().getDeclaredConstructor().newInstance();
-                for (Field declaredField : field.getType().getDeclaredFields()) {
+                var obj = field.getType().getDeclaredConstructor().newInstance();
+                for (var declaredField : field.getType().getDeclaredFields()) {
                     if (Objects.nonNull(declaredField.getAnnotation(OneToOne.class))
                         && (field.getAnnotation(OneToOne.class).mappedBy().equals(declaredField.getName())
                             || Objects.equals(field.getName(), declaredField.getAnnotation(OneToOne.class).mappedBy()))) {
                         setField(declaredField, obj, entity);
                     } else {
-                        Object object = resultSet.getObject(columnName(declaredField));
+                        var object = resultSet.getObject(columnName(declaredField));
                         setField(declaredField, obj, object);
                     }
                 }
 
                 return obj;
             } else {
-                Object obj = field.getType().getDeclaredConstructor().newInstance();
-                for (Field declaredField : field.getType().getDeclaredFields()) {
-                    Object object = resultSet.getObject(columnName(declaredField, type));
+                var obj = field.getType().getDeclaredConstructor().newInstance();
+                for (var declaredField : field.getType().getDeclaredFields()) {
+                    var object = resultSet.getObject(columnName(declaredField, type));
 
                     if (Objects.nonNull(declaredField.getAnnotation(OneToOne.class))) {
-                        Class<?> currentFieldType = declaredField.getType();
-                        Object oneOnOneRelation = entityPersistent.toEntity(resultSet, currentFieldType);
+                        var currentFieldType = declaredField.getType();
+                        var oneOnOneRelation = entityPersistent.toEntity(resultSet, currentFieldType);
                         setField(declaredField, obj, oneOnOneRelation);
                     } else {
                         setField(declaredField, obj, object);

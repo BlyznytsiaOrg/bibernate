@@ -29,10 +29,10 @@ public class ProxyUtils {
      */
     @SneakyThrows
     public Object createProxy(Class<?> clazz, Supplier<?> supplier) {
-        ProxyFactory proxyFactory = new ProxyFactory();
+        var proxyFactory = new ProxyFactory();
         proxyFactory.setSuperclass(clazz);
 
-        MethodHandler methodHandler = new Handler(supplier);
+        var methodHandler = new Handler(supplier);
 
         return proxyFactory.create(new Class<?>[0], new Object[0], methodHandler);
     }

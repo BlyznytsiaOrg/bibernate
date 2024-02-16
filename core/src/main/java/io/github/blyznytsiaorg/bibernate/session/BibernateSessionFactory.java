@@ -74,8 +74,8 @@ public class BibernateSessionFactory extends BibernateEntityManagerFactory {
      * @return a new EntityDao instance
      */
     private EntityDao entityDao() {
-        List<String> executedQueries = new ArrayList<>();
-        Identity identity = new PostgresIdentity(getBibernateSettings(), executedQueries);
+        var executedQueries = new ArrayList<String>();
+        var identity = new PostgresIdentity(getBibernateSettings(), executedQueries);
         return new EntityDao(new SqlBuilder(), getBibernateSettings(), identity, executedQueries);
     }
 

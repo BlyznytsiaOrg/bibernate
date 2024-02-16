@@ -36,6 +36,7 @@ import io.github.blyznytsiaorg.bibernate.utils.EntityReflectionUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
+
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,9 +54,8 @@ import java.util.Set;
  * It utilizes reflection to scan for classes annotated with @Entity and gathers metadata such as table names,
  * column details and index metadata.
  *
- * @see EntityMetadata
- *
  * @author Blyzhnytsia Team
+ * @see EntityMetadata
  * @since 1.0
  */
 @Getter
@@ -92,7 +92,7 @@ public class EntityMetadataCollector {
      * @throws EntitiesNotFoundException if no entities are found in the specified package.
      */
     public Map<Class<?>, EntityMetadata> collectMetadata() {
-        Set<Class<?>> entities = reflections.getTypesAnnotatedWith(Entity.class);
+        var entities = reflections.getTypesAnnotatedWith(Entity.class);
 
         log.trace("Found entities size {}", entities.size());
 
@@ -100,14 +100,14 @@ public class EntityMetadataCollector {
             throw new EntitiesNotFoundException(CANNOT_FIND_ANY_ENTITIES_ON_CLASSPATH_WITH_THIS_PACKAGE.formatted(packageName));
         }
 
-        for (Class<?> entityClass : entities) {
+        for (var entityClass : entities) {
 
             if (!inMemoryEntityMetadata.containsKey(entityClass)) {
                 var tableName = table(entityClass);
                 checkTableNameOnDuplicate(entityClass, tableName);
 
-                boolean immutable = isImmutable(entityClass);
-                boolean dynamicUpdate = isDynamicUpdate(entityClass);
+                var immutable = isImmutable(entityClass);
+                var dynamicUpdate = isDynamicUpdate(entityClass);
 
                 var entityMetadata = new EntityMetadata(tableName, immutable, dynamicUpdate, entityClass);
 
@@ -133,7 +133,7 @@ public class EntityMetadataCollector {
      */
     private void checkTableNameOnDuplicate(Class<?> entityClass, String tableName) {
         if (tableNames.containsKey(tableName)) {
-            Class<?> classWithSameTableName = tableNames.get(tableName);
+            var classWithSameTableName = tableNames.get(tableName);
             throw new MappingException(ERROR_MESSAGE_ON_DUPLICATE_TABLE_NAME
                     .formatted(tableName, entityClass.getSimpleName(), classWithSameTableName.getSimpleName()));
         } else {
@@ -215,14 +215,14 @@ public class EntityMetadataCollector {
     private void checkOnSufficientField(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(CreationTimestamp.class) && field.isAnnotationPresent(UpdateTimestamp.class)) {
             throw new MappingException(("In class '%s' on field '%s' can't be @CreationTimestamp "
-                    + "and @UpdateTimestamp annotations simultaneously")
+                                        + "and @UpdateTimestamp annotations simultaneously")
                     .formatted(entityClass.getSimpleName(), field.getName()));
         }
 
         if (field.isAnnotationPresent(CreationTimestamp.class) || field.isAnnotationPresent(UpdateTimestamp.class)) {
             if (!isJavaTypeSufficientForTimestamps(field)) {
                 throw new MappingException(("In class '%s' field '%s' with type '%s' is not supported "
-                        + "for @CreationTimestamp or @UpdateTimestamp annotations")
+                                            + "for @CreationTimestamp or @UpdateTimestamp annotations")
                         .formatted(entityClass.getSimpleName(), field.getName(), field.getType().getSimpleName()));
             }
         }
@@ -236,19 +236,19 @@ public class EntityMetadataCollector {
      * @return {@code true} if the field's type is one of the supported timestamp types, {@code false} otherwise.
      */
     private boolean isJavaTypeSufficientForTimestamps(Field field) {
-        Class<?> fieldType = field.getType();
+        var fieldType = field.getType();
         return fieldType.equals(LocalDate.class)
-                || fieldType.equals(OffsetTime.class) || fieldType.equals(LocalTime.class)
-                || fieldType.equals(OffsetDateTime.class) || fieldType.equals(LocalDateTime.class);
+               || fieldType.equals(OffsetTime.class) || fieldType.equals(LocalTime.class)
+               || fieldType.equals(OffsetDateTime.class) || fieldType.equals(LocalDateTime.class);
     }
 
     private SequenceGeneratorMetadata getSequenceGenerator(Field field) {
         if (isAnnotationPresent(field, SequenceGenerator.class)) {
-            SequenceGenerator annotation = field.getAnnotation(SequenceGenerator.class);
-            String generatorName = annotation.name();
-            String sequenceName = annotation.sequenceName();
-            int initialValue = annotation.initialValue();
-            int allocationSize = annotation.allocationSize();
+            var sequenceGenerator = field.getAnnotation(SequenceGenerator.class);
+            var generatorName = sequenceGenerator.name();
+            var sequenceName = sequenceGenerator.sequenceName();
+            var initialValue = sequenceGenerator.initialValue();
+            var allocationSize = sequenceGenerator.allocationSize();
             return new SequenceGeneratorMetadata
                     (generatorName, sequenceName, initialValue, allocationSize);
         }
@@ -263,9 +263,9 @@ public class EntityMetadataCollector {
      */
     private GeneratedValueMetadata getGeneratedValue(Field field) {
         if (isAnnotationPresent(field, GeneratedValue.class)) {
-            GeneratedValue annotation = field.getAnnotation(GeneratedValue.class);
-            String generatedStrategyName = annotation.strategy().name();
-            String generatorName = annotation.generator();
+            var generatedValue = field.getAnnotation(GeneratedValue.class);
+            var generatedStrategyName = generatedValue.strategy().name();
+            var generatorName = generatedValue.generator();
             return new GeneratedValueMetadata(generatedStrategyName, generatorName);
         }
         return null;
@@ -282,7 +282,7 @@ public class EntityMetadataCollector {
     private JoinTableMetadata getJoinTable(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(JoinTable.class) && (!field.isAnnotationPresent(ManyToMany.class))) {
             throw new MappingException((("No @ManyToMany annotation is set in class '%s' on field '%s' "
-                    + "annotated with @JoinTable annotation")
+                                         + "annotated with @JoinTable annotation")
                     .formatted(entityClass.getSimpleName(), field.getName())));
         }
         if (field.isAnnotationPresent(ManyToMany.class)) {
@@ -313,18 +313,18 @@ public class EntityMetadataCollector {
         if (field.isAnnotationPresent(JoinColumn.class)) {
             if (field.isAnnotationPresent(OneToMany.class)) {
                 log.warn(("It is performance-efficient to map the relationship from the child side "
-                        + "[field: '%s', @OneToMany]").formatted(field.getName()));
+                          + "[field: '%s', @OneToMany]").formatted(field.getName()));
             } else if (!field.isAnnotationPresent(OneToOne.class) && !field.isAnnotationPresent(ManyToOne.class)) {
                 throw new MappingException(("No @OneToOne or @ManyToOne annotation on field '%s' "
-                        + "annotated with @JoinColumn").formatted(field.getName()));
+                                            + "annotated with @JoinColumn").formatted(field.getName()));
             }
         }
 
         if (field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(ManyToOne.class)) {
 
-            String joinColumnName = joinColumnName(field);
-            String databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
-            Optional<String> key = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
+            var joinColumnName = joinColumnName(field);
+            var databaseTypeForJoinColumn = databaseTypeForJoinColumn(field);
+            var key = Optional.ofNullable(field.getAnnotation(JoinColumn.class))
                     .flatMap(annotation -> Optional.ofNullable(annotation.foreignKey()))
                     .map(ForeignKey::name);
             String foreignKeyName;
@@ -346,17 +346,17 @@ public class EntityMetadataCollector {
     /**
      * Retrieves the metadata for a ManyToMany association defined by the given field in the specified entity class.
      *
-     * @param field The field representing the ManyToMany association.
+     * @param field       The field representing the ManyToMany association.
      * @param entityClass The entity class containing the ManyToMany association.
      * @return ManyToManyMetadata if the field is annotated with ManyToMany, null otherwise.
      */
     private ManyToManyMetadata getManyToMany(Field field, Class<?> entityClass) {
         if (isAnnotationPresent(field, ManyToMany.class)) {
-            ManyToMany annotation = field.getAnnotation(ManyToMany.class);
+            var manyToMany = field.getAnnotation(ManyToMany.class);
             return ManyToManyMetadata
                     .builder()
-                    .mappedBy(getMappedByForManyToMany(field, entityClass, annotation))
-                    .cascadeTypes(getCascadeTypesFromAnnotation(annotation))
+                    .mappedBy(getMappedByForManyToMany(field, entityClass, manyToMany))
+                    .cascadeTypes(getCascadeTypesFromAnnotation(manyToMany))
                     .build();
         }
         return null;
@@ -365,20 +365,20 @@ public class EntityMetadataCollector {
     /**
      * Retrieves the mappedBy attribute value for a ManyToMany association defined by the given field in the specified entity class.
      *
-     * @param field The field representing the ManyToMany association.
+     * @param field       The field representing the ManyToMany association.
      * @param entityClass The entity class containing the ManyToMany association.
-     * @param manyToMany The ManyToMany annotation instance.
+     * @param manyToMany  The ManyToMany annotation instance.
      * @return The mappedBy attribute value if not empty and valid, otherwise an empty string.
      * @throws MappingException If the mappedBy attribute is not found in the target entity.
      */
     private String getMappedByForManyToMany(Field field, Class<?> entityClass,
                                             ManyToMany manyToMany) {
         if (!manyToMany.mappedBy().isEmpty()) {
-            String entityClassSimpleName = entityClass.getSimpleName();
-            Class<?> collectionGenericType = getCollectionGenericType(field);
+            var entityClassSimpleName = entityClass.getSimpleName();
+            var collectionGenericType = getCollectionGenericType(field);
             if (collectionGenericType.isAnnotationPresent(Entity.class)) {
-                Field[] declaredFields = collectionGenericType.getDeclaredFields();
-                boolean ifFieldHasParentEntity = Arrays.stream(declaredFields)
+                var declaredFields = collectionGenericType.getDeclaredFields();
+                var ifFieldHasParentEntity = Arrays.stream(declaredFields)
                         .filter(f -> f.isAnnotationPresent(ManyToMany.class))
                         .map(EntityReflectionUtils::getCollectionGenericType)
                         .anyMatch(f -> f.equals(entityClass));
@@ -386,7 +386,7 @@ public class EntityMetadataCollector {
                     return manyToMany.mappedBy();
                 }
                 throw new MappingException(("Can't find in entity '%s' @ManyToMany annotation "
-                        + "as entity '%s' is annotated with @ManyToMany mappedBy='%s'")
+                                            + "as entity '%s' is annotated with @ManyToMany mappedBy='%s'")
                         .formatted(collectionGenericType.getSimpleName(), entityClassSimpleName,
                                 manyToMany.mappedBy()));
             }
@@ -417,10 +417,10 @@ public class EntityMetadataCollector {
      */
     private OneToManyMetadata getOneToMany(Field field) {
         if (isAnnotationPresent(field, OneToMany.class)) {
-            OneToMany oneToManyAnnotation = field.getAnnotation(OneToMany.class);
+            var oneToMany = field.getAnnotation(OneToMany.class);
             return OneToManyMetadata.builder()
-                    .mappedByJoinColumnName(oneToManyAnnotation.mappedBy())
-                    .cascadeTypes(getCascadeTypesFromAnnotation(oneToManyAnnotation))
+                    .mappedByJoinColumnName(oneToMany.mappedBy())
+                    .cascadeTypes(getCascadeTypesFromAnnotation(oneToMany))
                     .build();
         }
         return null;
@@ -428,7 +428,7 @@ public class EntityMetadataCollector {
 
     private OneToOneMetadata getOneToOne(Field field, Class<?> entityClass) {
         if (isAnnotationPresent(field, OneToOne.class)) {
-            OneToOne oneToOne = field.getAnnotation(OneToOne.class);
+            var oneToOne = field.getAnnotation(OneToOne.class);
             Class<?> parentClass;
             Class<?> childClass;
 
@@ -460,18 +460,18 @@ public class EntityMetadataCollector {
      */
     private String getMappedByForOneToOne(Field field, Class<?> entityClass, OneToOne oneToOne) {
         if (!oneToOne.mappedBy().isEmpty()) {
-            String entityClassSimpleName = entityClass.getSimpleName();
-            Class<?> fieldType = field.getType();
+            var entityClassSimpleName = entityClass.getSimpleName();
+            var fieldType = field.getType();
             if (fieldType.isAnnotationPresent(Entity.class)) {
-                Field[] declaredFields = fieldType.getDeclaredFields();
-                boolean ifFieldHasParentEntity = Arrays.stream(declaredFields)
+                var declaredFields = fieldType.getDeclaredFields();
+                var ifFieldHasParentEntity = Arrays.stream(declaredFields)
                         .filter(f -> f.isAnnotationPresent(OneToOne.class))
                         .anyMatch(f -> f.getType().equals(entityClass));
                 if (ifFieldHasParentEntity) {
                     return oneToOne.mappedBy();
                 }
                 throw new MappingException(("Can't find in entity '%s' @OneToOne annotation "
-                        + "as entity '%s' is annotated with @OneToOne mappedBy='%s'")
+                                            + "as entity '%s' is annotated with @OneToOne mappedBy='%s'")
                         .formatted(fieldType.getSimpleName(), entityClassSimpleName,
                                 oneToOne.mappedBy()));
             }
@@ -499,8 +499,8 @@ public class EntityMetadataCollector {
      * @return Metadata related to the column.
      */
     private ColumnMetadata getColumn(Field field, Class<?> entityClass) {
-        String columnName = columnName(field);
-        String databaseType = databaseTypeForInternalJavaType(field);
+        var columnName = columnName(field);
+        var databaseType = databaseTypeForInternalJavaType(field);
         ColumnMetadata.ColumnMetadataBuilder builder = ColumnMetadata.builder()
                 .name(columnName)
                 .databaseType(databaseType)
@@ -511,11 +511,11 @@ public class EntityMetadataCollector {
                 .timeZone(isTimeZone(field));
 
         checkIfColumnAnnotationIsNotOnRelation(field, entityClass);
-        Column annotation = field.getAnnotation(Column.class);
-        if (annotation != null) {
-            builder.unique(annotation.unique())
-                    .nullable(annotation.nullable())
-                    .columnDefinition(annotation.columnDefinition());
+        var column = field.getAnnotation(Column.class);
+        if (column != null) {
+            builder.unique(column.unique())
+                    .nullable(column.nullable())
+                    .columnDefinition(column.columnDefinition());
         }
         return builder.build();
     }
@@ -523,15 +523,15 @@ public class EntityMetadataCollector {
     /**
      * Checks if the field is annotated with relational types are also annotated with the Column annotation.
      *
-     * @param field The field to check for annotations.
+     * @param field       The field to check for annotations.
      * @param entityClass The class containing the field.
      * @throws MappingException If the field is annotated with both relational and column annotations.
      *                          The exception message indicates the name of the field and the class where the violation occurred.
      */
     private void checkIfColumnAnnotationIsNotOnRelation(Field field, Class<?> entityClass) {
         if (field.isAnnotationPresent(Column.class) && (field.isAnnotationPresent(OneToOne.class) ||
-                field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToOne.class)
-                || field.isAnnotationPresent(ManyToMany.class))) {
+                                                        field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToOne.class)
+                                                        || field.isAnnotationPresent(ManyToMany.class))) {
             throw new MappingException("The @Column annotation can not be used on relation field '%s' in class '%s'"
                     .formatted(field.getName(), entityClass.getSimpleName()));
         }

@@ -64,11 +64,29 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 @Slf4j
 public class EntityDao implements Dao {
 
+    /**
+     * The SQL builder used to construct SQL queries.
+     */
     private final SqlBuilder sqlBuilder;
+
+    /**
+     * The settings related to the Bibernate database.
+     */
     private final BibernateDatabaseSettings bibernateDatabaseSettings;
+
+    /**
+     * Manages the persistence state of entities during database operations.
+     */
     private final EntityPersistent entityPersistent = new EntityPersistent();
+
+    /**
+     * The identity manager responsible for generating unique identifiers for entities.
+     */
     private final Identity identity;
 
+    /**
+     * List of executed SQL queries during the session. Provides a record of queries executed.
+     */
     @Getter
     private final List<String> executedQueries;
 

@@ -3,12 +3,20 @@ package io.github.blyznytsiaorg.bibernate.utils;
 import lombok.experimental.UtilityClass;
 
 /**
+ * Utility class containing message constants for logging and exception handling in the Bibernate framework.
+ * It includes nested utility classes, {@link ExceptionMessage} and {@link LogMessage}, each encapsulating
+ * specific message constants related to exceptions and logging, respectively.
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
 @UtilityClass
 public class MessageUtils {
 
+    /**
+     * Nested utility class containing message constants for exception handling in the Bibernate framework.
+     * Messages cover various scenarios such as database operations, query execution, entity actions, and more.
+     */
     @UtilityClass
     public static class ExceptionMessage {
         public static final String CANNOT_CLOSE_PS =
@@ -40,6 +48,10 @@ public class MessageUtils {
         public static final String NOT_SPECIFIED_ENTITY_ID = "Not specified entity Id";
     }
 
+    /**
+     * Nested utility class containing message constants for logging in the Bibernate framework.
+     * Messages cover logging scenarios for queries, updates, entity actions, cache operations, and more.
+     */
     @UtilityClass
     public static class LogMessage {
         public static final String QUERY = "Query {}";
@@ -67,9 +79,6 @@ public class MessageUtils {
                 "Deleted entityClass [{}] with primaryKey {} from snapshot";
         public static final String DELETED_ENTITY_CLASS_WITH_PRIMARY_KEYS_FROM_SNAPSHOT =
                 "Deleted entityClass [{}] with primaryKeys {} from snapshot";
-        public static final String UPDATE_ENTITY_IN_FIRST_LEVEL_CACHE_BY_ID =
-                "Update Entity {} in firstLevel cache by id {}";
-        public static final String UPDATE_SNAPSHOT_FOR_ENTITY_ID = "Update snapshot for entity {} id {}";
         public static final String DIRTY_ENTITY_FOUND_NEED_TO_GENERATE_UPDATE_FOR_ENTITY_KEY_AND_ENTITY =
                 "Dirty entity found need to generate update for entityKey {} and entity {}";
         public static final String DIRTY_ENTITY_NOT_FOUND_FOR_ENTITY_KEY_NO_CHANGES =

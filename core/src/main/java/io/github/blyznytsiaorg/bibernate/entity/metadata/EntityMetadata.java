@@ -100,7 +100,7 @@ public class EntityMetadata {
      */
     public Set<JoinInfo> joinInfos(Class<?> entityClass, List<EntityColumnDetails> currentEntityColumns,
                                     Map<Class<?>, EntityMetadata> bibernateEntityMetadata, Set<Class<?>> trackVisitedClasses) {
-        Set<JoinInfo> joinInfos = new LinkedHashSet<>();
+        var joinInfos = new LinkedHashSet<JoinInfo>();
         trackVisitedClasses.add(entityClass);
 
         for (var entityColumn : currentEntityColumns) {
