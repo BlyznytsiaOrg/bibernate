@@ -138,6 +138,9 @@ we have developed our own simplified version of the Persistence API.
  - [@Column](features/annotations/Column.md)
  - [@Table](features/annotations/Table.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
+ - [@OneToMany](features/annotations/OneToMany.md)
+ - [@ManyToOne](features/annotations/ManyToOne.md)
+ - [@ManyToMany](features/annotations/ManyToMany.md)
 
 - Exceptions
 

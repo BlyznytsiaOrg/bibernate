@@ -113,6 +113,7 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
+    //TODO
     @NotNull
     private String getAliasField(String table, EntityColumnDetails entityColumn) {
         return table.concat(DOT).concat(entityColumn.getColumn().getName()).concat(SPACE).concat(AS).concat(SPACE).concat(table).concat(UNDERSCORE).concat(entityColumn.getColumn().getName());
@@ -132,6 +133,7 @@ public class SelectQueryBuilder extends QueryBuilder {
         return this;
     }
 
+    //TODO:
     public SelectQueryBuilder join(List<JoinClause> joinClausesList) {
         joinClauses.addAll(joinClausesList);
         return this;
