@@ -22,7 +22,7 @@ public class UserRepositoryMethodHandler implements SimpleRepositoryMethodHandle
 
 **Note:** Ensure to place your custom implementation within the io.github.blyznytsiaorg.bibernate package.
 
-With this approach, Bibernate seamlessly integrates your custom method handlers, enhancing the functionality of your Hibernate Repository without compromising on simplicity or efficiency.
+With this approach, Bibernate seamlessly integrates your custom method handlers, enhancing the functionality of your Bibernate Repository without compromising on simplicity or efficiency.
 
 
 You can define interface and implement it and all will work.

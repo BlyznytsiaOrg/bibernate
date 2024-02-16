@@ -1,4 +1,5 @@
 <configuration>
+    <property name="serviceName" value="bibernate" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

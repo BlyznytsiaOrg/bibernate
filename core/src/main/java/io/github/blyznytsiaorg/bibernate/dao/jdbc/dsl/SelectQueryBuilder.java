@@ -13,6 +13,24 @@ import java.util.*;
  * such as JOIN, WHERE, GROUP BY, HAVING, and UNION.
  * Extends the base class QueryBuilder.
  *
+ * Example usage:
+ *
+ * ```java
+ * SelectQueryBuilder.from("users")
+ *                 .selectField("*")
+ *                 .join("orders", "users.id = orders.user_id", JoinType.LEFT)
+ *                 .whereCondition("age > ?")
+ *                 .groupBy("name")
+ *                 .havingCondition("COUNT(*) > 1")
+ *                 .buildSelectStatement();
+ *
+ * Result will be:
+ *
+ * SELECT * FROM users LEFT JOIN orders ON users.id = orders.user_id WHERE age > ? GROUP BY name HAVING COUNT(*) > 1;
+ *
+ *
+ * ```
+ *
  * @author Blyzhnytsia Team
  * @since 1.0
  */
