@@ -12,10 +12,16 @@ The `@OneToOne` annotation is used to define a one-to-one relationship between t
 
 ## Usage
 
-One main point! If you want to use relations you should use unique names of fields between entities!
+*One main point! If you want to use relations you should use unique names of fields between entities!*
 
 ```java
-package io.github.blyznytsiaorg.bibernate.annotation;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.CascadeType;
+import io.github.blyznytsiaorg.bibernate.annotation.enumeration.FetchType;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

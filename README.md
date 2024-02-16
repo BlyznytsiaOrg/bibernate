@@ -118,7 +118,7 @@ we have developed our own simplified version of the Persistence API.
 
 ## Features:
 
- - [Object-Relational Mapping (ORM)](features/): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
+ - [Object-Relational Mapping (ORM)](features/ObjectRelationalMapping.md): Simplifies the mapping of Java objects to relational database tables and vice versa, eliminating the need for manual SQL queries.
  - [Automatic Persistence](features/AutomaticPersistence.md): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
  - [Bibernate Query Language(BQL)](features/BQL.md): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
