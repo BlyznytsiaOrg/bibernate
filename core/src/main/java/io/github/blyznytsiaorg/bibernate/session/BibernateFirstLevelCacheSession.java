@@ -43,11 +43,37 @@ import static io.github.blyznytsiaorg.bibernate.utils.MessageUtils.LogMessage.*;
 @Slf4j
 public class BibernateFirstLevelCacheSession implements BibernateSession {
 
+    /**
+     * The underlying Bibernate session that this first-level cache session wraps.
+     */
     private final BibernateSession bibernateSession;
+
+    /**
+     * The action queue for managing and executing entity actions.
+     */
     private final ActionQueue actionQueue;
+
+    /**
+     * The first-level cache that holds entities in-memory for quick access.
+     * The key is the EntityKey, and the value is the corresponding entity.
+     */
     private final Map<EntityKey<?>, Object> firstLevelCache = new HashMap<>();
+
+    /**
+     * Snapshots of entities stored in the first-level cache.
+     * The key is the EntityKey, and the value is a list of ColumnSnapshots representing the entity's state.
+     */
     private final Map<EntityKey<?>, List<ColumnSnapshot>> snapshots = new HashMap<>();
 
+    /**
+     * Retrieves an entity by its primary key from the first-level cache or delegates to
+     * the underlying BibernateSession to fetch it from the database.
+     *
+     * @param entityClass The class of the entity to retrieve.
+     * @param primaryKey  The primary key of the entity to retrieve.
+     * @param <T>         The type of the entity.
+     * @return An Optional containing the retrieved entity or empty if not found.
+     */
     @Override
     public <T> Optional<T> findById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -72,6 +98,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return Optional.of(entityClass.cast(cachedEntity));
     }
 
+    /**
+     * Retrieves all entities of a given class from the first-level cache or delegates to
+     * the underlying BibernateSession to fetch them from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findAll(Class<T> entityClass) {
         flush();
@@ -81,6 +115,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entities;
     }
 
+    /**
+     * Retrieves all entities of a given class by their primary keys from the first-level
+     * cache or delegates to the underlying BibernateSession to fetch them from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param primaryKeys The primary keys of the entities to retrieve.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         flush();
@@ -90,6 +133,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entities;
     }
 
+    /**
+     * Retrieves entities of a given class by a specified column value from the first-level
+     * cache or delegates to the underlying BibernateSession to fetch them from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param columnName  The name of the column to match.
+     * @param columnValue The value to match in the specified column.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findAllByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         flush();
@@ -99,6 +152,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entities;
     }
 
+    /**
+     * Retrieves entities of a given class by a specified WHERE query from the first-level
+     * cache or delegates to the underlying BibernateSession to fetch them from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param whereQuery  The WHERE query.
+     * @param bindValues  The values to bind to the query.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findByWhere(Class<T> entityClass, String whereQuery, Object[] bindValues) {
         flush();
@@ -108,17 +171,49 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entities;
     }
 
+    /**
+     * Retrieves entities of a given class by joining with a specified field from the
+     * first-level cache or delegates to the underlying BibernateSession to fetch them
+     * from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param field       The field to join on.
+     * @param bindValues  The values to bind to the query.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findByJoinTableField(Class<T> entityClass, Field field, Object... bindValues) {
         flush();
         return bibernateSession.findByJoinTableField(entityClass, field, bindValues);
     }
 
+    /**
+     * Retrieves an entity of a given class by a specified WHERE JOIN query from the
+     * first-level cache or delegates to the underlying BibernateSession to fetch it
+     * from the database.
+     *
+     * @param entityClass The class of the entity to retrieve.
+     * @param bindValues  The values to bind to the query.
+     * @param <T>         The type of the entity.
+     * @return An Optional containing the retrieved entity or empty if not found.
+     */
     @Override
     public <T> Optional<T> findByWhereJoin(Class<T> entityClass, Object[] bindValues) {
         return bibernateSession.findByWhereJoin(entityClass, bindValues);
     }
 
+    /**
+     * Retrieves entities of a given class by executing a specified query from the
+     * first-level cache or delegates to the underlying BibernateSession to fetch them
+     * from the database.
+     *
+     * @param entityClass The class of the entities to retrieve.
+     * @param query       The query to execute.
+     * @param bindValues  The values to bind to the query.
+     * @param <T>         The type of the entities.
+     * @return A list of retrieved entities.
+     */
     @Override
     public <T> List<T> findByQuery(Class<T> entityClass, String query, Object[] bindValues) {
         flush();
@@ -128,6 +223,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entities;
     }
 
+    /**
+     * Updates an entity of a given class in the first-level cache and queues an update
+     * action to be executed or executes it immediately if no pending actions are present.
+     *
+     * @param entityClass The class of the entity to update.
+     * @param entity      The entity to update.
+     * @param <T>         The type of the entity.
+     */
     @Override
     public <T> void update(Class<T> entityClass, Object entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -136,12 +239,29 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         this.update(entityClass, entity, List.of());
     }
 
+    /**
+     * Executes a find query with the specified parameters and returns the count of affected rows.
+     * This method flushes the cache before executing the query.
+     *
+     * @param query      The find query to execute.
+     * @param bindValues The values to bind to the query.
+     * @return The count of affected rows.
+     */
     @Override
     public int find(String query, Object[] bindValues) {
         flush();
         return bibernateSession.find(query, bindValues);
     }
 
+    /**
+     * Saves an entity of a given class in the first-level cache and queues an insert action
+     * to be executed or executes it immediately if no pending actions are present.
+     *
+     * @param entityClass The class of the entity to save.
+     * @param entity      The entity to save.
+     * @param <T>         The type of the entity.
+     * @return The saved entity.
+     */
     @Override
     public <T> T save(Class<T> entityClass, T entity) {
         addToQueueOrExecute(
@@ -155,6 +275,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entityClass.cast(entity);
     }
 
+    /**
+     * Saves a collection of entities of a given class in the first-level cache and queues
+     * an insert action to be executed or executes it immediately if no pending actions are present.
+     *
+     * @param entityClass The class of the entities to save.
+     * @param entities    The entities to save.
+     * @param <T>         The type of the entities.
+     */
     @Override
     public <T> void saveAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -169,6 +297,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 () -> bibernateSession.saveAll(entityClass, entities));
     }
 
+    /**
+     * Deletes an entity of a given class by its primary key in the first-level cache and
+     * queues a delete action to be executed or executes it immediately if no pending actions
+     * are present.
+     *
+     * @param entityClass The class of the entity to delete.
+     * @param primaryKey  The primary key of the entity to delete.
+     */
     @Override
     public <T> void deleteById(Class<T> entityClass, Object primaryKey) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -186,6 +322,14 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 });
     }
 
+    /**
+     * Deletes entities of a given class by their primary keys in the first-level cache and
+     * queues a delete action to be executed or executes it immediately if no pending actions
+     * are present.
+     *
+     * @param entityClass The class of the entities to delete.
+     * @param primaryKeys The primary keys of the entities to delete.
+     */
     @Override
     public <T> void deleteAllById(Class<T> entityClass, Collection<Object> primaryKeys) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -212,6 +356,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 });
     }
 
+    /**
+     * Deletes entities of a given class by a specified column value in the first-level cache and
+     * delegates to the underlying BibernateSession to delete them from the database.
+     *
+     * @param entityClass The class of the entities to delete.
+     * @param columnName  The name of the column to match.
+     * @param columnValue The value to match in the specified column.
+     * @param <T>         The type of the entities.
+     * @return A list of deleted entities.
+     */
     @Override
     public <T> List<T> deleteByColumnValue(Class<T> entityClass, String columnName, Object columnValue) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -231,6 +385,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return deletedEntities;
     }
 
+    /**
+     * Deletes an entity of a given class in the first-level cache and
+     * queues a delete action to be executed or executes it immediately if no pending actions
+     * are present.
+     *
+     * @param entityClass The class of the entity to delete.
+     * @param entity      The entity to delete.
+     * @param <T>         The type of the entity.
+     */
     @Override
     public <T> void delete(Class<T> entityClass, T entity) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -253,6 +416,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 });
     }
 
+    /**
+     * Deletes entities of a given class in the first-level cache and
+     * queues a delete action to be executed or executes it immediately if no pending actions
+     * are present.
+     *
+     * @param entityClass The class of the entities to delete.
+     * @param entities    The entities to delete.
+     * @param <T>         The type of the entities.
+     */
     @Override
     public <T> void deleteAll(Class<T> entityClass, Collection<T> entities) {
         Objects.requireNonNull(entityClass, ENTITY_CLASS_MUST_BE_NOT_NULL);
@@ -278,6 +450,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 });
     }
 
+    /**
+     * Flushes the session by performing dirty checking, executing pending actions,
+     * and delegating to the underlying BibernateSession.
+     */
     @Override
     public void flush() {
         performDirtyChecking();
@@ -285,6 +461,10 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         bibernateSession.flush();
     }
 
+    /**
+     * Closes the session by performing dirty checking, executing pending actions,
+     * and resetting the Bibernate session. Clears the first-level cache and snapshots.
+     */
     @Override
     public void close() {
         log.trace(SESSION_IS_CLOSING_PERFORMING_DIRTY_CHECKING);
@@ -297,26 +477,53 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         bibernateSession.close();
     }
 
+    /**
+     * Retrieves the Dao associated with the session.
+     *
+     * @return The Dao associated with the session.
+     */
     @Override
     public Dao getDao() {
         return bibernateSession.getDao();
     }
 
+    /**
+     * Starts a transaction using the underlying BibernateSession.
+     *
+     * @throws SQLException If a SQL exception occurs while starting the transaction.
+     */
     @Override
     public void startTransaction() throws SQLException {
         bibernateSession.startTransaction();
     }
 
+    /**
+     * Commits the current transaction using the underlying BibernateSession.
+     *
+     * @throws SQLException If a SQL exception occurs while committing the transaction.
+     */
     @Override
     public void commitTransaction() throws SQLException {
         bibernateSession.commitTransaction();
     }
 
+    /**
+     * Rolls back the current transaction using the underlying BibernateSession.
+     *
+     * @throws SQLException If a SQL exception occurs while rolling back the transaction.
+     */
     @Override
     public void rollbackTransaction() throws SQLException {
         bibernateSession.rollbackTransaction();
     }
 
+    /**
+     * Builds a snapshot of an entity by iterating through its fields and creating
+     * ColumnSnapshot instances. Used for dirty checking.
+     *
+     * @param entity The entity for which to build a snapshot.
+     * @return A list of ColumnSnapshot instances representing the entity's state.
+     */
     private List<ColumnSnapshot> buildEntitySnapshot(Object entity) {
         Objects.requireNonNull(entity, ENTITY_MUST_BE_NOT_NULL);
 
@@ -333,6 +540,16 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return snapshot;
     }
 
+    /**
+     * Updates an entity of a given class in the first-level cache and queues an update
+     * action to be executed or executes it immediately if no pending actions are present.
+     * Used for updating entities and triggering dirty checking.
+     *
+     * @param entityClass The class of the entity to update.
+     * @param entity      The entity to update.
+     * @param diff        The list of differences between the entity and its snapshot.
+     * @param <T>         The type of the entity.
+     */
     private <T> void update(Class<T> entityClass, Object entity, List<ColumnSnapshot> diff) {
         addToQueueOrExecute(
                 () -> actionQueue.addEntityAction(UpdateEntityAction.builder()
@@ -344,6 +561,11 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 () -> bibernateSession.getDao().update(entityClass, entity, diff));
     }
 
+    /**
+     * Performs dirty checking by comparing the current state of entities in the first-level
+     * cache with their snapshots. If differences are detected, corresponding update actions
+     * are queued for execution.
+     */
     private void performDirtyChecking() {
         firstLevelCache.keySet().forEach(entityKey -> {
             var entityInFirstLevelCache = firstLevelCache.get(entityKey);
@@ -361,6 +583,17 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         });
     }
 
+    /**
+     * Prepares a DeleteByIdEntityAction for the specified entity class, primary key, and EntityKey.
+     * Retrieves the entity from the cache if available; otherwise, fetches it from the underlying BibernateSession.
+     * The action includes the removal of the entity from the first-level cache and snapshots.
+     *
+     * @param <T>         The type of the entity.
+     * @param entityClass The class of the entity.
+     * @param primaryKey  The primary key of the entity.
+     * @param entityKey   The EntityKey representing the entity.
+     * @return The prepared DeleteByIdEntityAction.
+     */
     private <T> EntityAction prepareDeleteByIdEntityAction(Class<T> entityClass,
                                                            Object primaryKey,
                                                            EntityKey<T> entityKey) {
@@ -377,6 +610,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
                 .build();
     }
 
+    /**
+     * Persists the context for a list of entities in the first-level cache.
+     * Checks each entity against the cache, updating it with the cached instance if present,
+     * or adds it to the cache and snapshots otherwise.
+     *
+     * @param <T>         The type of the entity.
+     * @param entityClass The class of the entity.
+     * @param entities    The list of entities to persist in the context.
+     */
     private <T> void persistentContext(Class<T> entityClass, List<T> entities) {
         for (int i = 0; i < entities.size(); i++) {
             var entityFromDb = entities.get(i);
@@ -393,6 +635,18 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         }
     }
 
+    /**
+     * Persists the context for a single entity in the first-level cache.
+     * Checks if the entity has lazy fields and, if not, adds it to the cache and creates a snapshot.
+     * The entity is added to the cache using its EntityKey as the key.
+     *
+     * @param <T>             The type of the entity.
+     * @param entityClass     The class of the entity.
+     * @param entityFromDb    The entity to persist in the context.
+     * @param entityKey       The EntityKey representing the entity.
+     * @param finalPrimaryKey The final primary key value.
+     * @return The persistent entity.
+     */
     private <T> T persistentContext(Class<?> entityClass, T entityFromDb, EntityKey<?> entityKey,
                                     Object finalPrimaryKey) {
         if (!isImmutable(entityClass)) {
@@ -411,6 +665,9 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         return entityFromDb;
     }
 
+    /**
+     * Clears both the first-level cache and snapshots, removing all entities and their snapshots.
+     */
     private void clearCacheAndSnapshots() {
         log.trace(FIRST_LEVEL_CACHE_IS_CLEARING);
         firstLevelCache.clear();
@@ -419,6 +676,12 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         snapshots.clear();
     }
 
+    /**
+     * Removes an entity and its snapshot from the first-level cache using the provided EntityKey.
+     * Logs trace messages indicating the removal from the cache and snapshots.
+     *
+     * @param entityKey The EntityKey representing the entity to remove.
+     */
     private void removeCacheAndSnapshotBy(EntityKey<?> entityKey) {
         if (Objects.nonNull(firstLevelCache.remove(entityKey))) {
             log.trace(DELETED_ENTITY_CLASS_WITH_PRIMARY_KEY_FROM_FIRST_LEVEL_CACHE, entityKey.getClass(), entityKey.id());
@@ -428,6 +691,15 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         }
     }
 
+    /**
+     * Removes multiple entities and their snapshots from the first-level cache using a list of EntityKeys.
+     * Logs trace messages indicating the removal from the cache and snapshots.
+     *
+     * @param entityKeys  The list of EntityKeys representing the entities to remove.
+     * @param <T>         The type of the entities.
+     * @param entityClass The class of the entities.
+     * @param primaryKeys The list of primary keys of the entities.
+     */
     private <T> void removeCacheAndSnapshotBy(Collection<EntityKey<T>> entityKeys,
                                               Class<T> entityClass,
                                               Collection<Object> primaryKeys) {
@@ -439,12 +711,27 @@ public class BibernateFirstLevelCacheSession implements BibernateSession {
         }
     }
 
+    /**
+     * Prepares an EntityKey for a given entity class and primary key.
+     *
+     * @param <T>         The type of the entity.
+     * @param entityClass The class of the entity.
+     * @param primaryKey  The primary key of the entity.
+     * @return The prepared EntityKey.
+     */
     private <T> EntityKey<T> prepareEntityKey(Class<T> entityClass, Object primaryKey) {
         var fieldIdType = columnIdType(entityClass);
 
         return new EntityKey<>(entityClass, primaryKey, fieldIdType);
     }
 
+    /**
+     * Adds the specified operations to a queue for later execution or immediately executes them,
+     * based on the execution state of the underlying ActionQueue.
+     *
+     * @param addToQueue The operation to add to the queue.
+     * @param execute    The operation to execute immediately.
+     */
     private void addToQueueOrExecute(Runnable addToQueue, Runnable execute) {
         if (actionQueue.isNotExecuted()) {
             addToQueue.run();
