@@ -122,7 +122,7 @@ we have developed our own simplified version of the Persistence API.
  - [Automatic Persistence](features/AutomaticPersistence.md): Automatically manages the lifecycle of persistent objects, tracking changes and synchronizing them with the database.
  - [Bibernate Query Language(BQL)](features/BQL.md): Provides a powerful query language similar to SQL but operates on Java objects, enabling database queries using object-oriented concepts.
  - [Caching Mechanisms](features/CachingMechanisms.md): Supports first-level and second-level caching to improve performance by reducing database queries and minimizing latency.
- - [Transaction Management](features/): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
+ - [Transaction Management](features/TransactionManagement.md): Offers built-in support for managing database transactions, ensuring data integrity and consistency across multiple operations.
  - [Lazy Loading](features/LazyLoading.md): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
  - [Criteria API](features/CriteriaApi.md): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
  - [Native SQL Queries:](features/NativeSQLQueries.md): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
