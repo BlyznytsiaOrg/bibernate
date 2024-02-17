@@ -30,9 +30,16 @@ class OneToOneMultirelationLazyFindByIdTest extends AbstractPostgresInfrastructu
                 assertThat(user.getId()).isEqualTo(1);
                 assertThat(user.getLastName()).isEqualTo("Doe");
                 assertThat(user.getFirstName()).isEqualTo("John");
+                assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * FROM users WHERE users_id = ?;"));
+
                 assertThat(user.getAddress()).isNotNull();
                 assertThat(user.getAddress().getId()).isEqualTo(1);
                 assertThat(user.getAddress().getName()).isEqualTo("Address 1");
+                assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * FROM users WHERE users_id = ?;",
+                        "SELECT * FROM addresses WHERE addresses_id = ?;"));
+
                 assertThat(user.getAddress().getHouse()).isNotNull();
                 assertThat(user.getAddress().getHouse().getId()).isEqualTo(1);
                 assertThat(user.getAddress().getHouse().getName()).isEqualTo("House A");

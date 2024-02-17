@@ -2,10 +2,9 @@ package io.github.blyznytsiaorg.bibernate.onetoone.bidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.AbstractPostgresInfrastructurePrep;
 import io.github.blyznytsiaorg.bibernate.utils.QueryUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testdata.onetoone.bidirectional.eager.Address;
+import testdata.onetoone.bidirectional.lazy.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,29 +15,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class OneToOneBidirectionalLazyTest extends AbstractPostgresInfrastructurePrep {
 
     @DisplayName("Should retrieve person and address")
-    @Disabled
     @Test
-    public void shouldFindUserByIdWithOneToOneEagerBidirectionalRelations() {
+    public void shouldFindChildUserByIdWithOneToOneLazyBidirectionalRelations() {
         QueryUtils.setupTables(dataSource, CREATE_USERS_ADDRESSES_FOR_BI_TABLES, CREATE_INSERT_USERS_ADRESSES_FOR_BI_STATEMENT);
 
-        var persistent = createPersistent("testdata.onetoone.bidirectional.eager");
+        var persistent = createPersistent("testdata.onetoone.bidirectional.lazy");
         try (var entityManager = persistent.createBibernateEntityManager()) {
             var bibernateSessionFactory = entityManager.getBibernateSessionFactory();
             try (var session = bibernateSessionFactory.openSession()) {
 
-                Optional<Address> address = session.findById(Address.class, 2L);
+                Optional<User> user = session.findById(User.class, 1L);
 
-                assertThat(address).isPresent();
-                assertThat(address.get())
-                        .hasFieldOrPropertyWithValue("id", 2L)
-                        .hasFieldOrPropertyWithValue("name", "street");
-
-                assertThat(address.get().getUser())
+                assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * " +
+                        "FROM users " +
+                        "WHERE users_id = ?;"));
+                assertThat(user).isPresent();
+                assertThat(user.get())
                         .hasFieldOrPropertyWithValue("id", 1L)
                         .hasFieldOrPropertyWithValue("firstName", "FirstName")
                         .hasFieldOrPropertyWithValue("lastName", "LastName");
 
+                assertThat(user.get().getAddress())
+                        .hasFieldOrPropertyWithValue("id", 2L)
+                        .hasFieldOrPropertyWithValue("name", "street");
+
                 assertQueries(bibernateSessionFactory, List.of(
+                        "SELECT * FROM users WHERE users_id = ?;",
+
                         "SELECT * " +
                         "FROM addresses " +
                         "LEFT JOIN users ON addresses.addresses_id = users.users_address_id " +

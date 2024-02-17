@@ -25,6 +25,4 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "users_address_id")
     private Address address;
-
-
 }
