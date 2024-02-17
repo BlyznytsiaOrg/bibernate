@@ -68,6 +68,48 @@ public interface AbstractPostgresTableCreationPrep {
                 age int
             );
             """;
+    String ONE_TO_ONE_EAGER_AND_LAZY_TABLES = """
+            CREATE TABLE houses (
+                houses_id BIGINT PRIMARY KEY,
+                houses_name VARCHAR(255)
+            );
+                        
+            CREATE TABLE addresses (
+                addresses_id BIGINT PRIMARY KEY,
+                addresses_name VARCHAR(255),
+                addresses_house_id BIGINT,
+                FOREIGN KEY (addresses_house_id) REFERENCES houses(houses_id)
+            );
+            
+            CREATE TABLE profiles (
+                profiles_id BIGINT PRIMARY KEY,
+                profiles_nickname VARCHAR(255)
+            );
+                        
+            CREATE TABLE users (
+                users_id BIGINT PRIMARY KEY,
+                users_first_name VARCHAR(255),
+                users_last_name VARCHAR(255),
+                users_address_id BIGINT,
+                users_profile_id BIGINT,
+                FOREIGN KEY (users_address_id) REFERENCES addresses(addresses_id),
+                FOREIGN KEY (users_profile_id) REFERENCES profiles(profiles_id)
+            );
+            """;
+
+    String ONE_TO_ONE_EAGER_AND_LAZY_INSERT = """
+            INSERT INTO houses (houses_id, houses_name) VALUES
+            (1, 'House A');
+                        
+            INSERT INTO addresses (addresses_id, addresses_name, addresses_house_id) VALUES
+            (2, 'Address 1', 1);
+            
+            INSERT INTO profiles (profiles_id, profiles_nickname) VALUES
+            (3, 'nickname');
+                        
+            INSERT INTO users (users_id, users_first_name, users_last_name, users_address_id, users_profile_id) VALUES
+            (1, 'John', 'Doe', 2, 3);
+            """;
 
     String ONE_TO_ONE_MULTIRELATION_TABLES = """
             CREATE TABLE houses (

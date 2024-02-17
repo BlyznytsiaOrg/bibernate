@@ -105,7 +105,7 @@ public class EntityMetadata {
 
         for (var entityColumn : currentEntityColumns) {
             var oneToOneMetadata = entityColumn.getOneToOne();
-            if (oneToOneMetadata != null &&
+            if (oneToOneMetadata != null && oneToOneMetadata.getFetchType() != FetchType.LAZY &&
                 (EMPTY.equals(oneToOneMetadata.getMappedBy()) || oneToOneMetadata.getFetchType() == FetchType.EAGER)
             ) {
                 var build = JoinInfo.builder()

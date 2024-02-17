@@ -2,7 +2,6 @@ package testdata.onetoone.bidirectional.lazy;
 
 import io.github.blyznytsiaorg.bibernate.annotation.*;
 import lombok.*;
-import testdata.onetoone.unidirectional.eager.House;
 
 @Entity
 @Table(name = "addresses")
@@ -13,16 +12,12 @@ import testdata.onetoone.unidirectional.eager.House;
 @AllArgsConstructor
 public class Address {
     @Id
-    @Column(name = "id")
+    @Column(name = "addresses_id")
     private Long id;
 
-    @Column(name = "name")
+    @Column(name = "addresses_name")
     private String name;
 
     @OneToOne(mappedBy = "address")
     private User user;
-
-    @OneToOne
-    @JoinColumn(name = "house_id")
-    private House house;
 }
