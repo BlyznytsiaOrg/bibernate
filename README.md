@@ -113,7 +113,7 @@ we have developed our own simplified version of the Persistence API.
 
 ## Documentation
 
-- There are two types of documentation: Markdown (see below) and [JavaDoc](https://github.com/BlyznytsiaOrg/bibernate-core-javadoc)
+- There are two types of documentation: Markdown (see below) and [JavaDoc (core)](https://blyznytsiaorg.github.io/bibernate-core-javadoc/), [JavaDoc (annotation processor)](https://blyznytsiaorg.github.io/bibernate-annotation-processor-javadoc/ )
 
 
 ## Features:
@@ -126,28 +126,37 @@ we have developed our own simplified version of the Persistence API.
  - [Lazy Loading](features/LazyLoading.md): Delays the loading of associated objects until they are explicitly accessed, improving performance by loading only what is necessary.
  - [Criteria API](features/CriteriaApi.md): Allows developers to build dynamic queries programmatically and fluent interface, enhancing query flexibility
  - [Native SQL Queries:](features/NativeSQLQueries.md): Allows execution of native SQL queries when needed, providing flexibility and compatibility with existing database schemas.
- - [Schema Generation](features/): Offers tools for generating database schemas based on entity mappings, simplifying database setup.
+ - [Schema Generation](features/SchemaGeneration.md): Offers tools for generating database schemas based on entity mappings, simplifying database setup.
  - [Extensibility](features/Extensibility.md): Provides a flexible architecture that allows developers to extend and customize Bibernate functionality to meet specific application requirements.
  - [Bibernate Data Repository](features/BibernateDataRepository.md): Bibernate Data Repository is a powerful feature provided by the Bring Framework that simplifies the process of interacting with databases, particularly in the context of Bibernate persistent API.
- - [Batch Processing](features/): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
  - [Versioning](features/Versioning.md): Supports versioning of entity data and implementing optimistic concurrency control.
  - [Flyway Migration Support](features/FlywayMigrationSupport.md): Integrates seamlessly with Flyway migration tool, enabling database schema management and version control through declarative SQL migration scripts. This ensures consistency and reliability in database schema evolution across different environments.
  - [Batch Processing](features/BatchProcessing.md): Facilitates batch processing of database operations, improving performance by minimizing round-trips to the database.
+ - [Configuration Management](features/ConfigurationManagement.md): Offers flexible configuration options, allowing for default settings or external settings specified in a configFile or passed as parameters.
 
 **Annotations:**
- - [@Column](features/annotations/Column.md)
+ - [@Entity](features/annotations/Entity.md)
  - [@Table](features/annotations/Table.md)
+ - [@Index](features/annotations/Index.md)
+ - [@Id](features/annotations/Id.md)
  - [@GeneratedValue](features/annotations/GeneratedValue.md)
  - [@SequenceGenerator](features/annotations/SequenceGenerator.md)
+ - [@Column](features/annotations/Column.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
- - [@Version](features/annotations/Version.md)
- - [@Param](features/annotations/Param.md)
- - [@Query](features/annotations/Query.md)
- - [@DynamicUpdate](features/annotations/DynamicUpdate.md)
+ - [@JoinTable](features/annotations/JoinTable.md)
+ - [@ForeignKey](features/annotations/ForeignKey.md)
  - [@OneToOne](features/annotations/OneToOne.md)
  - [@OneToMany](features/annotations/OneToMany.md)
  - [@ManyToOne](features/annotations/ManyToOne.md)
  - [@ManyToMany](features/annotations/ManyToMany.md)
+ - [@CreationTimestamp](features/annotations/CreationTimestamp.md)
+ - [@UpdateTimestamp](features/annotations/UpdateTimestamp.md)
+ - [@Version](features/annotations/Version.md)
+ - [@Param](features/annotations/Param.md)
+ - [@Query](features/annotations/Query.md)
+ - [@DynamicUpdate](features/annotations/DynamicUpdate.md)
+ - [@Immutable](features/annotations/Immutable.md)
+ - [@IgnoreEntity](features/annotations/IgnoreEntity.md)
 
 **Exceptions:**
   - [BibernateDataSourceException](features/exceptions/BibernateDataSourceException.md)
@@ -173,9 +182,9 @@ we have developed our own simplified version of the Persistence API.
   - [UnsupportedReturnTypeException](features/exceptions/UnsupportedReturnTypeException.md)
 
 # Additional items:
- - [Annotation processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.
- - [Runtime Entity validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.
- - [Reflection optimization](features/ReflectionOptimization.md): We gather all the details during startup and store them for later use because reflection is slow.
+ - [Annotation Processing](features/AnnotationProcessing.md): Ensure entity validation for proper usage during compile time.
+ - [Runtime Entity Validation](features/RuntimeEntityValidation.md): During the initialization of the application, we'll log warnings or exceptions and offer guidance on best practices for code improvement.
+ - [Reflection Optimization](features/ReflectionOptimization.md): We gather all the details during startup and store them for later use because reflection is slow.
 
 
 ## Feedback and Contributions

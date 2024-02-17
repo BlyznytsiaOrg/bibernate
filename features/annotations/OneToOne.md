@@ -98,3 +98,7 @@ public class Employee {
     // Other fields and methods
 }
 ```
+### See Also
+
+- [@JoinColumn](JoinColumn.md)
+- [Schema Generation](../SchemaGeneration.md)

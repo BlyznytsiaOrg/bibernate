@@ -26,3 +26,7 @@ public class EmployeeEntity {
 In this example, the version field of the EmployeeEntity class is annotated with @Version. 
 When instances of EmployeeEntity are updated, the value of the version field is automatically incremented, 
 allowing the system to detect concurrent modifications and prevent data loss.
+
+### See Also
+
+- [Versioning](../Versioning.md)

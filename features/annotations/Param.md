@@ -16,3 +16,7 @@ These named parameters are then used in the query method.
 
 **Parameters:**
 - value: Specifies the name of the parameter.
+
+### See Also
+
+- [Bibernate Data Repository](../BibernateDataRepository.md)
