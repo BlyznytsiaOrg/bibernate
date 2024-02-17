@@ -137,6 +137,8 @@ we have developed our own simplified version of the Persistence API.
 **Annotations:**
  - [@Column](features/annotations/Column.md)
  - [@Table](features/annotations/Table.md)
+ - [@GeneratedValue](features/annotations/GeneratedValue.md)
+ - [@SequenceGenerator](features/annotations/SequenceGenerator.md)
  - [@JoinColumn](features/annotations/JoinColumn.md)
  - [@Version](features/annotations/Version.md)
  - [@Param](features/annotations/Param.md)
