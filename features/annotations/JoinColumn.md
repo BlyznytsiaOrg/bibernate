@@ -69,3 +69,9 @@ public class Order {
 }
 ```
 In this example, the Order entity class has a customer field mapped as a foreign key column named "customer_id" in the database table. Additionally, a foreign key constraint named "fk_order_customer" is specified for the column.
+
+### See Also
+
+- [@OneToOne](OneToOne.md)
+- [@ManyToOne](ManyToOne.md)
+- [Schema Generation](../SchemaGeneration.md)

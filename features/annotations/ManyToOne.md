@@ -152,3 +152,8 @@ public class Person {
 }
 ```
 In this example there is a many-to-one relationship between Note and Person entities. The fetch = FetchType.LAZY attribute specifies that the associated Person entity should be lazily fetched, meaning it will not be loaded from the database until accessed
+
+### See Also
+
+- [@JoinColumn](JoinColumn.md)
+- [Schema Generation](../SchemaGeneration.md)

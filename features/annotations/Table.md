@@ -74,3 +74,6 @@ public class Employee {
 ```
 In this example, the Employee entity class is mapped to a database table named "employees" with two indexes: one on the "name" column and another on the "department_id" column.
 
+### See Also
+
+- [Schema Generation](../SchemaGeneration.md)

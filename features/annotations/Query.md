@@ -19,3 +19,7 @@ This interface defines a method countUserDuplicate, which uses the @Query annota
 
 - value: Specifies the SQL query to be executed.
 - nativeQuery: Indicates that the query is a native SQL query.
+
+### See Also
+
+- [Bibernate Data Repository](../BibernateDataRepository.md)

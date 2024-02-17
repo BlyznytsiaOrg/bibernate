@@ -91,3 +91,7 @@ public class Product {
 }
 ```
 In this example, the productName property of the Product class is mapped to a column with a custom column definition specifying that it should be a VARCHAR(255) column that is not nullable and has a unique constraint.
+
+### See Also
+
+- [Schema Generation](../SchemaGeneration.md)

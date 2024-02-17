@@ -114,3 +114,5 @@ public class Note {
 }
 ```
 In this example, the Person entity class has a one-to-many relationship with the Note entity. The mappedBy = "person" attribute specifies that the Person entity owns the relationship via its notes field.
+
+- [Schema Generation](../SchemaGeneration.md)

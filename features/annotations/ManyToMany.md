@@ -125,3 +125,7 @@ public class Person {
 }
 ```
 There is many-to-many bidirectional relationship between Course and Person entities. Person entity owns the relationship via courses field.
+
+### See also:
+- [@JoinTable](JoinTable.md)
+- [Schema Generation](../SchemaGeneration.md)
