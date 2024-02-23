@@ -22,7 +22,7 @@
         <slf4j.version>2.0.11</slf4j.version>
         <mockito.version>5.9.0</mockito.version>
         <flyway.version>9.22.3</flyway.version>
-        <postgresql.version>42.7.1</postgresql.version>
+        <postgresql.version>42.7.2</postgresql.version>
         <testcontainers.version>1.19.3</testcontainers.version>
         <system-stubs-jupiter.version>2.1.6</system-stubs-jupiter.version>
         <jetbrains.version>24.1.0</jetbrains.version>
